@@ -225,9 +225,9 @@
       
       list.innerHTML = appData.categorias.map(cat => {
         // Contar cuántos comercios tiene esta categoría
-        const categoriaRowId = cat['Row ID'] || cat.ROWID || '';
+        const categoriaRowId = cat['🔒 Row ID'] || cat.ROWID || '';
         if (!categoriaRowId) {
-          console.warn('Categoría sin Row ID:', cat);
+          console.warn('Categoría sin 🔒 Row ID:', cat);
           return '';
         }
         
@@ -282,7 +282,7 @@
           c.CATEGORIA == appData.selectedCategoria
         );
         
-        console.log('Row ID seleccionado:', appData.selectedCategoria);
+        console.log('🔒 Row ID seleccionado:', appData.selectedCategoria);
         console.log('Comercios filtrados:', comerciosFiltrados.length);
       }
 
