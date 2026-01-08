@@ -220,23 +220,7 @@
       setupEventListeners();
     }
 
-    function getImageUrl(imageUrl, defaultText) {
-      // Si no hay URL o la URL está vacía, usar placeholder
-      if (!imageUrl || imageUrl.trim() === '') {
-        return `https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=${encodeURIComponent(defaultText)}`;
-      }
-      
-      // Si la URL es una ruta relativa que empieza con "COMERCIOS_Images/" o similar
-      if (imageUrl.startsWith('COMERCIOS_Images/') || 
-          imageUrl.startsWith('data:image/') ||
-          imageUrl.includes('IMAGEN.')) {
-        // Usar placeholder porque estas rutas no son URLs válidas
-        return `https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=${encodeURIComponent(defaultText)}`;
-      }
-      
-      // Si es una URL válida de Google Drive o externa
-      return imageUrl;
-    }
+    function renderCategoriasCards() {
       const list = document.getElementById('categoriasList');
       
       list.innerHTML = appData.categorias.map(cat => {
@@ -318,11 +302,9 @@
       
       list.innerHTML = comerciosFiltrados.map(c => {
         const abierto = c['ABIERTO?'] === 'SI' || c['ABIERTO?'] === true || c['ABIERTO?'] === 'TRUE';
-        const imageUrl = getImageUrl(c.IMAGEN, c.COMERCIO);
-        
         return `
           <div class="comercio-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer ${!abierto ? 'opacity-60' : ''}" data-id="${c.ID}">
-            <img src="${imageUrl}" alt="${c.COMERCIO}" class="w-full h-32 object-cover" onerror="this.src='https://via.placeholder.com/400x250/1A1A1A/FFFFFF?text=${encodeURIComponent(c.COMERCIO)}'">
+            <img src="${c.IMAGEN || 'https://via.placeholder.com/300x200?text=Sin+Imagen'}" alt="${c.COMERCIO}" class="w-full h-32 object-cover">
             <div class="p-4">
               <h3 class="font-bold text-lg">${c.COMERCIO}</h3>
               <p class="text-sm text-gray-600">${c.SECTOR || c.CIUDAD || ''}</p>
@@ -353,7 +335,7 @@
       header.innerHTML = `
         <div class="bg-white rounded-lg shadow-md p-6">
           <div class="flex items-center gap-4">
-            <img src="${getImageUrl(appData.currentComercio.IMAGEN, appData.currentComercio.COMERCIO)}" alt="${appData.currentComercio.COMERCIO}" class="w-20 h-20 rounded-lg object-cover" onerror="this.src='https://via.placeholder.com/100/1A1A1A/FFFFFF?text=${encodeURIComponent(appData.currentComercio.COMERCIO.substring(0,2))}'">
+            <img src="${appData.currentComercio.IMAGEN || 'https://via.placeholder.com/100'}" alt="${appData.currentComercio.COMERCIO}" class="w-20 h-20 rounded-lg object-cover">
             <div>
               <h2 class="text-2xl font-bold brand-black">${appData.currentComercio.COMERCIO}</h2>
               <p class="text-gray-600">${appData.currentComercio.DIRECCION || ''}</p>
@@ -392,7 +374,7 @@
 
       list.innerHTML = productos.map(p => `
         <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-          <img src="${getImageUrl(p.IMAGEN, p.NOMBRE)}" alt="${p.NOMBRE}" class="w-full h-40 object-cover" onerror="this.src='https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=${encodeURIComponent(p.NOMBRE)}'">
+          <img src="${p.IMAGEN || 'https://via.placeholder.com/300x200?text=Producto'}" alt="${p.NOMBRE}" class="w-full h-40 object-cover">
           <div class="p-4">
             <h3 class="font-bold text-lg">${p.NOMBRE}</h3>
             <p class="text-sm text-gray-600 mt-1">${p.DESCRIPCION || ''}</p>
