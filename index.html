@@ -417,12 +417,16 @@
       document.getElementById('productosSection').classList.remove('hidden');
 
       const header = document.getElementById('comercioHeader');
+      const comercioNombre = appData.currentComercio.COMERCIO || 'Comercio';
+      const comercioImagen = getImageUrl(appData.currentComercio.IMAGEN, comercioNombre);
+      const iniciales = comercioNombre.substring(0, 2);
+      
       header.innerHTML = `
         <div class="bg-white rounded-lg shadow-md p-6">
           <div class="flex items-center gap-4">
-            <img src="${getImageUrl(appData.currentComercio.IMAGEN, appData.currentComercio.COMERCIO)}" alt="${appData.currentComercio.COMERCIO}" class="w-20 h-20 rounded-lg object-cover" onerror="this.src='https://via.placeholder.com/100/1A1A1A/FFFFFF?text=${encodeURIComponent(appData.currentComercio.COMERCIO.substring(0,2))}'">
+            <img src="${comercioImagen}" alt="${comercioNombre}" class="w-20 h-20 rounded-lg object-cover" onerror="this.src='https://via.placeholder.com/100/1A1A1A/FFFFFF?text=${encodeURIComponent(iniciales)}'">
             <div>
-              <h2 class="text-2xl font-bold brand-black">${appData.currentComercio.COMERCIO}</h2>
+              <h2 class="text-2xl font-bold brand-black">${comercioNombre}</h2>
               <p class="text-gray-600">${appData.currentComercio.DIRECCION || ''}</p>
               <p class="text-sm text-gray-500">${appData.currentComercio.HORARIOS || ''}</p>
             </div>
