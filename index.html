@@ -10,54 +10,200 @@
     .bg-brand-orange { background-color: #FF8C00; }
     .brand-black { color: #1A1A1A; }
     .bg-brand-black { background-color: #1A1A1A; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e5e5e5 50%, #f0f0f0 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; }
-    @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .hover-orange:hover { background-color: #FF8C00; }
+    .cart-badge {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+    .loading {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #FF8C00;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body class="bg-gray-50">
-  <header class="bg-brand-black text-white sticky top-0 z-50 shadow-lg px-4 py-4 flex justify-between items-center">
-    <h1 class="text-2xl font-bold brand-orange">🛵 Somar Express</h1>
-    <button id="cartBtn" class="relative bg-brand-orange px-4 py-2 rounded-full font-bold">
-      🛒 <span id="cartCount" class="ml-1 bg-white text-black rounded-full px-2 text-xs">0</span>
-    </button>
+  <!-- Header -->
+  <header class="bg-brand-black text-white sticky top-0 z-50 shadow-lg">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold brand-orange">🛵 Somar Express</h1>
+        <button id="cartBtn" class="relative bg-brand-orange px-4 py-2 rounded-lg font-semibold hover:bg-orange-600 transition">
+          🛒 Carrito <span id="cartCount" class="ml-1 bg-white text-black rounded-full px-2 py-0.5 text-sm">0</span>
+        </button>
+      </div>
+    </div>
   </header>
 
-  <section id="categoriesSection" class="hidden bg-white border-b sticky top-[68px] z-40 overflow-x-auto no-scrollbar flex gap-3 p-3">
-    <div id="categoriesList" class="flex gap-2"></div>
-  </section>
-
-  <div id="loading" class="p-4 space-y-4">
-    <div class="h-40 w-full skeleton rounded-xl"></div>
-    <div class="h-40 w-full skeleton rounded-xl"></div>
+  <!-- Loading -->
+  <div id="loading" class="flex justify-center items-center h-screen">
+    <div class="loading"></div>
   </div>
 
-  <main id="comerciosSection" class="hidden container mx-auto py-6 space-y-8"></main>
-
-  <section id="productosSection" class="hidden container mx-auto p-4 pb-24">
-    <button id="backBtn" class="mb-4 text-brand-orange font-bold flex items-center">← Volver</button>
-    <div id="comercioHeader" class="mb-6 bg-white p-4 rounded-xl shadow-sm"></div>
-    <div id="productosList" class="space-y-8"></div>
-    <button id="customProductBtn" class="mt-6 w-full bg-gray-100 border-2 border-dashed py-4 rounded-xl text-gray-500 font-bold">➕ No encuentro mi producto</button>
+  <!-- Categorías -->
+  <section id="categoriesSection" class="hidden bg-white shadow-md sticky top-16 z-40">
+    <div class="container mx-auto px-4 py-3">
+      <div id="categoriesList" class="flex overflow-x-auto gap-3 pb-2"></div>
+    </div>
   </section>
 
-  <script>
-    const SCRIPT_URL = 'TU_URL_AQUÍ';
-    let appData = { comercios: [], categorias: [], productos: [], categoriasxcomercio: [], cart: [], currentComercio: null, selectedCategoria: null };
+  <!-- Comercios -->
+  <section id="comerciosSection" class="hidden container mx-auto px-4 py-6">
+    <h2 class="text-2xl font-bold mb-4 brand-black">Comercios Disponibles</h2>
+    <div id="comerciosList" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+  </section>
 
+  <!-- Productos (Vista del comercio) -->
+  <section id="productosSection" class="hidden container mx-auto px-4 py-6">
+    <button id="backBtn" class="mb-4 text-brand-orange font-semibold hover:underline">← Volver a comercios</button>
+    <div id="comercioHeader" class="mb-6"></div>
+    <div id="productosList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <button id="customProductBtn" class="mt-6 w-full bg-gray-200 hover:bg-gray-300 text-black font-semibold py-3 rounded-lg transition">
+      ➕ No encuentro mi producto
+    </button>
+  </section>
+
+  <!-- Modal Carrito -->
+  <div id="cartModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold brand-black">Mi Carrito</h2>
+          <button id="closeCartBtn" class="text-2xl">&times;</button>
+        </div>
+        <div id="cartItems"></div>
+        <div class="mt-6 pt-4 border-t">
+          <div class="flex justify-between text-xl font-bold mb-4">
+            <span>Total:</span>
+            <span class="brand-orange">L.<span id="cartTotal">0</span></span>
+          </div>
+          <button id="checkoutBtn" class="w-full bg-brand-orange text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition">
+            Proceder al Checkout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Checkout -->
+  <div id="checkoutModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div class="p-6">
+        <h2 class="text-2xl font-bold mb-4 brand-black">Información de Entrega</h2>
+        <form id="checkoutForm">
+          <div class="mb-4">
+            <label class="block font-semibold mb-2">Número de Celular</label>
+            <input type="tel" id="celular" required class="w-full border rounded-lg px-4 py-2" placeholder="+504 9999-9999">
+          </div>
+          <div class="mb-4">
+            <label class="block font-semibold mb-2">Dirección</label>
+            <textarea id="direccion" required class="w-full border rounded-lg px-4 py-2" rows="3" placeholder="Ingresa tu dirección completa"></textarea>
+          </div>
+          <button type="button" id="getLocationBtn" class="w-full bg-gray-200 hover:bg-gray-300 text-black py-2 rounded-lg mb-4 font-semibold transition">
+            📍 Obtener mi ubicación GPS
+          </button>
+          <input type="hidden" id="ubicacionGPS">
+          <div id="locationStatus" class="mb-4 text-sm text-gray-600"></div>
+          <div class="flex gap-3">
+            <button type="button" id="cancelCheckoutBtn" class="flex-1 bg-gray-200 hover:bg-gray-300 text-black py-3 rounded-lg font-semibold transition">
+              Cancelar
+            </button>
+            <button type="submit" class="flex-1 bg-brand-orange text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition">
+              Confirmar Pedido
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Producto Personalizado -->
+  <div id="customProductModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg max-w-md w-full">
+      <div class="p-6">
+        <h2 class="text-xl font-bold mb-4 brand-black">Agregar Producto Personalizado</h2>
+        <form id="customProductForm">
+          <div class="mb-4">
+            <label class="block font-semibold mb-2">Nombre del Producto</label>
+            <input type="text" id="customName" required class="w-full border rounded-lg px-4 py-2">
+          </div>
+          <div class="mb-4">
+            <label class="block font-semibold mb-2">Precio Estimado (L.)</label>
+            <input type="number" id="customPrice" required class="w-full border rounded-lg px-4 py-2" min="0" step="0.01">
+          </div>
+          <div class="flex gap-3">
+            <button type="button" id="cancelCustomBtn" class="flex-1 bg-gray-200 hover:bg-gray-300 text-black py-2 rounded-lg font-semibold transition">
+              Cancelar
+            </button>
+            <button type="submit" class="flex-1 bg-brand-orange text-white py-2 rounded-lg font-semibold hover:bg-orange-600 transition">
+              Agregar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // URL de Google Apps Script
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzmnCMSGJOo5cjFB424vQ-6jNRRBQKWS3wVJlw4U-f3e_7utcXCgWf3zdrEtEFKPhL-g/exec';
+    
+    // Estado de la aplicación
+    let appData = {
+      comercios: [],
+      categorias: [],
+      productos: [],
+      categoriasxcomercio: [],
+      cart: [],
+      currentComercio: null,
+      selectedCategoria: null
+    };
+
+    // Cargar datos al iniciar
     window.addEventListener('DOMContentLoaded', async () => {
       try {
+        // Para GitHub Pages o acceso directo
         const response = await fetch(SCRIPT_URL + '?action=getData');
         const data = await response.json();
         loadApp(data);
-      } catch (e) { document.getElementById('loading').innerText = "Error al cargar datos."; }
+      } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('loading').innerHTML = `
+          <div class="text-center">
+            <p class="text-red-500 font-bold mb-2">Error al cargar datos</p>
+            <p class="text-gray-600">${error.message}</p>
+            <button onclick="location.reload()" class="mt-4 bg-brand-orange text-white px-6 py-2 rounded-lg">
+              Reintentar
+            </button>
+          </div>
+        `;
+      }
     });
 
     function loadApp(data) {
-      appData = { ...appData, ...data };
+      if (!data.success) {
+        alert('Error al cargar datos: ' + data.error);
+        return;
+      }
+
+      appData.comercios = data.comercios;
+      appData.categorias = data.categorias;
+      appData.productos = data.productos;
+      appData.categoriasxcomercio = data.categoriasxcomercio;
+
       document.getElementById('loading').classList.add('hidden');
       document.getElementById('categoriesSection').classList.remove('hidden');
       document.getElementById('comerciosSection').classList.remove('hidden');
+
       renderCategorias();
       renderComercios();
       setupEventListeners();
@@ -65,104 +211,457 @@
 
     function renderCategorias() {
       const list = document.getElementById('categoriesList');
-      list.innerHTML = appData.categorias.map(cat => `
-        <button onclick="filterCat('${cat.CATEGORIA}')" class="px-4 py-2 rounded-full font-bold text-sm border ${appData.selectedCategoria === cat.CATEGORIA ? 'bg-brand-orange text-white' : 'bg-gray-100'}">
+      
+      // Agregar botón "Todos"
+      const todosBtn = `
+        <button class="categoria-btn flex-shrink-0 px-4 py-2 rounded-full font-semibold transition ${!appData.selectedCategoria ? 'bg-brand-orange text-white' : 'bg-gray-200 hover:bg-gray-300'}" data-categoria="">
+          Todos
+        </button>
+      `;
+      
+      const categoriasHTML = appData.categorias.map(cat => `
+        <button class="categoria-btn flex-shrink-0 px-4 py-2 rounded-full font-semibold transition ${appData.selectedCategoria === cat.CATEGORIA ? 'bg-brand-orange text-white' : 'bg-gray-200 hover:bg-gray-300'}" data-categoria="${cat.CATEGORIA}">
           ${cat.CATEGORIA}
         </button>
       `).join('');
-    }
+      
+      list.innerHTML = todosBtn + categoriasHTML;
 
-    function filterCat(cat) {
-      appData.selectedCategoria = appData.selectedCategoria === cat ? null : cat;
-      renderCategorias();
-      renderComercios();
+      document.querySelectorAll('.categoria-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const cat = e.target.dataset.categoria;
+          appData.selectedCategoria = cat || null;
+          renderCategorias();
+          renderComercios();
+        });
+      });
     }
 
     function renderComercios() {
-      const container = document.getElementById('comerciosSection');
-      container.innerHTML = '';
-      
-      // Agrupar comercios por su categoría según CATEGORIASxCOMERCIO
-      const grupos = appData.categoriasxcomercio.reduce((acc, rel) => {
-        if (!acc[rel.CATEGORIA]) acc[rel.CATEGORIA] = [];
-        const comercio = appData.comercios.find(c => c.ID == rel.ID_COMERCIO);
-        if (comercio && (!appData.selectedCategoria || rel.CATEGORIA === appData.selectedCategoria)) {
-          acc[rel.CATEGORIA].push(comercio);
-        }
-        return acc;
-      }, {});
+      let comerciosFiltrados = [...appData.comercios];
 
-      for (const [nombreCat, lista] of Object.entries(grupos)) {
-        if (lista.length === 0) continue;
-        const section = document.createElement('div');
-        section.innerHTML = `
-          <h2 class="px-4 text-xl font-black brand-black">${nombreCat}</h2>
-          <div class="flex overflow-x-auto gap-4 p-4 no-scrollbar">
-            ${lista.map(c => `
-              <div onclick="openComercio(${c.ID})" class="min-w-[260px] bg-white rounded-2xl shadow-sm overflow-hidden border">
-                <img src="${c.IMAGEN || ''}" class="w-full h-32 object-cover">
-                <div class="p-3">
-                  <h3 class="font-bold">${c.COMERCIO}</h3>
-                  <p class="text-xs text-gray-500 truncate">${c.DIRECCION || ''}</p>
-                </div>
-              </div>
-            `).join('')}
-          </div>`;
-        container.appendChild(section);
+      // Filtrar por categoría si hay una seleccionada
+      if (appData.selectedCategoria) {
+        // Filtrar comercios por la columna CATEGORIA
+        comerciosFiltrados = comerciosFiltrados.filter(c => 
+          c.CATEGORIA === appData.selectedCategoria
+        );
+        
+        console.log('Categoría seleccionada:', appData.selectedCategoria);
+        console.log('Comercios filtrados:', comerciosFiltrados.length);
+        console.log('Categorías únicas en comercios:', [...new Set(appData.comercios.map(c => c.CATEGORIA))]);
       }
+
+      const list = document.getElementById('comerciosList');
+      
+      if (comerciosFiltrados.length === 0) {
+        list.innerHTML = `
+          <div class="col-span-full text-center py-12">
+            <p class="text-gray-500 text-lg">😔 No hay comercios disponibles en esta categoría</p>
+            <button onclick="appData.selectedCategoria = null; renderCategorias(); renderComercios();" class="mt-4 bg-brand-orange text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition">
+              Ver todos los comercios
+            </button>
+          </div>
+        `;
+        return;
+      }
+      
+      list.innerHTML = comerciosFiltrados.map(c => {
+        const abierto = c['ABIERTO?'] === 'SI' || c['ABIERTO?'] === true || c['ABIERTO?'] === 'TRUE';
+        return `
+          <div class="comercio-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer ${!abierto ? 'opacity-60' : ''}" data-id="${c.ID}">
+            <img src="${c.IMAGEN || 'https://via.placeholder.com/300x200?text=Sin+Imagen'}" alt="${c.COMERCIO}" class="w-full h-32 object-cover">
+            <div class="p-4">
+              <h3 class="font-bold text-lg">${c.COMERCIO}</h3>
+              <p class="text-sm text-gray-600">${c.SECTOR || c.CIUDAD || ''}</p>
+              <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ${abierto ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                ${abierto ? '🟢 Abierto' : '🔴 Cerrado'}
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.querySelectorAll('.comercio-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          const id = e.currentTarget.dataset.id;
+          openComercio(id);
+        });
+      });
     }
 
     function openComercio(id) {
       appData.currentComercio = appData.comercios.find(c => c.ID == id);
+      if (!appData.currentComercio) return;
+
       document.getElementById('comerciosSection').classList.add('hidden');
       document.getElementById('productosSection').classList.remove('hidden');
-      
-      document.getElementById('comercioHeader').innerHTML = `
-        <div class="flex items-center gap-4">
-          <img src="${appData.currentComercio.IMAGEN}" class="w-16 h-16 rounded-xl object-cover">
-          <div>
-            <h2 class="text-xl font-bold">${appData.currentComercio.COMERCIO}</h2>
-            <p class="text-xs text-gray-500">${appData.currentComercio.HORARIOS || ''}</p>
+
+      const header = document.getElementById('comercioHeader');
+      header.innerHTML = `
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="flex items-center gap-4">
+            <img src="${appData.currentComercio.IMAGEN || 'https://via.placeholder.com/100'}" alt="${appData.currentComercio.COMERCIO}" class="w-20 h-20 rounded-lg object-cover">
+            <div>
+              <h2 class="text-2xl font-bold brand-black">${appData.currentComercio.COMERCIO}</h2>
+              <p class="text-gray-600">${appData.currentComercio.DIRECCION || ''}</p>
+              <p class="text-sm text-gray-500">${appData.currentComercio.HORARIOS || ''}</p>
+            </div>
           </div>
-        </div>`;
+        </div>
+      `;
+
       renderProductos();
     }
 
     function renderProductos() {
-      const container = document.getElementById('productosList');
+      // Filtrar productos por ID del comercio en lugar del nombre
       const productos = appData.productos.filter(p => p.COMERCIO == appData.currentComercio.ID);
-      
-      // Agrupar productos por categoría interna (Columna CATEGORIA en PRODUCTOS)
-      const grupos = productos.reduce((acc, p) => {
-        const catRel = appData.categoriasxcomercio.find(r => r.ID_CATEGORIA_COMERCIO === p.CATEGORIA);
-        const nombreCat = catRel ? catRel.CATEGORIA : "Otros";
-        if (!acc[nombreCat]) acc[nombreCat] = [];
-        acc[nombreCat].push(p);
-        return acc;
-      }, {});
+      const list = document.getElementById('productosList');
 
-      container.innerHTML = Object.entries(grupos).map(([cat, items]) => `
-        <div>
-          <h3 class="text-lg font-bold mb-3 border-b-2 border-brand-orange inline-block">${cat}</h3>
-          <div class="grid gap-4">
-            ${items.map(p => `
-              <div class="flex bg-white p-3 rounded-xl shadow-sm items-center gap-3">
-                <div class="flex-1">
-                  <h4 class="font-bold text-sm">${p.NOMBRE}</h4>
-                  <p class="text-xs text-gray-400 line-clamp-2">${p.DESCRIPCION || ''}</p>
-                  <p class="brand-orange font-bold mt-1">L.${p.PRECIO}</p>
-                  <button onclick="addToCartClick(${JSON.stringify(p).replace(/"/g, '&quot;')})" class="mt-2 text-xs bg-orange-50 text-brand-orange px-3 py-1 rounded-lg font-bold border border-orange-200">Agregar</button>
-                </div>
-                <img src="${p['IMG URL'] || ''}" class="w-20 h-20 rounded-lg object-cover bg-gray-100">
-              </div>`).join('')}
+      // Debug: Mostrar información en consola
+      console.log('Comercio ID:', appData.currentComercio.ID);
+      console.log('Comercio nombre:', appData.currentComercio.COMERCIO);
+      console.log('Total productos en BD:', appData.productos.length);
+      console.log('Productos filtrados:', productos.length);
+      console.log('IDs de comercios en productos:', [...new Set(appData.productos.map(p => p.COMERCIO))]);
+
+      if (productos.length === 0) {
+        list.innerHTML = `
+          <div class="col-span-full bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+            <p class="text-lg font-semibold text-yellow-800 mb-2">⚠️ Este comercio no tiene productos registrados</p>
+            <p class="text-sm text-yellow-700">ID del comercio: <strong>${appData.currentComercio.ID}</strong></p>
+            <p class="text-sm text-yellow-700">Nombre: <strong>${appData.currentComercio.COMERCIO}</strong></p>
+            <p class="text-xs text-yellow-600 mt-2">Verifica que en la pestaña PRODUCTOS existan productos con este ID de comercio</p>
           </div>
-        </div>`).join('');
+        `;
+        return;
+      }
+
+      list.innerHTML = productos.map(p => `
+        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+          <img src="${p.IMAGEN || 'https://via.placeholder.com/300x200?text=Producto'}" alt="${p.NOMBRE}" class="w-full h-40 object-cover">
+          <div class="p-4">
+            <h3 class="font-bold text-lg">${p.NOMBRE}</h3>
+            <p class="text-sm text-gray-600 mt-1">${p.DESCRIPCION || ''}</p>
+            <div class="flex justify-between items-center mt-3">
+              <span class="text-xl font-bold brand-orange">L.${parseFloat(p.PRECIO || 0).toFixed(2)}</span>
+              <button class="add-to-cart bg-brand-orange text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-600 transition" data-producto='${JSON.stringify(p)}'>
+                + Agregar
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.add-to-cart').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const producto = JSON.parse(e.target.dataset.producto);
+          addToCart(producto);
+        });
+      });
     }
 
-    // Funciones del Carrito y Eventos (Copia aquí tus funciones addToCart, renderCart, procesarPedido, etc. tal cual las tenías)
-    function addToCartClick(p) {
-        addToCart(p); // Llama a tu función original
-        alert("Agregado: " + p.NOMBRE);
+    function addToCart(producto) {
+      // Agregar el nombre del comercio al producto usando el ID
+      const comercio = appData.comercios.find(c => c.ID == producto.COMERCIO);
+      const productoConNombre = {
+        ...producto,
+        NOMBRE_COMERCIO: comercio ? comercio.COMERCIO : 'Desconocido'
+      };
+      
+      const existing = appData.cart.find(item => 
+        item.NOMBRE === producto.NOMBRE && 
+        item.COMERCIO === producto.COMERCIO
+      );
+      
+      if (existing) {
+        existing.cantidad++;
+      } else {
+        appData.cart.push({...productoConNombre, cantidad: 1});
+      }
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      const count = appData.cart.reduce((sum, item) => sum + item.cantidad, 0);
+      document.getElementById('cartCount').textContent = count;
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cartItems');
+      if (appData.cart.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500">Tu carrito está vacío</p>';
+        document.getElementById('cartTotal').textContent = '0.00';
+        return;
+      }
+
+      container.innerHTML = appData.cart.map((item, index) => `
+        <div class="flex justify-between items-center py-3 border-b">
+          <div class="flex-1">
+            <p class="font-semibold">${item.NOMBRE || 'Producto sin nombre'}</p>
+            <p class="text-sm text-gray-600">L.${parseFloat(item.PRECIO || 0).toFixed(2)} c/u</p>
+            ${item.DESCRIPCION ? `<p class="text-xs text-gray-500">${item.DESCRIPCION}</p>` : ''}
+          </div>
+          <div class="flex items-center gap-3">
+            <button class="decrease-qty bg-gray-200 w-8 h-8 rounded" data-index="${index}">-</button>
+            <span class="font-semibold">${item.cantidad}</span>
+            <button class="increase-qty bg-gray-200 w-8 h-8 rounded" data-index="${index}">+</button>
+            <button class="remove-item text-red-500 font-bold ml-2" data-index="${index}">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+
+      const total = appData.cart.reduce((sum, item) => sum + (parseFloat(item.PRECIO || 0) * item.cantidad), 0);
+      document.getElementById('cartTotal').textContent = total.toFixed(2);
+
+      document.querySelectorAll('.increase-qty').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = e.target.dataset.index;
+          appData.cart[index].cantidad++;
+          renderCart();
+          updateCartUI();
+        });
+      });
+
+      document.querySelectorAll('.decrease-qty').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = e.target.dataset.index;
+          if (appData.cart[index].cantidad > 1) {
+            appData.cart[index].cantidad--;
+          } else {
+            appData.cart.splice(index, 1);
+          }
+          renderCart();
+          updateCartUI();
+        });
+      });
+
+      document.querySelectorAll('.remove-item').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = e.target.dataset.index;
+          appData.cart.splice(index, 1);
+          renderCart();
+          updateCartUI();
+        });
+      });
+    }
+
+    function setupEventListeners() {
+      document.getElementById('cartBtn').addEventListener('click', () => {
+        document.getElementById('cartModal').classList.remove('hidden');
+        renderCart();
+      });
+
+      document.getElementById('closeCartBtn').addEventListener('click', () => {
+        document.getElementById('cartModal').classList.add('hidden');
+      });
+
+      document.getElementById('backBtn').addEventListener('click', () => {
+        document.getElementById('productosSection').classList.add('hidden');
+        document.getElementById('comerciosSection').classList.remove('hidden');
+        appData.currentComercio = null;
+      });
+
+      document.getElementById('checkoutBtn').addEventListener('click', () => {
+        if (appData.cart.length === 0) {
+          alert('Tu carrito está vacío');
+          return;
+        }
+        document.getElementById('cartModal').classList.add('hidden');
+        document.getElementById('checkoutModal').classList.remove('hidden');
+      });
+
+      document.getElementById('cancelCheckoutBtn').addEventListener('click', () => {
+        document.getElementById('checkoutModal').classList.add('hidden');
+      });
+
+      document.getElementById('getLocationBtn').addEventListener('click', () => {
+        if (navigator.geolocation) {
+          document.getElementById('locationStatus').textContent = 'Obteniendo ubicación...';
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const gps = `${position.coords.latitude},${position.coords.longitude}`;
+              document.getElementById('ubicacionGPS').value = gps;
+              document.getElementById('locationStatus').textContent = `✅ Ubicación obtenida: ${gps}`;
+            },
+            (error) => {
+              document.getElementById('locationStatus').textContent = '❌ No se pudo obtener la ubicación';
+              console.error('Error:', error);
+            }
+          );
+        } else {
+          alert('Tu navegador no soporta geolocalización');
+        }
+      });
+
+      document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await procesarPedido();
+      });
+
+      document.getElementById('customProductBtn').addEventListener('click', () => {
+        document.getElementById('customProductModal').classList.remove('hidden');
+      });
+
+      document.getElementById('cancelCustomBtn').addEventListener('click', () => {
+        document.getElementById('customProductModal').classList.add('hidden');
+        document.getElementById('customProductForm').reset();
+      });
+
+      document.getElementById('customProductForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nombre = document.getElementById('customName').value;
+        const precio = document.getElementById('customPrice').value;
+        
+        addToCart({
+          NOMBRE: nombre,
+          PRECIO: precio,
+          COMERCIO: appData.currentComercio.ID,
+          NOMBRE_COMERCIO: appData.currentComercio.COMERCIO,
+          DESCRIPCION: 'Producto personalizado',
+          IMAGEN: ''
+        });
+
+        document.getElementById('customProductModal').classList.add('hidden');
+        document.getElementById('customProductForm').reset();
+        alert('Producto agregado al carrito');
+      });
+    }
+
+    async function procesarPedido() {
+      const celular = document.getElementById('celular').value;
+      const direccion = document.getElementById('direccion').value;
+      const ubicacionGPS = document.getElementById('ubicacionGPS').value;
+
+      if (!ubicacionGPS) {
+        alert('Por favor obtén tu ubicación GPS');
+        return;
+      }
+
+      if (appData.cart.length === 0) {
+        alert('Tu carrito está vacío');
+        return;
+      }
+
+      const total = appData.cart.reduce((sum, item) => sum + (parseFloat(item.PRECIO || 0) * item.cantidad), 0);
+
+      const datos = {
+        celular,
+        direccion,
+        ubicacionGPS,
+        items: appData.cart.map(item => ({
+          nombre: item.NOMBRE || 'Producto',
+          precio: parseFloat(item.PRECIO || 0),
+          cantidad: item.cantidad,
+          descripcion: item.DESCRIPCION || ''
+        })),
+        total,
+        comercio: appData.currentComercio.COMERCIO,
+        whatsappComercio: appData.currentComercio.WHATSAPP || appData.currentComercio['NUMERO COMERCIO']
+      };
+
+      // Mostrar loading
+      const submitBtn = document.querySelector('#checkoutForm button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Procesando...';
+      submitBtn.disabled = true;
+
+      try {
+        // Intentar registrar en Google Sheets
+        let result = { success: true, idPedido: Date.now() }; // ID temporal basado en timestamp
+        
+        try {
+          const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors', // Importante para evitar problemas de CORS
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              action: 'registrarPedido',
+              datos: datos
+            })
+          });
+
+          // Con mode: 'no-cors', no podemos leer la respuesta
+          // Así que asumimos que funcionó
+          console.log('Pedido enviado a Google Sheets');
+        } catch (err) {
+          console.warn('No se pudo guardar en Google Sheets, pero continuamos:', err);
+          // Continuamos de todas formas para enviar por WhatsApp
+        }
+        
+        finalizarPedido(result, datos);
+        
+      } catch (error) {
+        console.error('Error:', error);
+        // Preguntar si quiere continuar solo con WhatsApp
+        if (confirm('No se pudo guardar el pedido en el sistema. ¿Deseas continuar y enviar por WhatsApp de todas formas?')) {
+          finalizarPedido({ success: true, idPedido: Date.now() }, datos);
+        } else {
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+        }
+      }
+    }
+
+    function finalizarPedido(result, datos) {
+      if (!result.success) {
+        alert('Error al registrar pedido: ' + result.error);
+        return;
+      }
+
+      // Construir mensaje para WhatsApp
+      const itemsTexto = datos.items.map(item => 
+        `${item.cantidad}x ${item.nombre} - L.${(item.precio * item.cantidad).toFixed(2)}`
+      ).join('\n');
+
+      const mensaje = 
+        `🛵 *NUEVO PEDIDO SOMAR EXPRESS*\n\n` +
+        `*Pedido #${result.idPedido}*\n` +
+        `*Comercio:* ${datos.comercio}\n\n` +
+        `*PRODUCTOS:*\n${itemsTexto}\n\n` +
+        `*TOTAL: L.${datos.total.toFixed(2)}*\n\n` +
+        `*DATOS DEL CLIENTE:*\n` +
+        `📱 ${datos.celular}\n` +
+        `📍 ${datos.direccion}\n` +
+        `🗺️ GPS: ${datos.ubicacionGPS}`;
+
+      // Codificar el mensaje para URL
+      const mensajeCodificado = encodeURIComponent(mensaje);
+
+      // Limpiar el número de WhatsApp
+      let whatsappNumber = datos.whatsappComercio || '';
+      whatsappNumber = whatsappNumber.toString().replace(/[^0-9]/g, '');
+      
+      if (!whatsappNumber || whatsappNumber.length < 8) {
+        alert('No se encontró número de WhatsApp del comercio. Pedido #' + result.idPedido + ' guardado.');
+        // Limpiar carrito de todas formas
+        appData.cart = [];
+        updateCartUI();
+        document.getElementById('checkoutModal').classList.add('hidden');
+        document.getElementById('checkoutForm').reset();
+        return;
+      }
+
+      // Asegurar formato internacional
+      if (!whatsappNumber.startsWith('504') && whatsappNumber.length === 8) {
+        whatsappNumber = '504' + whatsappNumber;
+      }
+
+      // Abrir WhatsApp
+      const whatsappURL = `https://wa.me/${whatsappNumber}?text=${mensajeCodificado}`;
+      window.open(whatsappURL, '_blank');
+
+      // Limpiar carrito y cerrar modal
+      appData.cart = [];
+      updateCartUI();
+      document.getElementById('checkoutModal').classList.add('hidden');
+      document.getElementById('checkoutForm').reset();
+      document.getElementById('locationStatus').textContent = '';
+
+      alert(`¡Pedido #${result.idPedido} registrado con éxito! Se abrirá WhatsApp para confirmar.`);
     }
   </script>
 </body>
