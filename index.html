@@ -225,9 +225,10 @@
       
       list.innerHTML = appData.categorias.map(cat => {
         // Contar cuántos comercios tiene esta categoría
-        const categoriaRowId = cat['🔒 Row ID'] || cat.ROWID || '';
+        // El nombre real de la columna es "🔒 Row ID"
+        const categoriaRowId = cat['🔒 Row ID'] || cat['Row ID'] || cat.ROWID || '';
         if (!categoriaRowId) {
-          console.warn('Categoría sin 🔒 Row ID:', cat);
+          console.warn('Categoría sin Row ID:', cat);
           return '';
         }
         
@@ -248,6 +249,8 @@
           </div>
         `;
       }).filter(Boolean).join('');
+
+      console.log('Categorías renderizadas:', appData.categorias.length);
 
       // Event listeners para las tarjetas
       document.querySelectorAll('.categoria-card').forEach(card => {
@@ -282,7 +285,7 @@
           c.CATEGORIA == appData.selectedCategoria
         );
         
-        console.log('🔒 Row ID seleccionado:', appData.selectedCategoria);
+        console.log('Row ID seleccionado:', appData.selectedCategoria);
         console.log('Comercios filtrados:', comerciosFiltrados.length);
       }
 
