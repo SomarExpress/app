@@ -565,3 +565,242 @@
       if (appData.cart.length === 0) {
         container.innerHTML = '<p class="text-center text-gray-500 py-8">Tu carrito está vacío</p>';
         document.getElementById('cartTotal').textContent = '0.00';
+        return;
+      }
+
+      container.innerHTML = appData.cart.map((item, index) => `
+        <div class="flex gap-4 py-4 border-b last:border-0">
+          <div class="flex-1">
+            <p class="font-bold">${item.NOMBRE || 'Producto'}</p>
+            <p class="text-sm text-gray-600">L.${parseFloat(item.PRECIO || 0).toFixed(2)} c/u</p>
+            ${item.DESCRIPCION ? `<p class="text-xs text-gray-500 mt-1">${item.DESCRIPCION}</p>` : ''}
+          </div>
+          <div class="flex items-center gap-3">
+            <button class="decrease-qty w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center font-bold" data-index="${index}">-</button>
+            <span class="font-bold w-8 text-center">${item.cantidad}</span>
+            <button class="increase-qty w-8 h-8 rounded-lg bg-brand-orange text-white hover:bg-orange-600 flex items-center justify-center font-bold" data-index="${index}">+</button>
+            <button class="remove-item text-red-500 hover:text-red-700 ml-2" data-index="${index}">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      const total = appData.cart.reduce((sum, item) => sum + (parseFloat(item.PRECIO || 0) * item.cantidad), 0);
+      document.getElementById('cartTotal').textContent = total.toFixed(2);
+
+      document.querySelectorAll('.increase-qty').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = e.target.closest('button').dataset.index;
+          appData.cart[index].cantidad++;
+          renderCart();
+          updateCartUI();
+        });
+      });
+
+      document.querySelectorAll('.decrease-qty').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = e.target.closest('button').dataset.index;
+          if (appData.cart[index].cantidad > 1) {
+            appData.cart[index].cantidad--;
+          } else {
+            appData.cart.splice(index, 1);
+          }
+          renderCart();
+          updateCartUI();
+        });
+      });
+
+      document.querySelectorAll('.remove-item').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = e.target.closest('button').dataset.index;
+          appData.cart.splice(index, 1);
+          renderCart();
+          updateCartUI();
+        });
+      });
+    }
+
+    function setupEventListeners() {
+      document.getElementById('backToCategorias').addEventListener('click', () => {
+        document.getElementById('comerciosSection').classList.add('hidden');
+        document.getElementById('categoriasSection').classList.remove('hidden');
+        appData.selectedCategoria = null;
+      });
+
+      document.getElementById('cartBtn').addEventListener('click', () => {
+        document.getElementById('cartModal').classList.remove('hidden');
+        renderCart();
+      });
+
+      document.getElementById('closeCartBtn').addEventListener('click', () => {
+        document.getElementById('cartModal').classList.add('hidden');
+      });
+
+      document.getElementById('backBtn').addEventListener('click', () => {
+        document.getElementById('productosSection').classList.add('hidden');
+        document.getElementById('comerciosSection').classList.remove('hidden');
+        appData.currentComercio = null;
+      });
+
+      document.getElementById('checkoutBtn').addEventListener('click', () => {
+        if (appData.cart.length === 0) {
+          alert('Tu carrito está vacío');
+          return;
+        }
+        document.getElementById('cartModal').classList.add('hidden');
+        document.getElementById('checkoutModal').classList.remove('hidden');
+      });
+
+      document.getElementById('cancelCheckoutBtn').addEventListener('click', () => {
+        document.getElementById('checkoutModal').classList.add('hidden');
+      });
+
+      document.getElementById('getLocationBtn').addEventListener('click', () => {
+        if (navigator.geolocation) {
+          document.getElementById('locationStatus').textContent = 'Obteniendo ubicación...';
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const gps = `${position.coords.latitude},${position.coords.longitude}`;
+              document.getElementById('ubicacionGPS').value = gps;
+              document.getElementById('locationStatus').textContent = `✅ Ubicación obtenida`;
+              document.getElementById('locationStatus').classList.add('text-green-600');
+            },
+            (error) => {
+              document.getElementById('locationStatus').textContent = '❌ No se pudo obtener la ubicación';
+              document.getElementById('locationStatus').classList.add('text-red-600');
+            }
+          );
+        } else {
+          alert('Tu navegador no soporta geolocalización');
+        }
+      });
+
+      document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await procesarPedido();
+      });
+
+      document.getElementById('customProductBtn').addEventListener('click', () => {
+        document.getElementById('customProductModal').classList.remove('hidden');
+      });
+
+      document.getElementById('cancelCustomBtn').addEventListener('click', () => {
+        document.getElementById('customProductModal').classList.add('hidden');
+        document.getElementById('customProductForm').reset();
+      });
+
+      document.getElementById('customProductForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nombre = document.getElementById('customName').value;
+        const precio = document.getElementById('customPrice').value;
+        
+        addToCart({
+          NOMBRE: nombre,
+          PRECIO: precio,
+          COMERCIO: appData.currentComercio.ID,
+          NOMBRE_COMERCIO: appData.currentComercio.COMERCIO,
+          DESCRIPCION: 'Producto personalizado',
+          IMAGEN: ''
+        });
+
+        document.getElementById('customProductModal').classList.add('hidden');
+        document.getElementById('customProductForm').reset();
+      });
+    }
+
+    async function procesarPedido() {
+      const celular = document.getElementById('celular').value;
+      const direccion = document.getElementById('direccion').value;
+      const ubicacionGPS = document.getElementById('ubicacionGPS').value;
+
+      if (!ubicacionGPS) {
+        alert('Por favor obtén tu ubicación GPS');
+        return;
+      }
+
+      const total = appData.cart.reduce((sum, item) => sum + (parseFloat(item.PRECIO || 0) * item.cantidad), 0);
+
+      const datos = {
+        celular,
+        direccion,
+        ubicacionGPS,
+        items: appData.cart.map(item => ({
+          nombre: item.NOMBRE || 'Producto',
+          precio: parseFloat(item.PRECIO || 0),
+          cantidad: item.cantidad,
+          descripcion: item.DESCRIPCION || ''
+        })),
+        total,
+        comercio: appData.currentComercio.COMERCIO,
+        whatsappComercio: appData.currentComercio.WHATSAPP || appData.currentComercio['NUMERO COMERCIO']
+      };
+
+      const submitBtn = document.querySelector('#checkoutForm button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Procesando...';
+      submitBtn.disabled = true;
+
+      try {
+        let result = { success: true, idPedido: Date.now() };
+        
+        try {
+          await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'registrarPedido', datos: datos })
+          });
+        } catch (err) {
+          console.warn('Error al guardar en Sheets:', err);
+        }
+        
+        finalizarPedido(result, datos);
+        
+      } catch (error) {
+        if (confirm('¿Deseas continuar y enviar por WhatsApp?')) {
+          finalizarPedido({ success: true, idPedido: Date.now() }, datos);
+        } else {
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+        }
+      }
+    }
+
+    function finalizarPedido(result, datos) {
+      const itemsTexto = datos.items.map(item => 
+        `${item.cantidad}x ${item.nombre} - L.${(item.precio * item.cantidad).toFixed(2)}`
+      ).join('\n');
+
+      const mensaje = 
+        `🛵 *NUEVO PEDIDO SOMAR EXPRESS*\n\n` +
+        `*Pedido #${result.idPedido}*\n` +
+        `*Comercio:* ${datos.comercio}\n\n` +
+        `*PRODUCTOS:*\n${itemsTexto}\n\n` +
+        `*TOTAL: L.${datos.total.toFixed(2)}*\n\n` +
+        `*DATOS DEL CLIENTE:*\n` +
+        `📱 ${datos.celular}\n` +
+        `📍 ${datos.direccion}\n` +
+        `🗺️ GPS: ${datos.ubicacionGPS}`;
+
+      const mensajeCodificado = encodeURIComponent(mensaje);
+      let whatsappNumber = (datos.whatsappComercio || '').toString().replace(/[^0-9]/g, '');
+      
+      if (whatsappNumber && whatsappNumber.length >= 8) {
+        if (!whatsappNumber.startsWith('504') && whatsappNumber.length === 8) {
+          whatsappNumber = '504' + whatsappNumber;
+        }
+        window.open(`https://wa.me/${whatsappNumber}?text=${mensajeCodificado}`, '_blank');
+      }
+
+      appData.cart = [];
+      updateCartUI();
+      document.getElementById('checkoutModal').classList.add('hidden');
+      document.getElementById('checkoutForm').reset();
+      document.getElementById('locationStatus').textContent = '';
+    }
+  </script>
+</body>
+</html>
