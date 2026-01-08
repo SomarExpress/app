@@ -202,6 +202,17 @@
       appData.productos = data.productos;
       appData.categoriasxcomercio = data.categoriasxcomercio;
 
+      console.log('=== DATOS CARGADOS ===');
+      console.log('Categorías:', appData.categorias.length);
+      console.log('Comercios:', appData.comercios.length);
+      console.log('Productos:', appData.productos.length);
+      if (appData.categorias.length > 0) {
+        console.log('Primera categoría:', appData.categorias[0]);
+      }
+      if (appData.comercios.length > 0) {
+        console.log('Primer comercio:', appData.comercios[0]);
+      }
+
       document.getElementById('loading').classList.add('hidden');
       document.getElementById('categoriasSection').classList.remove('hidden');
 
@@ -214,9 +225,14 @@
       
       list.innerHTML = appData.categorias.map(cat => {
         // Contar cuántos comercios tiene esta categoría
-        const categoriaRowId = cat['Row ID'];
+        const categoriaRowId = cat['Row ID'] || cat.ROWID || '';
+        if (!categoriaRowId) {
+          console.warn('Categoría sin Row ID:', cat);
+          return '';
+        }
+        
         const numComercios = appData.comercios.filter(c => 
-          c.CATEGORIA === categoriaRowId || c.CATEGORIA === categoriaRowId.toString()
+          c.CATEGORIA == categoriaRowId
         ).length;
         
         return `
@@ -231,7 +247,7 @@
             </div>
           </div>
         `;
-      }).join('');
+      }).filter(Boolean).join('');
 
       // Event listeners para las tarjetas
       document.querySelectorAll('.categoria-card').forEach(card => {
@@ -263,8 +279,7 @@
       // Filtrar por categoría si hay una seleccionada
       if (appData.selectedCategoria) {
         comerciosFiltrados = comerciosFiltrados.filter(c => 
-          c.CATEGORIA === appData.selectedCategoria || 
-          c.CATEGORIA === appData.selectedCategoria.toString()
+          c.CATEGORIA == appData.selectedCategoria
         );
         
         console.log('Row ID seleccionado:', appData.selectedCategoria);
