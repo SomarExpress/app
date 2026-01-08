@@ -170,6 +170,49 @@
       selectedCategoria: null
     };
 
+    // Función auxiliar para manejar URLs de imágenes
+    function getImageUrl(imageUrl, defaultText) {
+      // Si no hay URL o la URL está vacía, usar placeholder
+      if (!imageUrl || imageUrl.trim() === '') {
+        return `https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=${encodeURIComponent(defaultText)}`;
+      }
+      
+      // Si la URL es una ruta relativa que empieza con "COMERCIOS_Images/" o similar
+      if (imageUrl.startsWith('COMERCIOS_Images/') || 
+          imageUrl.startsWith('data:image/') ||
+          imageUrl.includes('IMAGEN.')) {
+        // Usar placeholder porque estas rutas no son URLs válidas
+        return `https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=${encodeURIComponent(defaultText)}`;
+      }
+      
+      // Convertir URLs de Google Drive al formato correcto
+      if (imageUrl.includes('drive.google.com')) {
+        // Extraer el ID del archivo
+        let fileId = '';
+        
+        // Formato: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+        if (imageUrl.includes('/file/d/')) {
+          fileId = imageUrl.split('/file/d/')[1].split('/')[0];
+        }
+        // Formato: https://drive.google.com/open?id=FILE_ID
+        else if (imageUrl.includes('?id=')) {
+          fileId = imageUrl.split('?id=')[1].split('&')[0];
+        }
+        // Formato: https://drive.google.com/uc?id=FILE_ID
+        else if (imageUrl.includes('uc?id=')) {
+          fileId = imageUrl.split('uc?id=')[1].split('&')[0];
+        }
+        
+        // Si encontramos un ID, devolver la URL directa
+        if (fileId) {
+          return `https://drive.google.com/uc?export=view&id=${fileId}`;
+        }
+      }
+      
+      // Si es una URL válida de Google Drive o externa
+      return imageUrl;
+    }
+
     // Cargar datos al iniciar
     window.addEventListener('DOMContentLoaded', async () => {
       try {
