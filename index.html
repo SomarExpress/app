@@ -137,7 +137,7 @@
 
   <!-- Loading -->
   <div id="loading" class="loading-screen flex flex-col justify-center items-center h-screen">
-    <img src="https://res.cloudinary.com/drkaxsziu/image/upload/v1767872703/Dise%C3%B1o_Sin_T%C3%ADtulo_-_1_-_Editado_dsvcqv.png" alt="Somar Express" class="loading-logo w-48 h-48 mb-6">
+    <img src="https://res.cloudinary.com/drkaxsziu/image/upload/v1767871112/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221144_0000_fcsl1b.png" alt="Somar Express" class="loading-logo w-48 h-48 mb-6">
     <div class="loading"></div>
     <p class="text-white mt-4 font-semibold">Cargando delivery...</p>
   </div>
@@ -171,7 +171,15 @@
           </svg>
           <span class="font-semibold">Volver</span>
         </button>
-        <h2 id="categoriaTitulo" class="text-xl font-bold mt-2"></h2>
+        <h2 id="categoriaTitulo" class="text-xl font-bold mt-2 mb-3"></h2>
+        
+        <!-- Buscador de Comercios -->
+        <div class="relative">
+          <input type="text" id="searchComercio" placeholder="Buscar comercio..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pl-10 focus:border-brand-orange focus:outline-none transition">
+          <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
       </div>
     </div>
     
@@ -191,6 +199,14 @@
           <span class="font-semibold">Volver</span>
         </button>
         <div id="comercioHeader" class="mb-4"></div>
+        
+        <!-- Buscador de Productos -->
+        <div class="relative mt-3">
+          <input type="text" id="searchProducto" placeholder="Buscar producto..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pl-10 focus:border-brand-orange focus:outline-none transition">
+          <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
       </div>
     </div>
     
@@ -299,7 +315,9 @@
       currentComercio: null,
       selectedCategoria: null,
       userLocation: null,
-      userAddress: 'Obteniendo ubicación...'
+      userAddress: 'Obteniendo ubicación...',
+      searchTermComercio: '',
+      searchTermProducto: ''
     };
 
     // Obtener ubicación al cargar la página
@@ -481,12 +499,24 @@
 
     function renderComercios() {
       let comerciosFiltrados = appData.comercios.filter(c => c.CATEGORIA == appData.selectedCategoria);
+      
+      // Filtrar por búsqueda
+      if (appData.searchTermComercio) {
+        const searchLower = appData.searchTermComercio.toLowerCase();
+        comerciosFiltrados = comerciosFiltrados.filter(c => 
+          c.COMERCIO.toLowerCase().includes(searchLower) ||
+          (c.SECTOR && c.SECTOR.toLowerCase().includes(searchLower)) ||
+          (c.CIUDAD && c.CIUDAD.toLowerCase().includes(searchLower))
+        );
+      }
+      
       const list = document.getElementById('comerciosList');
       
       if (comerciosFiltrados.length === 0) {
         list.innerHTML = `
           <div class="col-span-full text-center py-12">
-            <p class="text-gray-500 text-lg">😔 No hay comercios disponibles</p>
+            <p class="text-gray-500 text-lg">😔 ${appData.searchTermComercio ? 'No se encontraron comercios' : 'No hay comercios disponibles'}</p>
+            ${appData.searchTermComercio ? '<p class="text-sm text-gray-400 mt-2">Intenta con otro término de búsqueda</p>' : ''}
           </div>
         `;
         return;
@@ -547,16 +577,35 @@
     }
 
     function renderProductos() {
-      const productos = appData.productos.filter(p => p.COMERCIO == appData.currentComercio.ID);
+      let productos = appData.productos.filter(p => p.COMERCIO == appData.currentComercio.ID);
+      
+      // Filtrar por búsqueda
+      if (appData.searchTermProducto) {
+        const searchLower = appData.searchTermProducto.toLowerCase();
+        productos = productos.filter(p => 
+          p.NOMBRE.toLowerCase().includes(searchLower) ||
+          (p.DESCRIPCION && p.DESCRIPCION.toLowerCase().includes(searchLower))
+        );
+      }
+      
       const list = document.getElementById('productosList');
 
       if (productos.length === 0) {
-        list.innerHTML = `
-          <div class="col-span-full bg-yellow-50 border border-yellow-200 rounded-2xl p-6 text-center">
-            <p class="text-lg font-semibold text-yellow-800 mb-2">⚠️ Este comercio no tiene productos registrados</p>
-            <p class="text-sm text-yellow-700">Puedes agregar un producto personalizado</p>
-          </div>
-        `;
+        if (appData.searchTermProducto) {
+          list.innerHTML = `
+            <div class="col-span-full bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center">
+              <p class="text-lg font-semibold text-blue-800 mb-2">🔍 No se encontraron productos</p>
+              <p class="text-sm text-blue-700">Intenta con otro término de búsqueda o agrega un producto personalizado</p>
+            </div>
+          `;
+        } else {
+          list.innerHTML = `
+            <div class="col-span-full bg-yellow-50 border border-yellow-200 rounded-2xl p-6 text-center">
+              <p class="text-lg font-semibold text-yellow-800 mb-2">⚠️ Este comercio no tiene productos registrados</p>
+              <p class="text-sm text-yellow-700">Puedes agregar un producto personalizado</p>
+            </div>
+          `;
+        }
         return;
       }
 
@@ -682,10 +731,24 @@
         obtenerUbicacion();
       });
 
+      // Buscador de comercios
+      document.getElementById('searchComercio').addEventListener('input', (e) => {
+        appData.searchTermComercio = e.target.value;
+        renderComercios();
+      });
+
+      // Buscador de productos
+      document.getElementById('searchProducto').addEventListener('input', (e) => {
+        appData.searchTermProducto = e.target.value;
+        renderProductos();
+      });
+
       document.getElementById('backToCategorias').addEventListener('click', () => {
         document.getElementById('comerciosSection').classList.add('hidden');
         document.getElementById('categoriasSection').classList.remove('hidden');
         appData.selectedCategoria = null;
+        appData.searchTermComercio = '';
+        document.getElementById('searchComercio').value = '';
       });
 
       document.getElementById('cartBtn').addEventListener('click', () => {
@@ -701,6 +764,8 @@
         document.getElementById('productosSection').classList.add('hidden');
         document.getElementById('comerciosSection').classList.remove('hidden');
         appData.currentComercio = null;
+        appData.searchTermProducto = '';
+        document.getElementById('searchProducto').value = '';
       });
 
       document.getElementById('checkoutBtn').addEventListener('click', () => {
