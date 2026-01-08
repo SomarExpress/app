@@ -170,49 +170,6 @@
       selectedCategoria: null
     };
 
-    // Función auxiliar para manejar URLs de imágenes
-    function getImageUrl(imageUrl, defaultText) {
-      // Si no hay URL o la URL está vacía, usar placeholder
-      if (!imageUrl || imageUrl.trim() === '') {
-        return `https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=${encodeURIComponent(defaultText)}`;
-      }
-      
-      // Si la URL es una ruta relativa que empieza con "COMERCIOS_Images/" o similar
-      if (imageUrl.startsWith('COMERCIOS_Images/') || 
-          imageUrl.startsWith('data:image/') ||
-          imageUrl.includes('IMAGEN.')) {
-        // Usar placeholder porque estas rutas no son URLs válidas
-        return `https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=${encodeURIComponent(defaultText)}`;
-      }
-      
-      // Convertir URLs de Google Drive al formato correcto
-      if (imageUrl.includes('drive.google.com')) {
-        // Extraer el ID del archivo
-        let fileId = '';
-        
-        // Formato: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
-        if (imageUrl.includes('/file/d/')) {
-          fileId = imageUrl.split('/file/d/')[1].split('/')[0];
-        }
-        // Formato: https://drive.google.com/open?id=FILE_ID
-        else if (imageUrl.includes('?id=')) {
-          fileId = imageUrl.split('?id=')[1].split('&')[0];
-        }
-        // Formato: https://drive.google.com/uc?id=FILE_ID
-        else if (imageUrl.includes('uc?id=')) {
-          fileId = imageUrl.split('uc?id=')[1].split('&')[0];
-        }
-        
-        // Si encontramos un ID, devolver la URL directa
-        if (fileId) {
-          return `https://drive.google.com/uc?export=view&id=${fileId}`;
-        }
-      }
-      
-      // Si es una URL válida de Google Drive o externa
-      return imageUrl;
-    }
-
     // Cargar datos al iniciar
     window.addEventListener('DOMContentLoaded', async () => {
       try {
@@ -275,30 +232,6 @@
           imageUrl.includes('IMAGEN.')) {
         // Usar placeholder porque estas rutas no son URLs válidas
         return `https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=${encodeURIComponent(defaultText)}`;
-      }
-      
-      // Convertir URLs de Google Drive al formato correcto
-      if (imageUrl.includes('drive.google.com')) {
-        // Extraer el ID del archivo
-        let fileId = '';
-        
-        // Formato: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
-        if (imageUrl.includes('/file/d/')) {
-          fileId = imageUrl.split('/file/d/')[1].split('/')[0];
-        }
-        // Formato: https://drive.google.com/open?id=FILE_ID
-        else if (imageUrl.includes('?id=')) {
-          fileId = imageUrl.split('?id=')[1].split('&')[0];
-        }
-        // Formato: https://drive.google.com/uc?id=FILE_ID
-        else if (imageUrl.includes('uc?id=')) {
-          fileId = imageUrl.split('uc?id=')[1].split('&')[0];
-        }
-        
-        // Si encontramos un ID, devolver la URL directa
-        if (fileId) {
-          return `https://drive.google.com/uc?export=view&id=${fileId}`;
-        }
       }
       
       // Si es una URL válida de Google Drive o externa
@@ -386,12 +319,10 @@
       list.innerHTML = comerciosFiltrados.map(c => {
         const abierto = c['ABIERTO?'] === 'SI' || c['ABIERTO?'] === true || c['ABIERTO?'] === 'TRUE';
         const imageUrl = getImageUrl(c.IMAGEN, c.COMERCIO);
-        const comercioEncoded = encodeURIComponent(c.COMERCIO);
-        const placeholderUrl = 'https://via.placeholder.com/400x250/1A1A1A/FFFFFF?text=' + comercioEncoded;
         
         return `
           <div class="comercio-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer ${!abierto ? 'opacity-60' : ''}" data-id="${c.ID}">
-            <img src="${imageUrl}" alt="${c.COMERCIO}" class="w-full h-32 object-cover" onerror="this.src='${placeholderUrl}'">
+            <img src="${imageUrl}" alt="${c.COMERCIO}" class="w-full h-32 object-cover" onerror="this.src='https://via.placeholder.com/400x250/1A1A1A/FFFFFF?text=${encodeURIComponent(c.COMERCIO)}'">
             <div class="p-4">
               <h3 class="font-bold text-lg">${c.COMERCIO}</h3>
               <p class="text-sm text-gray-600">${c.SECTOR || c.CIUDAD || ''}</p>
@@ -419,16 +350,12 @@
       document.getElementById('productosSection').classList.remove('hidden');
 
       const header = document.getElementById('comercioHeader');
-      const comercioNombre = appData.currentComercio.COMERCIO || 'Comercio';
-      const comercioImagen = getImageUrl(appData.currentComercio.IMAGEN, comercioNombre);
-      const iniciales = comercioNombre.substring(0, 2);
-      
       header.innerHTML = `
         <div class="bg-white rounded-lg shadow-md p-6">
           <div class="flex items-center gap-4">
-            <img src="${comercioImagen}" alt="${comercioNombre}" class="w-20 h-20 rounded-lg object-cover" onerror="this.src='https://via.placeholder.com/100/1A1A1A/FFFFFF?text=${encodeURIComponent(iniciales)}'">
+            <img src="${getImageUrl(appData.currentComercio.IMAGEN, appData.currentComercio.COMERCIO)}" alt="${appData.currentComercio.COMERCIO}" class="w-20 h-20 rounded-lg object-cover" onerror="this.src='https://via.placeholder.com/100/1A1A1A/FFFFFF?text=${encodeURIComponent(appData.currentComercio.COMERCIO.substring(0,2))}'">
             <div>
-              <h2 class="text-2xl font-bold brand-black">${comercioNombre}</h2>
+              <h2 class="text-2xl font-bold brand-black">${appData.currentComercio.COMERCIO}</h2>
               <p class="text-gray-600">${appData.currentComercio.DIRECCION || ''}</p>
               <p class="text-sm text-gray-500">${appData.currentComercio.HORARIOS || ''}</p>
             </div>
@@ -463,27 +390,21 @@
         return;
       }
 
-      list.innerHTML = productos.map(p => {
-        const imageUrl = getImageUrl(p.IMAGEN, p.NOMBRE);
-        const nombreEncoded = encodeURIComponent(p.NOMBRE);
-        const placeholderUrl = 'https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=' + nombreEncoded;
-        
-        return `
-          <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-            <img src="${imageUrl}" alt="${p.NOMBRE}" class="w-full h-40 object-cover" onerror="this.src='${placeholderUrl}'">
-            <div class="p-4">
-              <h3 class="font-bold text-lg">${p.NOMBRE}</h3>
-              <p class="text-sm text-gray-600 mt-1">${p.DESCRIPCION || ''}</p>
-              <div class="flex justify-between items-center mt-3">
-                <span class="text-xl font-bold brand-orange">L.${parseFloat(p.PRECIO || 0).toFixed(2)}</span>
-                <button class="add-to-cart bg-brand-orange text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-600 transition" data-producto='${JSON.stringify(p)}'>
-                  + Agregar
-                </button>
-              </div>
+      list.innerHTML = productos.map(p => `
+        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+          <img src="${getImageUrl(p.IMAGEN, p.NOMBRE)}" alt="${p.NOMBRE}" class="w-full h-40 object-cover" onerror="this.src='https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=${encodeURIComponent(p.NOMBRE)}'">
+          <div class="p-4">
+            <h3 class="font-bold text-lg">${p.NOMBRE}</h3>
+            <p class="text-sm text-gray-600 mt-1">${p.DESCRIPCION || ''}</p>
+            <div class="flex justify-between items-center mt-3">
+              <span class="text-xl font-bold brand-orange">L.${parseFloat(p.PRECIO || 0).toFixed(2)}</span>
+              <button class="add-to-cart bg-brand-orange text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-600 transition" data-producto='${JSON.stringify(p)}'>
+                + Agregar
+              </button>
             </div>
           </div>
-        `;
-      }).join('');
+        </div>
+      `).join('');
 
       document.querySelectorAll('.add-to-cart').forEach(btn => {
         btn.addEventListener('click', (e) => {
