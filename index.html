@@ -386,10 +386,12 @@
       list.innerHTML = comerciosFiltrados.map(c => {
         const abierto = c['ABIERTO?'] === 'SI' || c['ABIERTO?'] === true || c['ABIERTO?'] === 'TRUE';
         const imageUrl = getImageUrl(c.IMAGEN, c.COMERCIO);
+        const comercioEncoded = encodeURIComponent(c.COMERCIO);
+        const placeholderUrl = 'https://via.placeholder.com/400x250/1A1A1A/FFFFFF?text=' + comercioEncoded;
         
         return `
           <div class="comercio-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer ${!abierto ? 'opacity-60' : ''}" data-id="${c.ID}">
-            <img src="${imageUrl}" alt="${c.COMERCIO}" class="w-full h-32 object-cover" onerror="this.src='https://via.placeholder.com/400x250/1A1A1A/FFFFFF?text=${encodeURIComponent(c.COMERCIO)}'">
+            <img src="${imageUrl}" alt="${c.COMERCIO}" class="w-full h-32 object-cover" onerror="this.src='${placeholderUrl}'">
             <div class="p-4">
               <h3 class="font-bold text-lg">${c.COMERCIO}</h3>
               <p class="text-sm text-gray-600">${c.SECTOR || c.CIUDAD || ''}</p>
@@ -461,21 +463,27 @@
         return;
       }
 
-      list.innerHTML = productos.map(p => `
-        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-          <img src="${getImageUrl(p.IMAGEN, p.NOMBRE)}" alt="${p.NOMBRE}" class="w-full h-40 object-cover" onerror="this.src='https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=${encodeURIComponent(p.NOMBRE)}'">
-          <div class="p-4">
-            <h3 class="font-bold text-lg">${p.NOMBRE}</h3>
-            <p class="text-sm text-gray-600 mt-1">${p.DESCRIPCION || ''}</p>
-            <div class="flex justify-between items-center mt-3">
-              <span class="text-xl font-bold brand-orange">L.${parseFloat(p.PRECIO || 0).toFixed(2)}</span>
-              <button class="add-to-cart bg-brand-orange text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-600 transition" data-producto='${JSON.stringify(p)}'>
-                + Agregar
-              </button>
+      list.innerHTML = productos.map(p => {
+        const imageUrl = getImageUrl(p.IMAGEN, p.NOMBRE);
+        const nombreEncoded = encodeURIComponent(p.NOMBRE);
+        const placeholderUrl = 'https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=' + nombreEncoded;
+        
+        return `
+          <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+            <img src="${imageUrl}" alt="${p.NOMBRE}" class="w-full h-40 object-cover" onerror="this.src='${placeholderUrl}'">
+            <div class="p-4">
+              <h3 class="font-bold text-lg">${p.NOMBRE}</h3>
+              <p class="text-sm text-gray-600 mt-1">${p.DESCRIPCION || ''}</p>
+              <div class="flex justify-between items-center mt-3">
+                <span class="text-xl font-bold brand-orange">L.${parseFloat(p.PRECIO || 0).toFixed(2)}</span>
+                <button class="add-to-cart bg-brand-orange text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-600 transition" data-producto='${JSON.stringify(p)}'>
+                  + Agregar
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       document.querySelectorAll('.add-to-cart').forEach(btn => {
         btn.addEventListener('click', (e) => {
