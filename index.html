@@ -10,208 +10,159 @@
     .bg-brand-orange { background-color: #FF8C00; }
     .brand-black { color: #1A1A1A; }
     .bg-brand-black { background-color: #1A1A1A; }
-    
-    /* Estilo Rappi: Ocultar scrollbars */
     .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-    /* Esqueleto de carga (Skeleton) */
-    .skeleton {
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-      background-size: 200% 100%;
-      animation: loading 1.5s infinite;
-    }
-    @keyframes loading {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    .comercio-card:active { transform: scale(0.96); transition: 0.2s; }
+    .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e5e5e5 50%, #f0f0f0 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; }
+    @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
   </style>
 </head>
-<body class="bg-gray-50 pb-20">
-
-  <header class="bg-brand-black text-white sticky top-0 z-50 shadow-md">
-    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
-      <h1 class="text-xl font-bold brand-orange">🛵 Somar Express</h1>
-      <button id="cartBtn" class="bg-brand-orange px-4 py-2 rounded-full font-bold flex items-center">
-        🛒 <span id="cartCount" class="ml-2 text-sm">0</span>
-      </button>
-    </div>
+<body class="bg-gray-50">
+  <header class="bg-brand-black text-white sticky top-0 z-50 shadow-lg px-4 py-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold brand-orange">🛵 Somar Express</h1>
+    <button id="cartBtn" class="relative bg-brand-orange px-4 py-2 rounded-full font-bold">
+      🛒 <span id="cartCount" class="ml-1 bg-white text-black rounded-full px-2 text-xs">0</span>
+    </button>
   </header>
 
-  <nav id="topCategories" class="bg-white sticky top-[60px] z-40 border-b overflow-x-auto no-scrollbar flex gap-2 p-3">
-    </nav>
+  <section id="categoriesSection" class="hidden bg-white border-b sticky top-[68px] z-40 overflow-x-auto no-scrollbar flex gap-3 p-3">
+    <div id="categoriesList" class="flex gap-2"></div>
+  </section>
 
-  <main id="mainContent" class="container mx-auto py-4">
-    <div id="skeleton-loader" class="px-4 space-y-6">
-      <div class="h-6 w-32 skeleton rounded"></div>
-      <div class="flex gap-4 overflow-hidden">
-        <div class="min-w-[250px] h-40 skeleton rounded-2xl"></div>
-        <div class="min-w-[250px] h-40 skeleton rounded-2xl"></div>
-      </div>
-    </div>
-    <div id="comerciosSection" class="hidden"></div>
-  </main>
+  <div id="loading" class="p-4 space-y-4">
+    <div class="h-40 w-full skeleton rounded-xl"></div>
+    <div class="h-40 w-full skeleton rounded-xl"></div>
+  </div>
 
-  <section id="productosSection" class="hidden fixed inset-0 bg-white z-[60] overflow-y-auto">
-    <div class="sticky top-0 bg-brand-black p-4 flex items-center text-white">
-      <button id="backBtn" class="text-2xl mr-4">←</button>
-      <div id="comercioHeaderTitle" class="font-bold">Cargando...</div>
-    </div>
-    <div id="comercioBanner" class="w-full h-40 bg-gray-200"></div>
-    <div id="productosList" class="p-4 space-y-8"></div>
-    
-    <div class="p-4">
-      <button id="customProductBtn" class="w-full py-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 font-bold">
-        ➕ ¿No encuentras algo? Pídelo aquí
-      </button>
-    </div>
+  <main id="comerciosSection" class="hidden container mx-auto py-6 space-y-8"></main>
+
+  <section id="productosSection" class="hidden container mx-auto p-4 pb-24">
+    <button id="backBtn" class="mb-4 text-brand-orange font-bold flex items-center">← Volver</button>
+    <div id="comercioHeader" class="mb-6 bg-white p-4 rounded-xl shadow-sm"></div>
+    <div id="productosList" class="space-y-8"></div>
+    <button id="customProductBtn" class="mt-6 w-full bg-gray-100 border-2 border-dashed py-4 rounded-xl text-gray-500 font-bold">➕ No encuentro mi producto</button>
   </section>
 
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-Itj2DDiwiC5VM1JsGa7Wpoh_GhTV7X1pjhZrWtZ--ptHBdIicqS9VJfUrpF4aKg/exec';
-    
-    let appData = {
-      comercios: [],
-      categorias: [],
-      productos: [],
-      categoriasxcomercio: [],
-      cart: [],
-      currentComercio: null,
-      selectedFilter: null
-    };
+    const SCRIPT_URL = 'TU_URL_AQUÍ';
+    let appData = { comercios: [], categorias: [], productos: [], categoriasxcomercio: [], cart: [], currentComercio: null, selectedCategoria: null };
 
-    window.addEventListener('DOMContentLoaded', fetchData);
-
-    async function fetchData() {
+    window.addEventListener('DOMContentLoaded', async () => {
       try {
-        const response = await fetch(`${SCRIPT_URL}?action=getData`);
+        const response = await fetch(SCRIPT_URL + '?action=getData');
         const data = await response.json();
-        if (data.success) {
-          appData = { ...appData, ...data };
-          renderTopFilters();
-          renderHome();
-          document.getElementById('skeleton-loader').remove();
-          document.getElementById('comerciosSection').classList.remove('hidden');
-        }
-      } catch (e) {
-        console.error("Error cargando datos", e);
-      }
+        loadApp(data);
+      } catch (e) { document.getElementById('loading').innerText = "Error al cargar datos."; }
+    });
+
+    function loadApp(data) {
+      appData = { ...appData, ...data };
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('categoriesSection').classList.remove('hidden');
+      document.getElementById('comerciosSection').classList.remove('hidden');
+      renderCategorias();
+      renderComercios();
+      setupEventListeners();
     }
 
-    function renderTopFilters() {
-      const nav = document.getElementById('topCategories');
-      nav.innerHTML = appData.categorias.map(cat => `
-        <button onclick="filterBy('${cat.CATEGORIA}')" class="flex-shrink-0 px-4 py-2 rounded-full border text-sm font-bold ${appData.selectedFilter === cat.CATEGORIA ? 'bg-brand-orange text-white' : 'bg-white'}">
+    function renderCategorias() {
+      const list = document.getElementById('categoriesList');
+      list.innerHTML = appData.categorias.map(cat => `
+        <button onclick="filterCat('${cat.CATEGORIA}')" class="px-4 py-2 rounded-full font-bold text-sm border ${appData.selectedCategoria === cat.CATEGORIA ? 'bg-brand-orange text-white' : 'bg-gray-100'}">
           ${cat.CATEGORIA}
         </button>
       `).join('');
     }
 
-    function filterBy(cat) {
-      appData.selectedFilter = appData.selectedFilter === cat ? null : cat;
-      renderTopFilters();
-      renderHome();
+    function filterCat(cat) {
+      appData.selectedCategoria = appData.selectedCategoria === cat ? null : cat;
+      renderCategorias();
+      renderComercios();
     }
 
-    function renderHome() {
+    function renderComercios() {
       const container = document.getElementById('comerciosSection');
       container.innerHTML = '';
       
-      let listaComercios = appData.comercios;
-      if (appData.selectedFilter) {
-        const idsPermitidos = appData.categoriasxcomercio
-          .filter(rel => rel.CATEGORIA === appData.selectedFilter)
-          .map(rel => rel.ID_COMERCIO);
-        listaComercios = listaComercios.filter(c => idsPermitidos.includes(c.ID));
-      }
-
-      // Agrupar por SECTOR
-      const grupos = listaComercios.reduce((acc, c) => {
-        const sector = c.SECTOR || 'Recomendados';
-        if (!acc[sector]) acc[sector] = [];
-        acc[sector].push(c);
+      // Agrupar comercios por su categoría según CATEGORIASxCOMERCIO
+      const grupos = appData.categoriasxcomercio.reduce((acc, rel) => {
+        if (!acc[rel.CATEGORIA]) acc[rel.CATEGORIA] = [];
+        const comercio = appData.comercios.find(c => c.ID == rel.ID_COMERCIO);
+        if (comercio && (!appData.selectedCategoria || rel.CATEGORIA === appData.selectedCategoria)) {
+          acc[rel.CATEGORIA].push(comercio);
+        }
         return acc;
       }, {});
 
-      for (const [sector, items] of Object.entries(grupos)) {
+      for (const [nombreCat, lista] of Object.entries(grupos)) {
+        if (lista.length === 0) continue;
         const section = document.createElement('div');
-        section.className = 'mb-8';
         section.innerHTML = `
-          <h2 class="px-4 text-xl font-extrabold mb-3 text-gray-800">${sector}</h2>
-          <div class="flex overflow-x-auto gap-4 px-4 no-scrollbar">
-            ${items.map(c => `
-              <div onclick="openStore(${c.ID})" class="comercio-card min-w-[280px] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer">
-                <img src="${c.IMAGEN || 'https://via.placeholder.com/300x150'}" class="w-full h-36 object-cover">
+          <h2 class="px-4 text-xl font-black brand-black">${nombreCat}</h2>
+          <div class="flex overflow-x-auto gap-4 p-4 no-scrollbar">
+            ${lista.map(c => `
+              <div onclick="openComercio(${c.ID})" class="min-w-[260px] bg-white rounded-2xl shadow-sm overflow-hidden border">
+                <img src="${c.IMAGEN || ''}" class="w-full h-32 object-cover">
                 <div class="p-3">
-                  <div class="flex justify-between items-start">
-                    <h3 class="font-bold text-gray-900">${c.COMERCIO}</h3>
-                    <span class="text-[10px] font-bold px-2 py-1 bg-gray-100 rounded">${c.HORARIOS || 'Abierto'}</span>
-                  </div>
-                  <p class="text-xs text-gray-500 mt-1">${c.DIRECCION || ''}</p>
+                  <h3 class="font-bold">${c.COMERCIO}</h3>
+                  <p class="text-xs text-gray-500 truncate">${c.DIRECCION || ''}</p>
                 </div>
               </div>
             `).join('')}
-          </div>
-        `;
+          </div>`;
         container.appendChild(section);
       }
     }
 
-    function openStore(id) {
-      const store = appData.comercios.find(c => c.ID == id);
-      appData.currentComercio = store;
-      
-      document.getElementById('comercioHeaderTitle').innerText = store.COMERCIO;
-      document.getElementById('comercioBanner').innerHTML = `<img src="${store.PORTADA || store.IMAGEN}" class="w-full h-full object-cover">`;
+    function openComercio(id) {
+      appData.currentComercio = appData.comercios.find(c => c.ID == id);
+      document.getElementById('comerciosSection').classList.add('hidden');
       document.getElementById('productosSection').classList.remove('hidden');
       
-      renderProducts(id);
+      document.getElementById('comercioHeader').innerHTML = `
+        <div class="flex items-center gap-4">
+          <img src="${appData.currentComercio.IMAGEN}" class="w-16 h-16 rounded-xl object-cover">
+          <div>
+            <h2 class="text-xl font-bold">${appData.currentComercio.COMERCIO}</h2>
+            <p class="text-xs text-gray-500">${appData.currentComercio.HORARIOS || ''}</p>
+          </div>
+        </div>`;
+      renderProductos();
     }
 
-    function renderProducts(storeId) {
+    function renderProductos() {
       const container = document.getElementById('productosList');
-      const storeProducts = appData.productos.filter(p => p.COMERCIO == storeId);
-
-      // Agrupar por la categoría interna del producto (desde CATEGORIASxCOMERCIO)
-      const grupos = storeProducts.reduce((acc, p) => {
-        const rel = appData.categoriasxcomercio.find(r => r.ID_CATEGORIA_COMERCIO === p.CATEGORIA);
-        const catName = rel ? rel.CATEGORIA : 'General';
-        if (!acc[catName]) acc[catName] = [];
-        acc[catName].push(p);
+      const productos = appData.productos.filter(p => p.COMERCIO == appData.currentComercio.ID);
+      
+      // Agrupar productos por categoría interna (Columna CATEGORIA en PRODUCTOS)
+      const grupos = productos.reduce((acc, p) => {
+        const catRel = appData.categoriasxcomercio.find(r => r.ID_CATEGORIA_COMERCIO === p.CATEGORIA);
+        const nombreCat = catRel ? catRel.CATEGORIA : "Otros";
+        if (!acc[nombreCat]) acc[nombreCat] = [];
+        acc[nombreCat].push(p);
         return acc;
       }, {});
 
-      container.innerHTML = Object.entries(grupos).map(([name, prods]) => `
+      container.innerHTML = Object.entries(grupos).map(([cat, items]) => `
         <div>
-          <h3 class="text-lg font-black text-gray-800 border-b-2 border-brand-orange inline-block mb-4">${name}</h3>
-          <div class="space-y-4">
-            ${prods.map(p => `
-              <div class="flex gap-4 bg-white p-3 rounded-xl border border-gray-100 items-center">
+          <h3 class="text-lg font-bold mb-3 border-b-2 border-brand-orange inline-block">${cat}</h3>
+          <div class="grid gap-4">
+            ${items.map(p => `
+              <div class="flex bg-white p-3 rounded-xl shadow-sm items-center gap-3">
                 <div class="flex-1">
-                  <h4 class="font-bold text-gray-800 text-sm">${p.NOMBRE}</h4>
-                  <p class="text-xs text-gray-500 line-clamp-2 mt-1">${p.DESCRIPCION || ''}</p>
-                  <p class="brand-orange font-bold mt-2">L.${parseFloat(p.PRECIO.toString().replace('L','')).toFixed(2)}</p>
-                  <button onclick="addToCartClick(${p.ITEM})" class="mt-2 text-xs font-bold border border-brand-orange text-brand-orange px-3 py-1 rounded-lg">Agregar</button>
+                  <h4 class="font-bold text-sm">${p.NOMBRE}</h4>
+                  <p class="text-xs text-gray-400 line-clamp-2">${p.DESCRIPCION || ''}</p>
+                  <p class="brand-orange font-bold mt-1">L.${p.PRECIO}</p>
+                  <button onclick="addToCartClick(${JSON.stringify(p).replace(/"/g, '&quot;')})" class="mt-2 text-xs bg-orange-50 text-brand-orange px-3 py-1 rounded-lg font-bold border border-orange-200">Agregar</button>
                 </div>
-                <img src="${p['IMG URL'] || 'https://via.placeholder.com/100'}" class="w-20 h-20 object-cover rounded-xl bg-gray-100">
-              </div>
-            `).join('')}
+                <img src="${p['IMG URL'] || ''}" class="w-20 h-20 rounded-lg object-cover bg-gray-100">
+              </div>`).join('')}
           </div>
-        </div>
-      `).join('');
+        </div>`).join('');
     }
 
-    document.getElementById('backBtn').onclick = () => {
-      document.getElementById('productosSection').classList.add('hidden');
-    };
-
-    // Funciones de carrito (Reutiliza las de tu código original)
-    function addToCartClick(itemId) {
-        const prod = appData.productos.find(p => p.ITEM == itemId);
-        // ... lógica de tu addToCart original ...
-        alert(prod.NOMBRE + " agregado");
+    // Funciones del Carrito y Eventos (Copia aquí tus funciones addToCart, renderCart, procesarPedido, etc. tal cual las tenías)
+    function addToCartClick(p) {
+        addToCart(p); // Llama a tu función original
+        alert("Agregado: " + p.NOMBRE);
     }
   </script>
 </body>
