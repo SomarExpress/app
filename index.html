@@ -242,14 +242,22 @@
 
       // Filtrar por categoría si hay una seleccionada
       if (appData.selectedCategoria) {
-        // Filtrar comercios por la columna CATEGORIA
-        comerciosFiltrados = comerciosFiltrados.filter(c => 
-          c.CATEGORIA === appData.selectedCategoria
-        );
+        // Buscar el Row ID de la categoría seleccionada
+        const categoriaObj = appData.categorias.find(cat => cat.CATEGORIA === appData.selectedCategoria);
         
-        console.log('Categoría seleccionada:', appData.selectedCategoria);
-        console.log('Comercios filtrados:', comerciosFiltrados.length);
-        console.log('Categorías únicas en comercios:', [...new Set(appData.comercios.map(c => c.CATEGORIA))]);
+        if (categoriaObj) {
+          const categoriaRowId = categoriaObj['Row ID'];
+          
+          // Filtrar comercios que tengan este Row ID en su columna CATEGORIA
+          comerciosFiltrados = comerciosFiltrados.filter(c => 
+            c.CATEGORIA === categoriaRowId || 
+            c.CATEGORIA === categoriaRowId.toString()
+          );
+          
+          console.log('Categoría seleccionada:', appData.selectedCategoria);
+          console.log('Row ID de la categoría:', categoriaRowId);
+          console.log('Comercios filtrados:', comerciosFiltrados.length);
+        }
       }
 
       const list = document.getElementById('comerciosList');
