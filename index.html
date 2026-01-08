@@ -49,16 +49,18 @@
     <div class="loading"></div>
   </div>
 
-  <!-- Categorías -->
-  <section id="categoriesSection" class="hidden bg-white shadow-md sticky top-16 z-40">
-    <div class="container mx-auto px-4 py-3">
-      <div id="categoriesList" class="flex overflow-x-auto gap-3 pb-2"></div>
-    </div>
+  <!-- Categorías (Vista principal) -->
+  <section id="categoriasSection" class="hidden container mx-auto px-4 py-6">
+    <h2 class="text-3xl font-bold mb-6 brand-black text-center">¿Qué estás buscando?</h2>
+    <div id="categoriasList" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
   </section>
 
   <!-- Comercios -->
   <section id="comerciosSection" class="hidden container mx-auto px-4 py-6">
-    <h2 class="text-2xl font-bold mb-4 brand-black">Comercios Disponibles</h2>
+    <button id="backToCategorias" class="mb-4 text-brand-orange font-semibold hover:underline flex items-center gap-2">
+      <span>←</span> Volver a categorías
+    </button>
+    <h2 id="categoriaTitulo" class="text-2xl font-bold mb-4 brand-black"></h2>
     <div id="comerciosList" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
   </section>
 
@@ -201,40 +203,58 @@
       appData.categoriasxcomercio = data.categoriasxcomercio;
 
       document.getElementById('loading').classList.add('hidden');
-      document.getElementById('categoriesSection').classList.remove('hidden');
-      document.getElementById('comerciosSection').classList.remove('hidden');
+      document.getElementById('categoriasSection').classList.remove('hidden');
 
-      renderCategorias();
-      renderComercios();
+      renderCategoriasCards();
       setupEventListeners();
     }
 
-    function renderCategorias() {
-      const list = document.getElementById('categoriesList');
+    function renderCategoriasCards() {
+      const list = document.getElementById('categoriasList');
       
-      // Agregar botón "Todos"
-      const todosBtn = `
-        <button class="categoria-btn flex-shrink-0 px-4 py-2 rounded-full font-semibold transition ${!appData.selectedCategoria ? 'bg-brand-orange text-white' : 'bg-gray-200 hover:bg-gray-300'}" data-categoria="">
-          Todos
-        </button>
-      `;
-      
-      const categoriasHTML = appData.categorias.map(cat => `
-        <button class="categoria-btn flex-shrink-0 px-4 py-2 rounded-full font-semibold transition ${appData.selectedCategoria === cat.CATEGORIA ? 'bg-brand-orange text-white' : 'bg-gray-200 hover:bg-gray-300'}" data-categoria="${cat.CATEGORIA}">
-          ${cat.CATEGORIA}
-        </button>
-      `).join('');
-      
-      list.innerHTML = todosBtn + categoriasHTML;
+      list.innerHTML = appData.categorias.map(cat => {
+        // Contar cuántos comercios tiene esta categoría
+        const categoriaRowId = cat['Row ID'];
+        const numComercios = appData.comercios.filter(c => 
+          c.CATEGORIA === categoriaRowId || c.CATEGORIA === categoriaRowId.toString()
+        ).length;
+        
+        return `
+          <div class="categoria-card bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105" data-categoria="${cat.CATEGORIA}" data-rowid="${categoriaRowId}">
+            <div class="relative">
+              <img src="${cat.IMAGEN || 'https://via.placeholder.com/300x200?text=' + encodeURIComponent(cat.CATEGORIA)}" alt="${cat.CATEGORIA}" class="w-full h-40 object-cover">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+              <div class="absolute bottom-0 left-0 right-0 p-4">
+                <h3 class="text-white font-bold text-xl">${cat.CATEGORIA}</h3>
+                <p class="text-white/90 text-sm">${numComercios} comercio${numComercios !== 1 ? 's' : ''}</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
 
-      document.querySelectorAll('.categoria-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const cat = e.target.dataset.categoria;
-          appData.selectedCategoria = cat || null;
-          renderCategorias();
-          renderComercios();
+      // Event listeners para las tarjetas
+      document.querySelectorAll('.categoria-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          const categoria = e.currentTarget.dataset.categoria;
+          const rowId = e.currentTarget.dataset.rowid;
+          openCategoria(categoria, rowId);
         });
       });
+    }
+
+    function openCategoria(nombreCategoria, rowId) {
+      appData.selectedCategoria = rowId;
+      
+      // Ocultar categorías y mostrar comercios
+      document.getElementById('categoriasSection').classList.add('hidden');
+      document.getElementById('comerciosSection').classList.remove('hidden');
+      
+      // Actualizar título
+      document.getElementById('categoriaTitulo').textContent = nombreCategoria;
+      
+      // Renderizar comercios filtrados
+      renderComercios();
     }
 
     function renderComercios() {
@@ -242,22 +262,13 @@
 
       // Filtrar por categoría si hay una seleccionada
       if (appData.selectedCategoria) {
-        // Buscar el Row ID de la categoría seleccionada
-        const categoriaObj = appData.categorias.find(cat => cat.CATEGORIA === appData.selectedCategoria);
+        comerciosFiltrados = comerciosFiltrados.filter(c => 
+          c.CATEGORIA === appData.selectedCategoria || 
+          c.CATEGORIA === appData.selectedCategoria.toString()
+        );
         
-        if (categoriaObj) {
-          const categoriaRowId = categoriaObj['Row ID'];
-          
-          // Filtrar comercios que tengan este Row ID en su columna CATEGORIA
-          comerciosFiltrados = comerciosFiltrados.filter(c => 
-            c.CATEGORIA === categoriaRowId || 
-            c.CATEGORIA === categoriaRowId.toString()
-          );
-          
-          console.log('Categoría seleccionada:', appData.selectedCategoria);
-          console.log('Row ID de la categoría:', categoriaRowId);
-          console.log('Comercios filtrados:', comerciosFiltrados.length);
-        }
+        console.log('Row ID seleccionado:', appData.selectedCategoria);
+        console.log('Comercios filtrados:', comerciosFiltrados.length);
       }
 
       const list = document.getElementById('comerciosList');
@@ -266,9 +277,6 @@
         list.innerHTML = `
           <div class="col-span-full text-center py-12">
             <p class="text-gray-500 text-lg">😔 No hay comercios disponibles en esta categoría</p>
-            <button onclick="appData.selectedCategoria = null; renderCategorias(); renderComercios();" class="mt-4 bg-brand-orange text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition">
-              Ver todos los comercios
-            </button>
           </div>
         `;
         return;
@@ -456,6 +464,13 @@
     }
 
     function setupEventListeners() {
+      // Botón volver a categorías
+      document.getElementById('backToCategorias').addEventListener('click', () => {
+        document.getElementById('comerciosSection').classList.add('hidden');
+        document.getElementById('categoriasSection').classList.remove('hidden');
+        appData.selectedCategoria = null;
+      });
+
       document.getElementById('cartBtn').addEventListener('click', () => {
         document.getElementById('cartModal').classList.remove('hidden');
         renderCart();
