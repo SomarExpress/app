@@ -524,6 +524,10 @@
   <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzmnCMSGJOo5cjFB424vQ-6jNRRBQKWS3wVJlw4U-f3e_7utcXCgWf3zdrEtEFKPhL-g/exec';
     
+    // CONFIGURACIÓN CLOUDINARY
+    const CLOUDINARY_CLOUD_NAME = 'drkaxsziu';
+    const CLOUDINARY_UPLOAD_PRESET = 'TRANSFERENCIAS';
+    
     let appData = {
       comercios: [],
       categorias: [],
@@ -1437,7 +1441,10 @@
 
       let montoPago = null;
       let cambio = null;
-      let comprobanteBase64 = null;
+      let comprobanteUrl = null;
+
+      const submitBtn = document.querySelector('#checkoutForm button[type="submit"]');
+      const originalText = submitBtn.textContent;
 
       if (metodoPago === 'efectivo') {
         const montoInput = document.getElementById('montoPago').value;
@@ -1457,11 +1464,39 @@
           return;
         }
         
-        comprobanteBase64 = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(comprobanteFile);
-        });
+        // SUBIR IMAGEN A CLOUDINARY
+        submitBtn.textContent = 'Subiendo comprobante...';
+        submitBtn.disabled = true;
+
+        try {
+          console.log('📤 Subiendo comprobante a Cloudinary...');
+          
+          const formData = new FormData();
+          formData.append('file', comprobanteFile);
+          formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+          formData.append('cloud_name', CLOUDINARY_CLOUD_NAME);
+          formData.append('folder', 'TRANSFERENCIAS');
+          
+          const cloudinaryResponse = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+            method: 'POST',
+            body: formData
+          });
+          
+          const cloudinaryData = await cloudinaryResponse.json();
+          
+          if (cloudinaryData.secure_url) {
+            comprobanteUrl = cloudinaryData.secure_url;
+            console.log('✅ Comprobante subido:', comprobanteUrl);
+          } else {
+            throw new Error('Error al subir comprobante');
+          }
+        } catch (error) {
+          console.error('Error subiendo comprobante:', error);
+          alert('⚠️ Error al subir el comprobante. Por favor intenta nuevamente.');
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+          return;
+        }
       }
 
       const datos = {
@@ -1483,11 +1518,9 @@
         montoPago,
         cambio,
         notasEspeciales,
-        comprobanteBase64
+        comprobanteUrl
       };
 
-      const submitBtn = document.querySelector('#checkoutForm button[type="submit"]');
-      const originalText = submitBtn.textContent;
       submitBtn.textContent = 'Procesando...';
       submitBtn.disabled = true;
 
@@ -1546,7 +1579,7 @@
         mensajeCompleto += `Pagarás con: L.${datos.montoPago.toFixed(2)}\n`;
         mensajeCompleto += `Tu cambio: L.${datos.cambio.toFixed(2)}\n`;
       } else if (datos.metodoPago === 'transferencia') {
-        mensajeCompleto += `✅ Comprobante adjunto\n`;
+        mensajeCompleto += `✅ Comprobante de pago adjunto\n`;
       }
 
       mensajeCompleto += `\n📍 *DIRECCIÓN DE ENTREGA:*\n${datos.direccion}\n`;
@@ -1570,6 +1603,14 @@
         try {
           console.log('📤 Enviando confirmación al cliente:', numeroCliente);
           
+          // Determinar qué imagen enviar
+          let imagenWhatsApp = 'https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png';
+          
+          if (datos.comprobanteUrl) {
+            imagenWhatsApp = datos.comprobanteUrl;
+            console.log('📷 Enviando comprobante:', imagenWhatsApp);
+          }
+          
           fetch(SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -1578,7 +1619,7 @@
               action: 'enviarWhatsApp',
               numero: numeroCliente,
               mensaje: mensajeCompleto,
-              imagenUrl: datos.comprobanteBase64 || 'https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png'
+              imagenUrl: imagenWhatsApp
             })
           }).catch(err => console.warn('Error envío WhatsApp:', err));
 
