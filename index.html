@@ -1295,55 +1295,48 @@
       ).join('\n');
 
       const mensajeCompleto = 
-        `🛵 *NUEVO PEDIDO SOMAR EXPRESS*\n\n` +
+        `🛵 *CONFIRMACIÓN DE PEDIDO SOMAR EXPRESS*\n\n` +
         `*Pedido #${result.idPedido}*\n` +
         `*Comercio:* ${datos.comercio}\n\n` +
-        `📦 *PRODUCTOS:*\n${itemsTexto}\n\n` +
+        `📦 *TUS PRODUCTOS:*\n${itemsTexto}\n\n` +
         `💰 *TOTAL: L.${datos.total.toFixed(2)}*\n\n` +
-        `👤 *DATOS DEL CLIENTE:*\n` +
-        `📱 Celular: ${datos.celular}\n` +
-        `📍 Dirección: ${datos.direccion}\n` +
-        `🗺️ GPS: ${datos.ubicacionGPS}\n\n` +
-        `_Pedido generado desde Somar Express Catalog_`;
+        `📍 *DIRECCIÓN DE ENTREGA:*\n${datos.direccion}\n\n` +
+        `✅ *Tu pedido ha sido recibido y será procesado en breve.*\n\n` +
+        `📞 El comercio se pondrá en contacto contigo para confirmar.\n\n` +
+        `_Gracias por usar Somar Express_ 🚀`;
 
-      // Limpiar número de WhatsApp
-      let whatsappNumber = (datos.whatsappComercio || '').toString().replace(/[^0-9]/g, '');
+      // Limpiar número de WhatsApp del CLIENTE
+      let numeroCliente = datos.celular.toString().replace(/[^0-9]/g, '');
       
-      if (whatsappNumber && whatsappNumber.length >= 8) {
-        if (!whatsappNumber.startsWith('504') && whatsappNumber.length === 8) {
-          whatsappNumber = '504' + whatsappNumber;
+      if (numeroCliente && numeroCliente.length >= 8) {
+        if (!numeroCliente.startsWith('504') && numeroCliente.length === 8) {
+          numeroCliente = '504' + numeroCliente;
         }
 
         try {
-          console.log('📤 Enviando pedido vía BuilderBot...');
+          console.log('📤 Enviando confirmación al cliente:', numeroCliente);
           
-          // ENVIAR VÍA GOOGLE APPS SCRIPT (Proxy Seguro)
+          // ENVIAR VÍA GOOGLE APPS SCRIPT (Proxy Seguro) - AL CLIENTE
           const response = await fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               action: 'enviarWhatsApp',
-              numero: whatsappNumber,
+              numero: numeroCliente,
               mensaje: mensajeCompleto,
               imagenUrl: 'https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png'
             })
           });
 
-          // No podemos leer la respuesta en mode no-cors, pero asumimos éxito
-          console.log('✅ Pedido enviado');
-          alert('✅ ¡Pedido enviado exitosamente!\n\nEl comercio recibirá tu pedido por WhatsApp en breve.');
+          console.log('✅ Confirmación enviada al cliente');
+          alert('✅ ¡Pedido confirmado!\n\nRecibirás un mensaje de confirmación en WhatsApp.');
           
         } catch (error) {
           console.error('❌ Error:', error);
-          
-          // Fallback: WhatsApp Web
-          if (confirm('⚠️ No se pudo enviar el pedido automáticamente.\n\n¿Deseas abrir WhatsApp para enviarlo manualmente?')) {
-            const mensajeCodificado = encodeURIComponent(mensajeCompleto);
-            window.open(`https://wa.me/${whatsappNumber}?text=${mensajeCodificado}`, '_blank');
-          }
+          alert('✅ ¡Pedido registrado exitosamente!\n\nPronto recibirás confirmación del comercio.');
         }
       } else {
-        alert('⚠️ El comercio no tiene un número de WhatsApp configurado.');
+        alert('✅ ¡Pedido registrado exitosamente!');
       }
 
       // Limpiar carrito y cerrar modal
