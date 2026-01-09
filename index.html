@@ -39,7 +39,6 @@
       100% { transform: rotate(360deg); }
     }
     
-    /* Skeleton Loaders */
     .skeleton {
       background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
       background-size: 200% 100%;
@@ -62,31 +61,17 @@
       overflow: hidden;
     }
     
-    /* Carrusel de banners */
     .carousel-container {
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
+    
+    .carousel-container::-webkit-scrollbar { display: none; }
     
     .carousel-item {
       scroll-snap-align: start;
       flex-shrink: 0;
-    }
-    
-    .carousel-container::-webkit-scrollbar {
-      display: none;
-    }
-    
-    .carousel-container {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    
-    .carousel-dots {
-      display: flex;
-      gap: 6px;
-      justify-content: center;
-      margin-top: 12px;
     }
     
     .carousel-dot {
@@ -103,13 +88,11 @@
       border-radius: 4px;
     }
     
-    /* Banner de ofertas auto-scroll */
     .offers-banner {
       background: linear-gradient(90deg, #FF8C00, #FF6B00, #FF8C00);
       background-size: 200% 100%;
       animation: gradient-shift 3s ease infinite;
       overflow: hidden;
-      position: relative;
     }
     
     @keyframes gradient-shift {
@@ -128,21 +111,6 @@
       100% { transform: translateX(-50%); }
     }
     
-    .offers-scroll:hover {
-      animation-play-state: paused;
-    }
-    
-    /* Categorías scroll horizontal */
-    .categorias-scroll::-webkit-scrollbar {
-      display: none;
-    }
-    
-    .categorias-scroll {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    
-    /* Animaciones de transición */
     .fade-in {
       animation: fadeIn 0.4s ease-in;
     }
@@ -151,26 +119,7 @@
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
-    .slide-up {
-      animation: slideUp 0.3s ease-out;
-    }
-    
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-    
-    .scale-in {
-      animation: scaleIn 0.2s ease-out;
-    }
-    
-    @keyframes scaleIn {
-      from { transform: scale(0.9); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-    
-    /* Badges y etiquetas */
+
     .distance-badge {
       background: rgba(0, 0, 0, 0.7);
       backdrop-filter: blur(8px);
@@ -178,1135 +127,553 @@
   </style>
 </head>
 <body class="bg-gray-50">
-  <!-- Header Fixed con ubicación -->
   <header class="bg-white sticky top-0 z-50 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 py-3">
+    <div class="max-w-7xl mx-auto px-4 py-3 text-brand-black">
       <div class="flex items-center justify-between">
-        <!-- Logo y ubicación -->
         <div class="flex items-center gap-3">
           <img src="https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png" alt="Somar Express" class="w-12 h-12 object-contain">
           <div>
-            <p class="text-xs text-gray-500">Entregar en</p>
-            <button id="locationBtn" class="text-sm font-semibold flex items-center gap-1 hover:text-brand-orange transition">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Entregar en</p>
+            <button id="locationBtn" class="text-sm font-bold flex items-center gap-1 hover:text-brand-orange transition">
+              <svg class="w-4 h-4 text-brand-orange" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
               </svg>
-              <span id="locationText">Obteniendo ubicación...</span>
-              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
+              <span id="locationText">Detectando...</span>
             </button>
           </div>
         </div>
         
-        <!-- Carrito -->
-        <button id="cartBtn" class="relative p-2">
-          <svg class="w-7 h-7 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button id="cartBtn" class="relative p-2 bg-gray-50 rounded-full">
+          <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
           </svg>
-          <span id="cartCount" class="absolute -top-1 -right-1 bg-brand-orange text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">0</span>
+          <span id="cartCount" class="absolute -top-1 -right-1 bg-brand-orange text-white text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center border-2 border-white">0</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Banner de Ofertas Especiales (Auto-scroll) -->
-  <div class="offers-banner text-white py-2">
+  <div class="offers-banner text-white py-2 text-xs uppercase tracking-tighter">
     <div class="offers-scroll">
-      <div class="flex items-center gap-8 px-4">
-        <span class="font-bold">🎉 ¡Envío Gratis en pedidos mayores a L.300!</span>
-        <span class="font-bold">⚡ Delivery Express en 30 minutos</span>
-        <span class="font-bold">🆕 Nuevos comercios disponibles</span>
-        <span class="font-bold">💰 Ofertas especiales todos los días</span>
+      <div class="flex items-center gap-8 px-4 font-black">
+        <span>🎉 Envío Gratis pedidos > L.300</span>
+        <span>⚡ Delivery Express 30 min</span>
+        <span>💰 Ofertas todos los días</span>
+        <span>🆕 Nuevos comercios disponibles</span>
       </div>
-      <!-- Duplicado para efecto continuo -->
-      <div class="flex items-center gap-8 px-4">
-        <span class="font-bold">🎉 ¡Envío Gratis en pedidos mayores a L.300!</span>
-        <span class="font-bold">⚡ Delivery Express en 30 minutos</span>
-        <span class="font-bold">🆕 Nuevos comercios disponibles</span>
-        <span class="font-bold">💰 Ofertas especiales todos los días</span>
+      <div class="flex items-center gap-8 px-4 font-black">
+        <span>🎉 Envío Gratis pedidos > L.300</span>
+        <span>⚡ Delivery Express 30 min</span>
+        <span>💰 Ofertas todos los días</span>
+        <span>🆕 Nuevos comercios disponibles</span>
       </div>
     </div>
   </div>
 
-  <!-- Loading -->
-  <div id="loading" class="loading-screen flex flex-col justify-center items-center h-screen">
-    <img src="https://res.cloudinary.com/drkaxsziu/image/upload/v1767871112/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221144_0000_fcsl1b.png" alt="Somar Express" class="loading-logo w-48 h-48 mb-6">
+  <div id="loading" class="loading-screen fixed inset-0 z-[100] flex flex-col justify-center items-center">
+    <img src="https://res.cloudinary.com/drkaxsziu/image/upload/v1767871112/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221144_0000_fcsl1b.png" alt="Somar Express" class="loading-logo w-40 h-40 mb-6">
     <div class="loading"></div>
-    <p class="text-white mt-4 font-semibold">Cargando delivery...</p>
+    <p class="text-white mt-4 font-black uppercase text-sm tracking-widest">Iniciando App...</p>
   </div>
 
-  <!-- Vista Principal: Categorías con Banner -->
-  <section id="categoriasSection" class="hidden">
-    <!-- Banner Carousel -->
-    <div class="bg-white pb-4">
-      <div class="carousel-container flex overflow-x-auto snap-x snap-mandatory px-4 gap-3 pt-4" id="bannerCarousel">
-        <!-- Banners se generan dinámicamente -->
-      </div>
-      <div class="carousel-dots" id="carouselDots"></div>
+  <section id="categoriasSection" class="hidden pb-20">
+    <div class="bg-white pb-6 shadow-sm">
+      <div class="carousel-container flex overflow-x-auto snap-x snap-mandatory px-4 gap-3 pt-4" id="bannerCarousel"></div>
+      <div class="carousel-dots mt-4" id="carouselDots"></div>
     </div>
 
-    <!-- Categorías -->
-    <div class="bg-white mt-2 py-4">
-      <div class="max-w-7xl mx-auto px-4">
-        <h2 class="text-lg font-bold mb-4">Nuestras categorías</h2>
-        <div id="categoriasList" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
-        <!-- Skeleton Loader para Categorías -->
-        <div id="categoriasLoader" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <div class="skeleton skeleton-card p-4">
-            <div class="skeleton w-16 h-16 rounded-full mx-auto mb-2"></div>
-            <div class="skeleton skeleton-text w-3/4 mx-auto"></div>
-          </div>
-          <div class="skeleton skeleton-card p-4">
-            <div class="skeleton w-16 h-16 rounded-full mx-auto mb-2"></div>
-            <div class="skeleton skeleton-text w-3/4 mx-auto"></div>
-          </div>
-          <div class="skeleton skeleton-card p-4">
-            <div class="skeleton w-16 h-16 rounded-full mx-auto mb-2"></div>
-            <div class="skeleton skeleton-text w-3/4 mx-auto"></div>
-          </div>
-        </div>
+    <div class="max-w-7xl mx-auto px-4 mt-8">
+      <h2 class="text-xl font-black mb-6 uppercase tracking-tight">¿Qué pedimos hoy?</h2>
+      <div id="categoriasList" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+      <div id="categoriasLoader" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 hidden">
+        <div class="skeleton h-24 rounded-2xl"></div>
+        <div class="skeleton h-24 rounded-2xl"></div>
+        <div class="skeleton h-24 rounded-2xl"></div>
       </div>
     </div>
   </section>
 
-  <!-- Vista: Comercios de una Categoría -->
-  <section id="comerciosSection" class="hidden min-h-screen">
-    <div class="bg-white sticky top-16 z-40 shadow-sm">
+  <section id="comerciosSection" class="hidden min-h-screen bg-gray-50">
+    <div class="bg-white sticky top-[72px] z-40 shadow-sm border-t border-gray-100">
       <div class="max-w-7xl mx-auto px-4 py-3">
-        <button id="backToCategorias" class="flex items-center gap-2 text-gray-600 hover:text-brand-orange transition">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-          </svg>
-          <span class="font-semibold">Volver</span>
+        <button id="backToCategorias" class="flex items-center gap-1 text-gray-400 font-bold text-xs uppercase mb-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          Categorías
         </button>
-        <h2 id="categoriaTitulo" class="text-xl font-bold mt-2 mb-3"></h2>
+        <h2 id="categoriaTitulo" class="text-2xl font-black mb-4"></h2>
         
-        <!-- Buscador y Ordenar -->
-        <div class="flex gap-2 mb-3">
+        <div class="flex gap-2">
           <div class="relative flex-1">
-            <input type="text" id="searchComercio" placeholder="Buscar comercio..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pl-10 focus:border-brand-orange focus:outline-none transition">
-            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
+            <input type="text" id="searchComercio" placeholder="Buscar..." class="w-full bg-gray-100 border-none rounded-xl px-4 py-3 pl-10 focus:ring-2 focus:ring-brand-orange focus:bg-white transition text-sm">
+            <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           </div>
-          <select id="sortComercio" class="border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition bg-white">
-            <option value="default">Ordenar por</option>
-            <option value="distance">Distancia</option>
-            <option value="name">Nombre A-Z</option>
+          <select id="sortComercio" class="bg-gray-100 border-none rounded-xl px-3 py-3 text-xs font-bold uppercase focus:ring-2 focus:ring-brand-orange">
+            <option value="default">Ordenar</option>
+            <option value="distance">Más cercanos</option>
+            <option value="name">Nombre</option>
           </select>
         </div>
       </div>
     </div>
     
-    <div class="max-w-7xl mx-auto px-4 py-4">
-      <div id="comerciosList" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
-      <!-- Skeleton Loader para Comercios -->
-      <div id="comerciosLoader" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        <div class="skeleton skeleton-card">
-          <div class="skeleton w-full h-32"></div>
-          <div class="p-3">
-            <div class="skeleton skeleton-text w-3/4 mb-2"></div>
-            <div class="skeleton skeleton-text w-1/2"></div>
-          </div>
-        </div>
-        <div class="skeleton skeleton-card">
-          <div class="skeleton w-full h-32"></div>
-          <div class="p-3">
-            <div class="skeleton skeleton-text w-3/4 mb-2"></div>
-            <div class="skeleton skeleton-text w-1/2"></div>
-          </div>
-        </div>
+    <div class="max-w-7xl mx-auto px-4 py-6">
+      <div id="comerciosList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+      <div id="comerciosLoader" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="skeleton h-48 rounded-3xl"></div>
+        <div class="skeleton h-48 rounded-3xl"></div>
       </div>
     </div>
   </section>
 
-  <!-- Vista: Productos del Comercio -->
-  <section id="productosSection" class="hidden min-h-screen">
-    <div class="bg-white">
-      <div class="max-w-7xl mx-auto px-4 py-3">
-        <button id="backBtn" class="flex items-center gap-2 text-gray-600 hover:text-brand-orange transition mb-3">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-          </svg>
-          <span class="font-semibold">Volver</span>
+  <section id="productosSection" class="hidden min-h-screen bg-gray-50">
+    <div class="bg-white border-b border-gray-100">
+      <div class="max-w-7xl mx-auto px-4 py-4">
+        <button id="backBtn" class="flex items-center gap-1 text-gray-400 font-bold text-xs uppercase mb-4">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          Comercios
         </button>
-        <div id="comercioHeader" class="mb-4"></div>
-        
-        <!-- Buscador y Ordenar Productos -->
-        <div class="flex gap-2 mt-3">
-          <div class="relative flex-1">
-            <input type="text" id="searchProducto" placeholder="Buscar producto..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pl-10 focus:border-brand-orange focus:outline-none transition">
-            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-          </div>
-          <select id="sortProducto" class="border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition bg-white">
-            <option value="default">Ordenar por</option>
-            <option value="price-asc">Precio: menor a mayor</option>
-            <option value="price-desc">Precio: mayor a menor</option>
-            <option value="name">Nombre A-Z</option>
-          </select>
-        </div>
+        <div id="comercioHeader" class="mb-2"></div>
+        <input type="text" id="searchProducto" placeholder="¿Qué se te antoja?" class="w-full bg-gray-100 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-orange transition text-sm">
       </div>
     </div>
     
-    <div class="max-w-7xl mx-auto px-4 py-4">
+    <div class="max-w-7xl mx-auto px-4 py-6">
       <div id="productosList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-      <!-- Skeleton Loader para Productos -->
-      <div id="productosLoader" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div class="skeleton skeleton-card">
-          <div class="skeleton w-full h-40"></div>
-          <div class="p-4">
-            <div class="skeleton skeleton-text w-3/4 mb-2"></div>
-            <div class="skeleton skeleton-text w-full mb-2"></div>
-            <div class="skeleton skeleton-text w-1/2"></div>
-          </div>
-        </div>
+      <div id="productosLoader" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="skeleton h-32 rounded-2xl"></div>
       </div>
-      <button id="customProductBtn" class="mt-6 w-full bg-white border-2 border-dashed border-gray-300 hover:border-brand-orange text-gray-600 hover:text-brand-orange font-semibold py-4 rounded-xl transition">
-        ➕ No encuentro mi producto
+      <button id="customProductBtn" class="mt-8 w-full bg-white border-2 border-dashed border-gray-300 py-4 rounded-2xl font-bold text-gray-400 hover:border-brand-orange hover:text-brand-orange transition flex items-center justify-center gap-2">
+        <span>➕</span> No encuentro lo que busco
       </button>
     </div>
   </section>
 
-  <!-- Modal Carrito -->
-  <div id="cartModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end md:items-center justify-center">
-    <div class="bg-white rounded-t-3xl md:rounded-2xl w-full md:max-w-2xl md:max-h-[90vh] overflow-hidden flex flex-col max-h-[85vh] slide-up">
-      <div class="p-6 border-b">
-        <div class="flex justify-between items-center">
-          <h2 class="text-2xl font-bold">Mi Carrito</h2>
-          <button id="closeCartBtn" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
+  <div id="cartModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center">
+    <div class="bg-white rounded-t-[32px] sm:rounded-3xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden animate-slide-up">
+      <div class="p-6 border-b flex justify-between items-center">
+        <h2 class="text-2xl font-black">Tu Carrito</h2>
+        <button id="closeCartBtn" class="bg-gray-100 p-2 rounded-full"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
       </div>
-      
       <div id="cartItems" class="flex-1 overflow-y-auto p-6"></div>
-      
-      <div class="p-6 border-t bg-gray-50">
-        <div class="flex justify-between text-xl font-bold mb-4">
-          <span>Total:</span>
-          <span class="brand-orange">L.<span id="cartTotal">0</span></span>
+      <div class="p-6 bg-gray-50 border-t">
+        <div class="flex justify-between items-center mb-6">
+          <span class="font-bold text-gray-500 uppercase text-xs tracking-widest">Total a pagar</span>
+          <span class="text-3xl font-black brand-orange">L.<span id="cartTotal">0</span></span>
         </div>
-        <button id="checkoutBtn" class="w-full bg-brand-orange text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg">
-          Continuar con el pedido
-        </button>
+        <button id="checkoutBtn" class="w-full bg-brand-orange text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-orange-200 hover:scale-[1.02] active:scale-95 transition">Continuar</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal Checkout -->
-  <div id="checkoutModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end md:items-center justify-center">
-    <div class="bg-white rounded-t-3xl md:rounded-2xl w-full md:max-w-lg max-h-[90vh] overflow-y-auto slide-up">
-      <div class="p-6">
-        <h2 class="text-2xl font-bold mb-6">Información de Entrega</h2>
-        <form id="checkoutForm">
-          <div class="mb-4">
-            <label class="block font-semibold mb-2 text-sm text-gray-700">Número de Celular</label>
-            <input type="tel" id="celular" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="+504 9999-9999">
-          </div>
-          
-          <div class="mb-4">
-            <label class="block font-semibold mb-2 text-sm text-gray-700">Dirección de Entrega</label>
-            <textarea id="direccion" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="3" placeholder="Calle, colonia, referencias..."></textarea>
-            <p class="text-xs text-gray-500 mt-1">📍 Ubicación GPS ya capturada</p>
-          </div>
-          
-          <div class="flex gap-3 mt-6">
-            <button type="button" id="cancelCheckoutBtn" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 rounded-xl font-bold transition">
-              Cancelar
-            </button>
-            <button type="submit" class="flex-1 bg-brand-orange text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg">
-              Confirmar Pedido
-            </button>
-          </div>
-        </form>
-      </div>
+  <div id="checkoutModal" class="hidden fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4">
+    <div class="bg-white rounded-[32px] w-full max-w-md p-8 animate-scale-in">
+      <h2 class="text-2xl font-black mb-6">Entrega</h2>
+      <form id="checkoutForm" class="space-y-4">
+        <div>
+          <label class="block text-[10px] font-black uppercase text-gray-400 mb-1">Tu Celular</label>
+          <input type="tel" id="celular" required placeholder="9999-9999" class="w-full bg-gray-100 border-none rounded-xl p-4 focus:ring-2 focus:ring-brand-orange">
+        </div>
+        <div>
+          <label class="block text-[10px] font-black uppercase text-gray-400 mb-1">Referencia de Dirección</label>
+          <textarea id="direccion" required placeholder="Ej: Portón negro frente a la escuela..." class="w-full bg-gray-100 border-none rounded-xl p-4 focus:ring-2 focus:ring-brand-orange" rows="3"></textarea>
+        </div>
+        <div class="flex gap-3 pt-4">
+          <button type="button" id="cancelCheckoutBtn" class="flex-1 font-bold text-gray-400 py-4">Atrás</button>
+          <button type="submit" class="flex-[2] bg-brand-orange text-white rounded-2xl font-black uppercase tracking-widest py-4 shadow-lg shadow-orange-200">Pedir Ya</button>
+        </div>
+      </form>
     </div>
   </div>
 
-  <!-- Modal Producto Personalizado -->
-  <div id="customProductModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full scale-in">
-      <div class="p-6">
-        <h2 class="text-xl font-bold mb-4">Agregar Producto Personalizado</h2>
-        <form id="customProductForm">
-          <div class="mb-4">
-            <label class="block font-semibold mb-2 text-sm text-gray-700">Nombre del Producto</label>
-            <input type="text" id="customName" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition">
-          </div>
-          <div class="mb-4">
-            <label class="block font-semibold mb-2 text-sm text-gray-700">Precio Estimado (L.)</label>
-            <input type="number" id="customPrice" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" min="0" step="0.01">
-          </div>
-          <div class="flex gap-3">
-            <button type="button" id="cancelCustomBtn" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-bold transition">
-              Cancelar
-            </button>
-            <button type="submit" class="flex-1 bg-brand-orange text-white py-3 rounded-xl font-bold hover:bg-orange-600 transition">
-              Agregar
-            </button>
-          </div>
-        </form>
-      </div>
+  <div id="customProductModal" class="hidden fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4">
+    <div class="bg-white rounded-[32px] w-full max-w-md p-8">
+      <h2 class="text-xl font-black mb-6 uppercase">Producto Especial</h2>
+      <form id="customProductForm" class="space-y-4">
+        <input type="text" id="customName" placeholder="¿Qué necesitas?" required class="w-full bg-gray-100 border-none rounded-xl p-4">
+        <input type="number" id="customPrice" placeholder="Precio aprox. L." required class="w-full bg-gray-100 border-none rounded-xl p-4">
+        <div class="flex gap-3 pt-4">
+          <button type="button" id="cancelCustomBtn" class="flex-1 font-bold text-gray-400">Cancelar</button>
+          <button type="submit" class="flex-[2] bg-brand-orange text-white rounded-2xl font-black py-4">Agregar</button>
+        </div>
+      </form>
     </div>
   </div>
 
-<script>
+  <script>
+    // URL del Google Apps Script
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzmnCMSGJOo5cjFB424vQ-6jNRRBQKWS3wVJlw4U-f3e_7utcXCgWf3zdrEtEFKPhL-g/exec';
     
     let appData = {
       comercios: [],
       categorias: [],
       productos: [],
-      categoriasxcomercio: [],
       cart: [],
       currentComercio: null,
       selectedCategoria: null,
       userLocation: null,
-      userAddress: 'Obteniendo ubicación...',
+      userAddress: 'Ubicación no detectada',
       searchTermComercio: '',
       searchTermProducto: '',
       sortComercio: 'default',
-      sortProducto: 'default',
       comerciosConDistancia: []
     };
 
-    // Función para calcular distancia por carretera usando OSRM - OPTIMIZADA
-    async function calcularDistanciaCarretera(comercioGPS, usuarioGPS) {
-      try {
-        if (!comercioGPS || !usuarioGPS || comercioGPS === '' || usuarioGPS === '') {
-          return { exito: false };
-        }
+    // --- OPTIMIZACIÓN DE CÁLCULO DE DISTANCIA ---
 
-        const comercioStr = String(comercioGPS).trim().replace(/\s+/g, '');
-        const usuarioStr = String(usuarioGPS).trim().replace(/\s+/g, '');
-        
-        if (!comercioStr.includes(',') || !usuarioStr.includes(',')) {
-          return { exito: false };
-        }
-
-        const [comercioLat, comercioLon] = comercioStr.split(',').map(s => parseFloat(s.trim()));
-        const [usuarioLat, usuarioLon] = usuarioStr.split(',').map(s => parseFloat(s.trim()));
-        
-        if (isNaN(comercioLat) || isNaN(comercioLon) || isNaN(usuarioLat) || isNaN(usuarioLon)) {
-          return { exito: false };
-        }
-        
-        if (Math.abs(comercioLat) > 90 || Math.abs(comercioLon) > 180 || 
-            Math.abs(usuarioLat) > 90 || Math.abs(usuarioLon) > 180) {
-          return { exito: false };
-        }
-        
-        // OSRM espera: longitud,latitud
-        const url = `https://router.project-osrm.org/route/v1/driving/${comercioLon},${comercioLat};${usuarioLon},${usuarioLat}?overview=false`;
-        
-        // TIMEOUT DE 3 SEGUNDOS - No esperar más
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
-        
-        try {
-          const response = await fetch(url, { signal: controller.signal });
-          clearTimeout(timeoutId);
-          const data = await response.json();
-          
-          if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
-            const distanciaMetros = data.routes[0].distance;
-            const distanciaKm = (distanciaMetros / 1000).toFixed(1);
-            const duracionMinutos = Math.round(data.routes[0].duration / 60);
-            
-            return { distancia: distanciaKm, duracion: duracionMinutos, exito: true };
-          }
-          
-          return { exito: false };
-        } catch (fetchError) {
-          clearTimeout(timeoutId);
-          return { exito: false };
-        }
-      } catch (error) {
-        return { exito: false };
-      }
+    // 1. Haversine: Calcula distancia lineal (Offline y ultra rápido)
+    function getLinealDist(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
 
-    // OPTIMIZADO: Cálculo en PARALELO con límite de concurrencia
-    async function calcularDistanciasComercios() {
-      const comerciosFiltrados = appData.comercios.filter(c => c.CATEGORIA == appData.selectedCategoria);
-      
-      console.log('\n🚀 === CÁLCULO DE DISTANCIAS (OPTIMIZADO) ===');
-      console.log('📍 Usuario:', appData.userLocation);
-      console.log('🏪 Comercios:', comerciosFiltrados.length);
-      
-      if (!appData.userLocation) {
-        console.log('⚠️ Sin ubicación de usuario');
-        appData.comerciosConDistancia = comerciosFiltrados.map(c => ({...c, distancia: null, duracion: null}));
-        return;
-      }
-
-      // CALCULAR EN LOTES PARALELOS (5 a la vez para no sobrecargar)
-      const BATCH_SIZE = 5;
-      const resultados = [];
-      
-      for (let i = 0; i < comerciosFiltrados.length; i += BATCH_SIZE) {
-        const batch = comerciosFiltrados.slice(i, i + BATCH_SIZE);
-        console.log(`📦 Lote ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(comerciosFiltrados.length / BATCH_SIZE)}`);
+    // 2. OSRM con Caché: Calcula por carretera solo si es necesario
+    async function getRoadDist(comercioGPS, userGPS) {
+      try {
+        const cacheKey = `route_${comercioGPS}_${userGPS}`;
+        const cached = localStorage.getItem(cacheKey);
         
-        const promesasBatch = batch.map(async (comercio) => {
-          const gpsComercio = comercio['GPS COMERCIO'] || comercio['GPS_COMERCIO'] || comercio.GPS || comercio['GPS COORDENADAS'];
-          
-          if (gpsComercio && String(gpsComercio).trim() !== '') {
-            const resultado = await calcularDistanciaCarretera(gpsComercio, appData.userLocation);
-            return {
-              ...comercio,
-              distancia: resultado.exito ? resultado.distancia : null,
-              duracion: resultado.exito ? resultado.duracion : null
-            };
-          } else {
-            return {...comercio, distancia: null, duracion: null};
-          }
-        });
-        
-        const resultadosBatch = await Promise.all(promesasBatch);
-        resultados.push(...resultadosBatch);
-        
-        // Renderizar progresivamente para dar feedback visual
-        if (i === 0) {
-          appData.comerciosConDistancia = resultados;
-          renderComercios();
+        // Caché de 20 min para evitar llamadas repetitivas
+        if (cached) {
+          const { data, time } = JSON.parse(cached);
+          if (Date.now() - time < 1200000) return data;
         }
-      }
 
-      appData.comerciosConDistancia = resultados;
+        const [cLat, cLon] = comercioGPS.split(',').map(Number);
+        const [uLat, uLon] = userGPS.split(',').map(Number);
+
+        // Si la distancia lineal es > 40km, ni siquiera preguntamos a la API (filtro de seguridad)
+        if (getLinealDist(cLat, cLon, uLat, uLon) > 40) return { exito: false };
+
+        const url = `https://router.project-osrm.org/route/v1/driving/${cLon},${cLat};${uLon},${uLat}?overview=false`;
+        const res = await fetch(url);
+        const json = await res.json();
+
+        if (json.code === 'Ok' && json.routes?.length > 0) {
+          const result = {
+            km: (json.routes[0].distance / 1000).toFixed(1),
+            min: Math.round(json.routes[0].duration / 60) + 10, // +10 min de preparación
+            exito: true
+          };
+          localStorage.setItem(cacheKey, JSON.stringify({ data: result, time: Date.now() }));
+          return result;
+        }
+        return { exito: false };
+      } catch (e) { return { exito: false }; }
+    }
+
+    // 3. Procesador en lotes para no saturar la UI
+    async function processDistances() {
+      const filtered = appData.comercios.filter(c => c.CATEGORIA == appData.selectedCategoria);
       
-      const conDistancia = resultados.filter(c => c.distancia !== null).length;
-      console.log(`✅ ${conDistancia}/${comerciosFiltrados.length} calculadas`);
+      // Mostrar primero los comercios sin distancia para carga instantánea
+      appData.comerciosConDistancia = filtered.map(c => ({...c, distData: null}));
+      renderComercios();
+
+      if (!appData.userLocation) return;
+
+      // Calcular en paralelo
+      const promises = filtered.map(async (com) => {
+        const gps = com['GPS COMERCIO'] || com.GPS;
+        if (gps) {
+          const res = await getRoadDist(gps, appData.userLocation);
+          return { ...com, distData: res.exito ? res : null };
+        }
+        return { ...com, distData: null };
+      });
+
+      const results = await Promise.all(promises);
+      appData.comerciosConDistancia = results;
       
-      // Render final
+      // Si el orden es por distancia, re-renderizar
+      if (appData.sortComercio === 'distance') {
+        appData.comerciosConDistancia.sort((a, b) => {
+          if (!a.distData) return 1;
+          if (!b.distData) return -1;
+          return parseFloat(a.distData.km) - parseFloat(b.distData.km);
+        });
+      }
       renderComercios();
     }
 
-    // Obtener ubicación al cargar la página
-    function obtenerUbicacion() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            appData.userLocation = `${lat},${lon}`;
-            
-            console.log('📍 Ubicación usuario:', appData.userLocation);
-            
-            try {
-              const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
-              const data = await response.json();
-              
-              if (data.address) {
-                const ciudad = data.address.city || data.address.town || data.address.municipality || 'Honduras';
-                const estado = data.address.state || '';
-                appData.userAddress = `${ciudad}${estado ? ', ' + estado : ''}`;
-              } else {
-                appData.userAddress = 'Ubicación obtenida';
-              }
-            } catch (error) {
-              console.error('Error geocodificación:', error);
-              appData.userAddress = 'Ubicación obtenida';
-            }
-            
-            document.getElementById('locationText').textContent = appData.userAddress;
-          },
-          (error) => {
-            console.error('Error ubicación:', error);
-            appData.userAddress = 'Choloma, Cortés';
-            appData.userLocation = '15.6100,-87.9533';
-            document.getElementById('locationText').textContent = appData.userAddress;
-          },
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-      } else {
-        appData.userAddress = 'Choloma, Cortés';
-        appData.userLocation = '15.6100,-87.9533';
-        document.getElementById('locationText').textContent = appData.userAddress;
-      }
-    }
+    // --- LÓGICA DE NAVEGACIÓN Y RENDER ---
 
-    function getImageUrl(imageUrl, defaultText) {
-      if (!imageUrl || imageUrl.trim() === '') {
-        return `https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=${encodeURIComponent(defaultText)}`;
+    function getImg(url, alt) {
+      if (!url || url.length < 10) return `https://ui-avatars.com/api/?name=${alt}&background=FF8C00&color=fff`;
+      if (url.includes('drive.google.com')) {
+        const id = url.split('id=')[1] || url.split('/d/')[1]?.split('/')[0];
+        return `https://drive.google.com/uc?export=view&id=${id}`;
       }
-      
-      if (imageUrl.startsWith('COMERCIOS_Images/') || imageUrl.startsWith('data:image/') || imageUrl.includes('IMAGEN.')) {
-        return `https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=${encodeURIComponent(defaultText)}`;
-      }
-      
-      if (imageUrl.includes('drive.google.com')) {
-        let fileId = '';
-        if (imageUrl.includes('/file/d/')) {
-          fileId = imageUrl.split('/file/d/')[1].split('/')[0];
-        } else if (imageUrl.includes('?id=')) {
-          fileId = imageUrl.split('?id=')[1].split('&')[0];
-        } else if (imageUrl.includes('uc?id=')) {
-          fileId = imageUrl.split('uc?id=')[1].split('&')[0];
-        }
-        if (fileId) {
-          return `https://drive.google.com/uc?export=view&id=${fileId}`;
-        }
-      }
-      return imageUrl;
+      return url;
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
-      obtenerUbicacion();
-      
+      initLocation();
       try {
-        const response = await fetch(SCRIPT_URL + '?action=getData');
-        const data = await response.json();
-        loadApp(data);
-      } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('loading').innerHTML = `
-          <div class="text-center text-white">
-            <p class="font-bold mb-2 text-xl">Error al cargar datos</p>
-            <button onclick="location.reload()" class="mt-4 bg-white text-brand-orange px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition">
-              Reintentar
-            </button>
-          </div>
-        `;
-      }
+        const res = await fetch(SCRIPT_URL + '?action=getData');
+        const data = await res.json();
+        if (data.success) {
+          appData.comercios = data.comercios;
+          appData.categorias = data.categorias;
+          appData.productos = data.productos;
+          
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('categoriasSection').classList.remove('hidden');
+          
+          renderBanners();
+          renderCategorias();
+          setupEvents();
+        }
+      } catch (e) { alert("Error de conexión. Reintenta."); }
     });
 
-    function loadApp(data) {
-      if (!data.success) {
-        alert('Error al cargar datos: ' + data.error);
-        return;
+    function initLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+          appData.userLocation = `${pos.coords.latitude},${pos.coords.longitude}`;
+          document.getElementById('locationText').textContent = "Ubicación fijada";
+        });
       }
-
-      appData.comercios = data.comercios;
-      appData.categorias = data.categorias;
-      appData.productos = data.productos;
-      appData.categoriasxcomercio = data.categoriasxcomercio;
-
-      document.getElementById('loading').classList.add('hidden');
-      document.getElementById('categoriasSection').classList.remove('hidden');
-
-      renderBanners();
-      renderCategoriasCards();
-      setupEventListeners();
-      
-      autoScrollBanners();
-    }
-
-    function autoScrollBanners() {
-      const carousel = document.getElementById('bannerCarousel');
-      let scrollInterval = setInterval(() => {
-        const maxScroll = carousel.scrollWidth - carousel.clientWidth;
-        const currentScroll = carousel.scrollLeft;
-        
-        if (currentScroll >= maxScroll) {
-          carousel.scrollTo({ left: 0, behavior: 'smooth' });
-        } else {
-          carousel.scrollBy({ left: carousel.querySelector('.carousel-item').offsetWidth + 12, behavior: 'smooth' });
-        }
-      }, 4000);
-      
-      carousel.addEventListener('touchstart', () => clearInterval(scrollInterval));
-      carousel.addEventListener('mouseenter', () => clearInterval(scrollInterval));
-      carousel.addEventListener('mouseleave', () => {
-        scrollInterval = setInterval(() => {
-          const maxScroll = carousel.scrollWidth - carousel.clientWidth;
-          const currentScroll = carousel.scrollLeft;
-          
-          if (currentScroll >= maxScroll) {
-            carousel.scrollTo({ left: 0, behavior: 'smooth' });
-          } else {
-            carousel.scrollBy({ left: carousel.querySelector('.carousel-item').offsetWidth + 12, behavior: 'smooth' });
-          }
-        }, 4000);
-      });
     }
 
     function renderBanners() {
       const banners = [
-        { title: 'Envío Gratis', subtitle: 'En pedidos mayores a L.300', color: 'bg-gradient-to-r from-orange-500 to-red-500' },
-        { title: 'Nuevos Comercios', subtitle: 'Descubre más opciones', color: 'bg-gradient-to-r from-blue-500 to-purple-500' },
-        { title: 'Delivery Express', subtitle: 'En 30 minutos o menos', color: 'bg-gradient-to-r from-green-500 to-teal-500' }
+        { t: 'ENVÍO GRATIS', s: 'En pedidos seleccionados', c: 'from-orange-500 to-red-500' },
+        { t: 'MÁS RÁPIDO', s: 'Llegamos en tiempo récord', c: 'from-blue-600 to-indigo-700' }
       ];
+      const container = document.getElementById('bannerCarousel');
+      container.innerHTML = banners.map(b => `
+        <div class="carousel-item bg-gradient-to-br ${b.c} rounded-3xl p-8 text-white w-[85%] min-w-[280px]">
+          <h3 class="text-2xl font-black mb-1">${b.t}</h3>
+          <p class="text-xs font-bold opacity-80 uppercase tracking-widest">${b.s}</p>
+        </div>
+      `).join('');
+    }
 
-      const carousel = document.getElementById('bannerCarousel');
-      const dots = document.getElementById('carouselDots');
-
-      carousel.innerHTML = banners.map((banner, i) => `
-        <div class="carousel-item ${banner.color} rounded-2xl p-6 text-white w-[calc(100%-1rem)] min-w-[280px]">
-          <h3 class="text-2xl font-bold mb-1">${banner.title}</h3>
-          <p class="text-sm opacity-90">${banner.subtitle}</p>
+    function renderCategorias() {
+      const list = document.getElementById('categoriasList');
+      list.innerHTML = appData.categorias.map(cat => `
+        <div class="cat-card cursor-pointer group" data-id="${cat['🔒 Row ID'] || cat.ROWID}" data-name="${cat.CATEGORIA}">
+          <div class="bg-white rounded-2xl p-4 flex flex-col items-center shadow-sm group-hover:shadow-md transition group-active:scale-95">
+            <img src="${getImg(cat.IMAGEN, cat.CATEGORIA)}" class="w-12 h-12 object-contain mb-2">
+            <span class="text-[10px] font-black uppercase text-center text-gray-800">${cat.CATEGORIA}</span>
+          </div>
         </div>
       `).join('');
 
-      dots.innerHTML = banners.map((_, i) => `
-        <div class="carousel-dot ${i === 0 ? 'active' : ''}" data-index="${i}"></div>
-      `).join('');
-
-      carousel.addEventListener('scroll', () => {
-        const scrollLeft = carousel.scrollLeft;
-        const itemWidth = carousel.querySelector('.carousel-item').offsetWidth + 12;
-        const activeIndex = Math.round(scrollLeft / itemWidth);
-        
-        document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
-          dot.classList.toggle('active', i === activeIndex);
-        });
+      document.querySelectorAll('.cat-card').forEach(card => {
+        card.onclick = () => {
+          appData.selectedCategoria = card.dataset.id;
+          document.getElementById('categoriaTitulo').textContent = card.dataset.name;
+          document.getElementById('categoriasSection').classList.add('hidden');
+          document.getElementById('comerciosSection').classList.remove('hidden');
+          processDistances();
+        };
       });
     }
 
-    function renderCategoriasCards() {
-      const list = document.getElementById('categoriasList');
-      const loader = document.getElementById('categoriasLoader');
-      
-      loader.classList.remove('hidden');
-      loader.classList.add('grid');
-      list.innerHTML = '';
-      
-      setTimeout(() => {
-        loader.classList.add('hidden');
-        loader.classList.remove('grid');
-        
-        list.innerHTML = appData.categorias.map(cat => {
-          const categoriaRowId = cat['🔒 Row ID'] || cat['Row ID'] || cat.ROWID || '';
-          if (!categoriaRowId) return '';
-          
-          const imageUrl = getImageUrl(cat.IMAGEN, cat.CATEGORIA);
-          const placeholderUrl = 'https://via.placeholder.com/200/FF8C00/FFFFFF?text=' + encodeURIComponent(cat.CATEGORIA.substring(0, 2));
-          
-          return `
-            <div class="categoria-card cursor-pointer group fade-in" data-categoria="${cat.CATEGORIA}" data-rowid="${categoriaRowId}">
-              <div class="bg-orange-50 rounded-2xl p-4 flex flex-col items-center text-center transition group-hover:shadow-lg group-hover:scale-105">
-                <div class="w-16 h-16 mb-2 rounded-full overflow-hidden bg-white shadow-sm">
-                  <img src="${imageUrl}" alt="${cat.CATEGORIA}" class="w-full h-full object-cover" onerror="this.src='${placeholderUrl}'">
-                </div>
-                <p class="text-sm font-semibold text-gray-800">${cat.CATEGORIA}</p>
-              </div>
-            </div>
-          `;
-        }).filter(Boolean).join('');
-
-        document.querySelectorAll('.categoria-card').forEach(card => {
-          card.addEventListener('click', (e) => {
-            const categoria = e.currentTarget.dataset.categoria;
-            const rowId = e.currentTarget.dataset.rowid;
-            openCategoria(categoria, rowId);
-          });
-        });
-      }, 500);
-    }
-
-    async function openCategoria(nombreCategoria, rowId) {
-      appData.selectedCategoria = rowId;
-      document.getElementById('categoriasSection').classList.add('hidden');
-      document.getElementById('comerciosSection').classList.remove('hidden');
-      document.getElementById('categoriaTitulo').textContent = nombreCategoria;
-      
-      const loader = document.getElementById('comerciosLoader');
-      loader.classList.remove('hidden');
-      loader.classList.add('grid');
-      document.getElementById('comerciosList').innerHTML = '';
-      
-      await calcularDistanciasComercios();
-    }
-
     function renderComercios() {
-      let comerciosFiltrados = [...appData.comerciosConDistancia];
-      
-      if (appData.searchTermComercio) {
-        const searchLower = appData.searchTermComercio.toLowerCase();
-        comerciosFiltrados = comerciosFiltrados.filter(c => 
-          c.COMERCIO.toLowerCase().includes(searchLower) ||
-          (c.SECTOR && c.SECTOR.toLowerCase().includes(searchLower)) ||
-          (c.CIUDAD && c.CIUDAD.toLowerCase().includes(searchLower))
-        );
-      }
-      
-      if (appData.sortComercio === 'distance') {
-        comerciosFiltrados.sort((a, b) => {
-          if (a.distancia === null) return 1;
-          if (b.distancia === null) return -1;
-          return parseFloat(a.distancia) - parseFloat(b.distancia);
-        });
-      } else if (appData.sortComercio === 'name') {
-        comerciosFiltrados.sort((a, b) => a.COMERCIO.localeCompare(b.COMERCIO));
-      }
-      
       const list = document.getElementById('comerciosList');
-      const loader = document.getElementById('comerciosLoader');
+      document.getElementById('comerciosLoader').classList.add('hidden');
       
-      loader.classList.add('hidden');
-      loader.classList.remove('grid');
-      
-      if (comerciosFiltrados.length === 0) {
-        list.innerHTML = `
-          <div class="col-span-full text-center py-12">
-            <p class="text-gray-500 text-lg">😔 ${appData.searchTermComercio ? 'No se encontraron comercios' : 'No hay comercios disponibles'}</p>
-            ${appData.searchTermComercio ? '<p class="text-sm text-gray-400 mt-2">Intenta con otro término de búsqueda</p>' : ''}
-          </div>
-        `;
-        return;
+      let filtered = [...appData.comerciosConDistancia];
+      if (appData.searchTermComercio) {
+        filtered = filtered.filter(c => c.COMERCIO.toLowerCase().includes(appData.searchTermComercio.toLowerCase()));
       }
-      
-      list.innerHTML = comerciosFiltrados.map(c => {
-        const abierto = c['ABIERTO?'] === 'SI' || c['ABIERTO?'] === true || c['ABIERTO?'] === 'TRUE';
-        const imageUrl = getImageUrl(c.IMAGEN, c.COMERCIO);
-        const placeholderUrl = 'https://via.placeholder.com/300/1A1A1A/FFFFFF?text=' + encodeURIComponent(c.COMERCIO.substring(0, 2));
-        
+
+      list.innerHTML = filtered.map(c => {
+        const isOpen = c['ABIERTO?'] === 'SI' || c['ABIERTO?'] === true;
         return `
-          <div class="comercio-card bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer ${!abierto ? 'opacity-60' : ''} fade-in" data-id="${c.ID}">
-            <div class="relative">
-              <img src="${imageUrl}" alt="${c.COMERCIO}" class="w-full h-32 object-cover" onerror="this.src='${placeholderUrl}'">
-              ${c.distancia ? `
-                <div class="absolute top-2 right-2 distance-badge text-white px-2 py-1 rounded-lg text-xs font-bold">
-                  📍 ${c.distancia} km
+          <div class="com-card bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition cursor-pointer relative ${!isOpen ? 'grayscale opacity-70' : ''}" data-id="${c.ID}">
+            <div class="h-40 relative">
+              <img src="${getImg(c.IMAGEN, c.COMERCIO)}" class="w-full h-full object-cover">
+              ${c.distData ? `
+                <div class="absolute top-4 left-4 distance-badge text-white px-3 py-1.5 rounded-xl text-[10px] font-black">
+                  📍 ${c.distData.km} KM
                 </div>
               ` : ''}
-              ${!abierto ? '<div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center"><span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">Cerrado</span></div>' : ''}
+              ${!isOpen ? '<div class="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-black uppercase">Cerrado</div>' : ''}
             </div>
-            <div class="p-3">
-              <h3 class="font-bold text-sm mb-1">${c.COMERCIO}</h3>
-              <p class="text-xs text-gray-500">${c.SECTOR || c.CIUDAD || ''}</p>
-              ${c.duracion ? `<p class="text-xs text-blue-600 font-semibold mt-1">🚗 ${c.duracion} min aprox.</p>` : ''}
-              ${abierto ? '<p class="text-xs text-green-600 font-semibold mt-1">🟢 Abierto</p>' : ''}
+            <div class="p-6">
+              <h3 class="text-lg font-black mb-1">${c.COMERCIO}</h3>
+              <p class="text-xs text-gray-400 font-bold uppercase mb-3">${c.SECTOR || 'Honduras'}</p>
+              <div class="flex items-center gap-4">
+                <span class="text-[10px] font-black px-2 py-1 bg-green-100 text-green-600 rounded-md uppercase">Envío L.40</span>
+                ${c.distData ? `<span class="text-[10px] font-black px-2 py-1 bg-blue-100 text-blue-600 rounded-md uppercase">🕒 ${c.distData.min} MIN</span>` : ''}
+              </div>
             </div>
           </div>
         `;
       }).join('');
 
-      document.querySelectorAll('.comercio-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-          const id = e.currentTarget.dataset.id;
-          openComercio(id);
-        });
+      document.querySelectorAll('.com-card').forEach(card => {
+        card.onclick = () => openComercio(card.dataset.id);
       });
     }
 
     function openComercio(id) {
       appData.currentComercio = appData.comercios.find(c => c.ID == id);
-      if (!appData.currentComercio) return;
-
       document.getElementById('comerciosSection').classList.add('hidden');
       document.getElementById('productosSection').classList.remove('hidden');
-
-      const header = document.getElementById('comercioHeader');
-      const imageUrl = getImageUrl(appData.currentComercio.IMAGEN, appData.currentComercio.COMERCIO);
-      const iniciales = (appData.currentComercio.COMERCIO || 'C').substring(0, 2);
-      const placeholderUrl = 'https://via.placeholder.com/80/1A1A1A/FFFFFF?text=' + encodeURIComponent(iniciales);
       
-      header.innerHTML = `
-        <div class="flex items-center gap-4 fade-in">
-          <img src="${imageUrl}" alt="${appData.currentComercio.COMERCIO}" class="w-16 h-16 rounded-xl object-cover shadow-sm" onerror="this.src='${placeholderUrl}'">
-          <div>
-            <h2 class="text-xl font-bold">${appData.currentComercio.COMERCIO}</h2>
-            <p class="text-sm text-gray-600">${appData.currentComercio.DIRECCION || ''}</p>
-            <p class="text-xs text-gray-500">${appData.currentComercio.HORARIOS || ''}</p>
-          </div>
-        </div>
+      document.getElementById('comercioHeader').innerHTML = `
+        <h2 class="text-2xl font-black">${appData.currentComercio.COMERCIO}</h2>
+        <p class="text-xs text-gray-400 font-bold uppercase">${appData.currentComercio.DIRECCION || ''}</p>
       `;
-
       renderProductos();
     }
 
     function renderProductos() {
-      let productos = appData.productos.filter(p => p.COMERCIO == appData.currentComercio.ID);
-      
-      if (appData.searchTermProducto) {
-        const searchLower = appData.searchTermProducto.toLowerCase();
-        productos = productos.filter(p => 
-          p.NOMBRE.toLowerCase().includes(searchLower) ||
-          (p.DESCRIPCION && p.DESCRIPCION.toLowerCase().includes(searchLower))
-        );
-      }
-      
-      if (appData.sortProducto === 'price-asc') {
-        productos.sort((a, b) => parseFloat(a.PRECIO || 0) - parseFloat(b.PRECIO || 0));
-      } else if (appData.sortProducto === 'price-desc') {
-        productos.sort((a, b) => parseFloat(b.PRECIO || 0) - parseFloat(a.PRECIO || 0));
-      } else if (appData.sortProducto === 'name') {
-        productos.sort((a, b) => a.NOMBRE.localeCompare(b.NOMBRE));
-      }
-      
       const list = document.getElementById('productosList');
-      const loader = document.getElementById('productosLoader');
-
-      loader.classList.remove('hidden');
-      loader.classList.add('grid');
-      list.innerHTML = '';
+      const filtered = appData.productos.filter(p => p.COMERCIO == appData.currentComercio.ID);
       
-      setTimeout(() => {
-        loader.classList.add('hidden');
-        loader.classList.remove('grid');
-        
-        if (productos.length === 0) {
-          if (appData.searchTermProducto) {
-            list.innerHTML = `
-              <div class="col-span-full bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center fade-in">
-                <p class="text-lg font-semibold text-blue-800 mb-2">🔍 No se encontraron productos</p>
-                <p class="text-sm text-blue-700">Intenta con otro término de búsqueda o agrega un producto personalizado</p>
-              </div>
-            `;
-          } else {
-            list.innerHTML = `
-              <div class="col-span-full bg-yellow-50 border border-yellow-200 rounded-2xl p-6 text-center fade-in">
-                <p class="text-lg font-semibold text-yellow-800 mb-2">⚠️ Este comercio no tiene productos registrados</p>
-                <p class="text-sm text-yellow-700">Puedes agregar un producto personalizado</p>
-              </div>
-            `;
-          }
-          return;
-        }
-
-        list.innerHTML = productos.map(p => {
-          const imageUrl = getImageUrl(p.IMAGEN, p.NOMBRE);
-          const placeholderUrl = 'https://via.placeholder.com/300/FF8C00/FFFFFF?text=' + encodeURIComponent((p.NOMBRE || 'P').substring(0, 1));
-          
-          return `
-            <div class="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition fade-in">
-              <img src="${imageUrl}" alt="${p.NOMBRE}" class="w-full h-40 object-cover" onerror="this.src='${placeholderUrl}'">
-              <div class="p-4">
-                <h3 class="font-bold text-base mb-1">${p.NOMBRE}</h3>
-                <p class="text-sm text-gray-600 mb-3 line-clamp-2">${p.DESCRIPCION || ''}</p>
-                <div class="flex justify-between items-center">
-                  <span class="text-xl font-bold brand-orange">L.${parseFloat(p.PRECIO || 0).toFixed(2)}</span>
-                  <button class="add-to-cart bg-brand-orange text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-600 transition" data-producto='${JSON.stringify(p).replace(/'/g, "&#39;")}'>
-                    Agregar
-                  </button>
-                </div>
-              </div>
+      list.innerHTML = filtered.map(p => `
+        <div class="bg-white p-4 rounded-3xl shadow-sm flex items-center gap-4">
+          <img src="${getImg(p.IMAGEN, p.NOMBRE)}" class="w-20 h-20 rounded-2xl object-cover">
+          <div class="flex-1">
+            <h4 class="font-black text-sm uppercase">${p.NOMBRE}</h4>
+            <p class="text-[10px] text-gray-400 mb-2 line-clamp-1">${p.DESCRIPCION || ''}</p>
+            <div class="flex justify-between items-center">
+              <span class="font-black brand-orange">L.${p.PRECIO}</span>
+              <button class="add-btn bg-brand-orange text-white p-2 rounded-xl shadow-lg shadow-orange-100 active:scale-90 transition" data-p='${JSON.stringify(p)}'>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+              </button>
             </div>
-          `;
-        }).join('');
+          </div>
+        </div>
+      `).join('');
 
-        document.querySelectorAll('.add-to-cart').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            const producto = JSON.parse(e.target.dataset.producto.replace(/&#39;/g, "'"));
-            addToCart(producto);
-          });
-        });
-      }, 400);
-    }
-
-    function addToCart(producto) {
-      const comercio = appData.comercios.find(c => c.ID == producto.COMERCIO);
-      const productoConNombre = {
-        ...producto,
-        NOMBRE_COMERCIO: comercio ? comercio.COMERCIO : 'Desconocido'
-      };
-      
-      const existing = appData.cart.find(item => 
-        item.NOMBRE === producto.NOMBRE && item.COMERCIO === producto.COMERCIO
-      );
-      
-      if (existing) {
-        existing.cantidad++;
-      } else {
-        appData.cart.push({...productoConNombre, cantidad: 1});
-      }
-      updateCartUI();
-      
-      const btn = event.target;
-      const originalText = btn.textContent;
-      btn.textContent = '✓ Agregado';
-      btn.classList.add('bg-green-500');
-      btn.classList.remove('bg-brand-orange');
-      setTimeout(() => {
-        btn.textContent = originalText;
-        btn.classList.remove('bg-green-500');
-        btn.classList.add('bg-brand-orange');
-      }, 1000);
+      document.querySelectorAll('.add-btn').forEach(btn => {
+        btn.onclick = () => {
+          const prod = JSON.parse(btn.dataset.p);
+          const exist = appData.cart.find(item => item.ID == prod.ID);
+          if (exist) exist.qty++;
+          else appData.cart.push({...prod, qty: 1});
+          updateCartUI();
+        };
+      });
     }
 
     function updateCartUI() {
-      const count = appData.cart.reduce((sum, item) => sum + item.cantidad, 0);
-      const cartCountEl = document.getElementById('cartCount');
-      cartCountEl.textContent = count;
-      
-      cartCountEl.classList.add('scale-in');
-      setTimeout(() => cartCountEl.classList.remove('scale-in'), 200);
+      const count = appData.cart.reduce((s, i) => s + i.qty, 0);
+      document.getElementById('cartCount').textContent = count;
+      const total = appData.cart.reduce((s, i) => s + (i.PRECIO * i.qty), 0);
+      document.getElementById('cartTotal').textContent = total.toFixed(2);
     }
 
     function renderCart() {
       const container = document.getElementById('cartItems');
       if (appData.cart.length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-500 py-8">Tu carrito está vacío</p>';
-        document.getElementById('cartTotal').textContent = '0.00';
+        container.innerHTML = '<div class="text-center py-10 text-gray-400 font-bold uppercase text-xs">Tu carrito está vacío</div>';
         return;
       }
-
-      container.innerHTML = appData.cart.map((item, index) => `
-        <div class="flex gap-4 py-4 border-b last:border-0 fade-in">
-          <div class="flex-1">
-            <p class="font-bold">${item.NOMBRE || 'Producto'}</p>
-            <p class="text-sm text-gray-600">L.${parseFloat(item.PRECIO || 0).toFixed(2)} c/u</p>
-            ${item.DESCRIPCION ? `<p class="text-xs text-gray-500 mt-1">${item.DESCRIPCION}</p>` : ''}
+      container.innerHTML = appData.cart.map((item, idx) => `
+        <div class="flex justify-between items-center mb-4 bg-gray-50 p-4 rounded-2xl">
+          <div>
+            <p class="font-black text-xs uppercase">${item.NOMBRE}</p>
+            <p class="text-xs brand-orange font-bold">L.${item.PRECIO}</p>
           </div>
           <div class="flex items-center gap-3">
-            <button class="decrease-qty w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center font-bold" data-index="${index}">-</button>
-            <span class="font-bold w-8 text-center">${item.cantidad}</span>
-            <button class="increase-qty w-8 h-8 rounded-lg bg-brand-orange text-white hover:bg-orange-600 flex items-center justify-center font-bold" data-index="${index}">+</button>
-            <button class="remove-item text-red-500 hover:text-red-700 ml-2" data-index="${index}">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-              </svg>
-            </button>
+            <button class="w-8 h-8 bg-white rounded-lg shadow-sm font-black" onclick="changeQty(${idx}, -1)">-</button>
+            <span class="font-black text-sm">${item.qty}</span>
+            <button class="w-8 h-8 bg-brand-orange text-white rounded-lg shadow-sm font-black" onclick="changeQty(${idx}, 1)">+</button>
           </div>
         </div>
       `).join('');
-
-      const total = appData.cart.reduce((sum, item) => sum + (parseFloat(item.PRECIO || 0) * item.cantidad), 0);
-      document.getElementById('cartTotal').textContent = total.toFixed(2);
-
-      document.querySelectorAll('.increase-qty').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const index = e.target.closest('button').dataset.index;
-          appData.cart[index].cantidad++;
-          renderCart();
-          updateCartUI();
-        });
-      });
-
-      document.querySelectorAll('.decrease-qty').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const index = e.target.closest('button').dataset.index;
-          if (appData.cart[index].cantidad > 1) {
-            appData.cart[index].cantidad--;
-          } else {
-            appData.cart.splice(index, 1);
-          }
-          renderCart();
-          updateCartUI();
-        });
-      });
-
-      document.querySelectorAll('.remove-item').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const index = e.target.closest('button').dataset.index;
-          appData.cart.splice(index, 1);
-          renderCart();
-          updateCartUI();
-        });
-      });
     }
 
-    function setupEventListeners() {
-      document.getElementById('locationBtn').addEventListener('click', () => {
-        obtenerUbicacion();
-      });
+    window.changeQty = (idx, delta) => {
+      appData.cart[idx].qty += delta;
+      if (appData.cart[idx].qty <= 0) appData.cart.splice(idx, 1);
+      updateCartUI();
+      renderCart();
+    };
 
-      document.getElementById('searchComercio').addEventListener('input', (e) => {
-        appData.searchTermComercio = e.target.value;
-        renderComercios();
-      });
-
-      document.getElementById('sortComercio').addEventListener('change', (e) => {
-        appData.sortComercio = e.target.value;
-        renderComercios();
-      });
-
-      document.getElementById('searchProducto').addEventListener('input', (e) => {
-        appData.searchTermProducto = e.target.value;
-        renderProductos();
-      });
-
-      document.getElementById('sortProducto').addEventListener('change', (e) => {
-        appData.sortProducto = e.target.value;
-        renderProductos();
-      });
-
-      document.getElementById('backToCategorias').addEventListener('click', () => {
+    function setupEvents() {
+      document.getElementById('backToCategorias').onclick = () => {
         document.getElementById('comerciosSection').classList.add('hidden');
         document.getElementById('categoriasSection').classList.remove('hidden');
-        appData.selectedCategoria = null;
-        appData.searchTermComercio = '';
-        appData.sortComercio = 'default';
-        document.getElementById('searchComercio').value = '';
-        document.getElementById('sortComercio').value = 'default';
-      });
-
-      document.getElementById('cartBtn').addEventListener('click', () => {
-        document.getElementById('cartModal').classList.remove('hidden');
-        renderCart();
-      });
-
-      document.getElementById('closeCartBtn').addEventListener('click', () => {
-        document.getElementById('cartModal').classList.add('hidden');
-      });
-
-      document.getElementById('backBtn').addEventListener('click', () => {
+      };
+      
+      document.getElementById('backBtn').onclick = () => {
         document.getElementById('productosSection').classList.add('hidden');
         document.getElementById('comerciosSection').classList.remove('hidden');
-        appData.currentComercio = null;
-        appData.searchTermProducto = '';
-        appData.sortProducto = 'default';
-        document.getElementById('searchProducto').value = '';
-        document.getElementById('sortProducto').value = 'default';
-      });
-
-      document.getElementById('checkoutBtn').addEventListener('click', () => {
-        if (appData.cart.length === 0) {
-          alert('Tu carrito está vacío');
-          return;
-        }
-        document.getElementById('cartModal').classList.add('hidden');
-        document.getElementById('checkoutModal').classList.remove('hidden');
-      });
-
-      document.getElementById('cancelCheckoutBtn').addEventListener('click', () => {
-        document.getElementById('checkoutModal').classList.add('hidden');
-      });
-
-      document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await procesarPedido();
-      });
-
-      document.getElementById('customProductBtn').addEventListener('click', () => {
-        document.getElementById('customProductModal').classList.remove('hidden');
-      });
-
-      document.getElementById('cancelCustomBtn').addEventListener('click', () => {
-        document.getElementById('customProductModal').classList.add('hidden');
-        document.getElementById('customProductForm').reset();
-      });
-
-      document.getElementById('customProductForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const nombre = document.getElementById('customName').value;
-        const precio = document.getElementById('customPrice').value;
-        
-        addToCart({
-          NOMBRE: nombre,
-          PRECIO: precio,
-          COMERCIO: appData.currentComercio.ID,
-          NOMBRE_COMERCIO: appData.currentComercio.COMERCIO,
-          DESCRIPCION: 'Producto personalizado',
-          IMAGEN: ''
-        });
-
-        document.getElementById('customProductModal').classList.add('hidden');
-        document.getElementById('customProductForm').reset();
-      });
-    }
-
-    async function procesarPedido() {
-      const celular = document.getElementById('celular').value;
-      const direccion = document.getElementById('direccion').value;
-
-      if (!appData.userLocation) {
-        alert('Por favor espera mientras obtenemos tu ubicación');
-        obtenerUbicacion();
-        return;
-      }
-
-      const total = appData.cart.reduce((sum, item) => sum + (parseFloat(item.PRECIO || 0) * item.cantidad), 0);
-
-      const datos = {
-        celular,
-        direccion,
-        ubicacionGPS: appData.userLocation,
-        items: appData.cart.map(item => ({
-          nombre: item.NOMBRE || 'Producto',
-          precio: parseFloat(item.PRECIO || 0),
-          cantidad: item.cantidad,
-          descripcion: item.DESCRIPCION || ''
-        })),
-        total,
-        comercio: appData.currentComercio.COMERCIO,
-        whatsappComercio: appData.currentComercio.WHATSAPP || appData.currentComercio['NUMERO COMERCIO']
       };
 
-      const submitBtn = document.querySelector('#checkoutForm button[type="submit"]');
-      const originalText = submitBtn.textContent;
-      submitBtn.textContent = 'Procesando...';
-      submitBtn.disabled = true;
+      document.getElementById('cartBtn').onclick = () => {
+        renderCart();
+        document.getElementById('cartModal').classList.remove('hidden');
+      };
 
-      try {
-        let result = { success: true, idPedido: Date.now() };
-        
-        try {
-          await fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'registrarPedido', datos: datos })
-          });
-        } catch (err) {
-          console.warn('Error al guardar en Sheets:', err);
+      document.getElementById('closeCartBtn').onclick = () => document.getElementById('cartModal').classList.add('hidden');
+
+      document.getElementById('searchComercio').oninput = (e) => {
+        appData.searchTermComercio = e.target.value;
+        renderComercios();
+      };
+
+      document.getElementById('sortComercio').onchange = (e) => {
+        appData.sortComercio = e.target.value;
+        processDistances();
+      };
+
+      document.getElementById('checkoutBtn').onclick = () => {
+        if (appData.cart.length > 0) {
+          document.getElementById('cartModal').classList.add('hidden');
+          document.getElementById('checkoutModal').classList.remove('hidden');
         }
-        
-        finalizarPedido(result, datos);
-        
-      } catch (error) {
-        if (confirm('¿Deseas continuar y enviar por WhatsApp?')) {
-          finalizarPedido({ success: true, idPedido: Date.now() }, datos);
-        } else {
-          submitBtn.textContent = originalText;
-          submitBtn.disabled = false;
-        }
-      }
+      };
+
+      document.getElementById('cancelCheckoutBtn').onclick = () => document.getElementById('checkoutModal').classList.add('hidden');
+
+      document.getElementById('checkoutForm').onsubmit = (e) => {
+        e.preventDefault();
+        sendOrder();
+      };
+
+      document.getElementById('customProductBtn').onclick = () => document.getElementById('customProductModal').classList.remove('hidden');
+      document.getElementById('cancelCustomBtn').onclick = () => document.getElementById('customProductModal').classList.add('hidden');
+      document.getElementById('customProductForm').onsubmit = (e) => {
+        e.preventDefault();
+        const p = {
+          ID: 'custom_' + Date.now(),
+          NOMBRE: document.getElementById('customName').value,
+          PRECIO: document.getElementById('customPrice').value,
+          qty: 1
+        };
+        appData.cart.push(p);
+        updateCartUI();
+        document.getElementById('customProductModal').classList.add('hidden');
+        document.getElementById('customProductForm').reset();
+      };
     }
 
-    function finalizarPedido(result, datos) {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#FF8C00', '#FF6B00', '#FFD700', '#FFA500']
-      });
+    async function sendOrder() {
+      const cel = document.getElementById('celular').value;
+      const dir = document.getElementById('direccion').value;
+      const total = appData.cart.reduce((s, i) => s + (i.PRECIO * i.qty), 0);
       
+      const itemsText = appData.cart.map(i => `${i.qty}x ${i.NOMBRE} (L.${i.PRECIO})`).join('\n');
+      const mensaje = `🛵 *NUEVO PEDIDO SOMAR EXPRESS*\n\n` +
+                      `*Comercio:* ${appData.currentComercio.COMERCIO}\n` +
+                      `*Productos:*\n${itemsText}\n\n` +
+                      `*Total: L.${total.toFixed(2)}*\n\n` +
+                      `*Cliente:* ${cel}\n` +
+                      `*Dirección:* ${dir}\n` +
+                      `*GPS:* ${appData.userLocation || 'No disponible'}`;
+
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+
       setTimeout(() => {
-        confetti({
-          particleCount: 50,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0 },
-          colors: ['#FF8C00', '#FF6B00', '#FFD700']
-        });
-      }, 250);
-      
-      setTimeout(() => {
-        confetti({
-          particleCount: 50,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1 },
-          colors: ['#FF8C00', '#FF6B00', '#FFD700']
-        });
-      }, 400);
-
-      const itemsTexto = datos.items.map(item => 
-        `${item.cantidad}x ${item.nombre} - L.${(item.precio * item.cantidad).toFixed(2)}`
-      ).join('\n');
-
-      const mensaje = 
-        `🛵 *NUEVO PEDIDO SOMAR EXPRESS*\n\n` +
-        `*Pedido #${result.idPedido}*\n` +
-        `*Comercio:* ${datos.comercio}\n\n` +
-        `*PRODUCTOS:*\n${itemsTexto}\n\n` +
-        `*TOTAL: L.${datos.total.toFixed(2)}*\n\n` +
-        `*DATOS DEL CLIENTE:*\n` +
-        `📱 ${datos.celular}\n` +
-        `📍 ${datos.direccion}\n` +
-        `🗺️ GPS: ${datos.ubicacionGPS}`;
-
-      const mensajeCodificado = encodeURIComponent(mensaje);
-      let whatsappNumber = (datos.whatsappComercio || '').toString().replace(/[^0-9]/g, '');
-      
-      if (whatsappNumber && whatsappNumber.length >= 8) {
-        if (!whatsappNumber.startsWith('504') && whatsappNumber.length === 8) {
-          whatsappNumber = '504' + whatsappNumber;
-        }
-        window.open(`https://wa.me/${whatsappNumber}?text=${mensajeCodificado}`, '_blank');
-      }
-
-      appData.cart = [];
-      updateCartUI();
-      document.getElementById('checkoutModal').classList.add('hidden');
-      document.getElementById('checkoutForm').reset();
+        let wa = (appData.currentComercio.WHATSAPP || '50499999999').toString().replace(/\D/g, '');
+        if (wa.length === 8) wa = '504' + wa;
+        window.open(`https://wa.me/${wa}?text=${encodeURIComponent(mensaje)}`, '_blank');
+        location.reload();
+      }, 2000);
     }
   </script>
 </body>
