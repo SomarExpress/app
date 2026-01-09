@@ -1206,7 +1206,7 @@
       });
     }
 
-    async function procesarPedido() {
+  async function procesarPedido() {
       const celular = document.getElementById('celular').value;
       const direccion = document.getElementById('direccion').value;
 
@@ -1239,17 +1239,18 @@
       submitBtn.disabled = true;
 
       try {
-        // Registrar pedido en Google Sheets
-        await fetch(SCRIPT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'registrarPedido', datos: datos })
-        });
-
         // Generar ID del pedido
         const result = { success: true, idPedido: Date.now() };
         
-        // Finalizar y enviar por WhatsApp vía BuilderBot
+        // Registrar pedido en Google Sheets (modo no-cors)
+        fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors', // ← IMPORTANTE
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'registrarPedido', datos: datos })
+        }).catch(err => console.warn('Error registro Sheets:', err));
+        
+        // Finalizar y enviar por WhatsApp
         await finalizarPedido(result, datos);
         
       } catch (error) {
