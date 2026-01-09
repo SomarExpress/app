@@ -475,61 +475,116 @@
       comerciosConDistancia: []
     };
 
-    // Función para calcular distancia por carretera usando OSRM
+    // Función para calcular distancia por carretera usando OSRM - OPTIMIZADA
     async function calcularDistanciaCarretera(comercioGPS, usuarioGPS) {
       try {
         if (!comercioGPS || !usuarioGPS || comercioGPS === '' || usuarioGPS === '') {
           return { exito: false };
         }
 
-        // Limpiar coordenadas - REMOVER TODOS LOS ESPACIOS
         const comercioStr = String(comercioGPS).trim().replace(/\s+/g, '');
         const usuarioStr = String(usuarioGPS).trim().replace(/\s+/g, '');
         
-        // Validar formato básico
         if (!comercioStr.includes(',') || !usuarioStr.includes(',')) {
-          console.log('❌ Formato GPS inválido');
           return { exito: false };
         }
 
         const [comercioLat, comercioLon] = comercioStr.split(',').map(s => parseFloat(s.trim()));
         const [usuarioLat, usuarioLon] = usuarioStr.split(',').map(s => parseFloat(s.trim()));
         
-        // Validar que sean números válidos
         if (isNaN(comercioLat) || isNaN(comercioLon) || isNaN(usuarioLat) || isNaN(usuarioLon)) {
-          console.log('❌ Coordenadas no son números válidos');
           return { exito: false };
         }
         
-        // Validar rangos de coordenadas (Honduras aproximadamente)
         if (Math.abs(comercioLat) > 90 || Math.abs(comercioLon) > 180 || 
             Math.abs(usuarioLat) > 90 || Math.abs(usuarioLon) > 180) {
-          console.log('❌ Coordenadas fuera de rango');
           return { exito: false };
         }
         
         // OSRM espera: longitud,latitud
         const url = `https://router.project-osrm.org/route/v1/driving/${comercioLon},${comercioLat};${usuarioLon},${usuarioLat}?overview=false`;
         
-        const response = await fetch(url);
-        const data = await response.json();
+        // TIMEOUT DE 3 SEGUNDOS - No esperar más
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
         
-        if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
-          const distanciaMetros = data.routes[0].distance;
-          const distanciaKm = (distanciaMetros / 1000).toFixed(1);
-          const duracionMinutos = Math.round(data.routes[0].duration / 60);
+        try {
+          const response = await fetch(url, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          const data = await response.json();
           
-          console.log(`✅ ${distanciaKm} km, ${duracionMinutos} min`);
+          if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+            const distanciaMetros = data.routes[0].distance;
+            const distanciaKm = (distanciaMetros / 1000).toFixed(1);
+            const duracionMinutos = Math.round(data.routes[0].duration / 60);
+            
+            return { distancia: distanciaKm, duracion: duracionMinutos, exito: true };
+          }
           
-          return { distancia: distanciaKm, duracion: duracionMinutos, exito: true };
+          return { exito: false };
+        } catch (fetchError) {
+          clearTimeout(timeoutId);
+          return { exito: false };
         }
-        
-        console.log('❌ OSRM no retornó rutas:', data.code);
-        return { exito: false };
       } catch (error) {
-        console.error('❌ Error calculando distancia:', error);
         return { exito: false };
       }
+    }
+
+    // OPTIMIZADO: Cálculo en PARALELO con límite de concurrencia
+    async function calcularDistanciasComercios() {
+      const comerciosFiltrados = appData.comercios.filter(c => c.CATEGORIA == appData.selectedCategoria);
+      
+      console.log('\n🚀 === CÁLCULO DE DISTANCIAS (OPTIMIZADO) ===');
+      console.log('📍 Usuario:', appData.userLocation);
+      console.log('🏪 Comercios:', comerciosFiltrados.length);
+      
+      if (!appData.userLocation) {
+        console.log('⚠️ Sin ubicación de usuario');
+        appData.comerciosConDistancia = comerciosFiltrados.map(c => ({...c, distancia: null, duracion: null}));
+        return;
+      }
+
+      // CALCULAR EN LOTES PARALELOS (5 a la vez para no sobrecargar)
+      const BATCH_SIZE = 5;
+      const resultados = [];
+      
+      for (let i = 0; i < comerciosFiltrados.length; i += BATCH_SIZE) {
+        const batch = comerciosFiltrados.slice(i, i + BATCH_SIZE);
+        console.log(`📦 Lote ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(comerciosFiltrados.length / BATCH_SIZE)}`);
+        
+        const promesasBatch = batch.map(async (comercio) => {
+          const gpsComercio = comercio['GPS COMERCIO'] || comercio['GPS_COMERCIO'] || comercio.GPS || comercio['GPS COORDENADAS'];
+          
+          if (gpsComercio && String(gpsComercio).trim() !== '') {
+            const resultado = await calcularDistanciaCarretera(gpsComercio, appData.userLocation);
+            return {
+              ...comercio,
+              distancia: resultado.exito ? resultado.distancia : null,
+              duracion: resultado.exito ? resultado.duracion : null
+            };
+          } else {
+            return {...comercio, distancia: null, duracion: null};
+          }
+        });
+        
+        const resultadosBatch = await Promise.all(promesasBatch);
+        resultados.push(...resultadosBatch);
+        
+        // Renderizar progresivamente para dar feedback visual
+        if (i === 0) {
+          appData.comerciosConDistancia = resultados;
+          renderComercios();
+        }
+      }
+
+      appData.comerciosConDistancia = resultados;
+      
+      const conDistancia = resultados.filter(c => c.distancia !== null).length;
+      console.log(`✅ ${conDistancia}/${comerciosFiltrados.length} calculadas`);
+      
+      // Render final
+      renderComercios();
     }
 
     // Obtener ubicación al cargar la página
@@ -564,7 +619,7 @@
           (error) => {
             console.error('Error ubicación:', error);
             appData.userAddress = 'Choloma, Cortés';
-            appData.userLocation = '15.6100,-87.9533'; // Coordenadas de Choloma
+            appData.userLocation = '15.6100,-87.9533';
             document.getElementById('locationText').textContent = appData.userAddress;
           },
           { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -756,47 +811,6 @@
       document.getElementById('comerciosList').innerHTML = '';
       
       await calcularDistanciasComercios();
-      renderComercios();
-    }
-
-    async function calcularDistanciasComercios() {
-      const comerciosFiltrados = appData.comercios.filter(c => c.CATEGORIA == appData.selectedCategoria);
-      
-      console.log('\n🚀 === CÁLCULO DE DISTANCIAS ===');
-      console.log('📍 Usuario:', appData.userLocation);
-      console.log('🏪 Comercios:', comerciosFiltrados.length);
-      
-      if (!appData.userLocation) {
-        console.log('⚠️ Sin ubicación de usuario');
-        appData.comerciosConDistancia = comerciosFiltrados.map(c => ({...c, distancia: null, duracion: null}));
-        return;
-      }
-
-      const promesas = comerciosFiltrados.map(async (comercio, index) => {
-        console.log(`\n[${index + 1}/${comerciosFiltrados.length}] ${comercio.COMERCIO}`);
-        
-        // BUSCAR EN MÚLTIPLES NOMBRES DE COLUMNA POSIBLES
-        const gpsComercio = comercio['GPS COMERCIO'] || comercio['GPS_COMERCIO'] || comercio.GPS || comercio['GPS COORDENADAS'];
-        
-        console.log('   GPS Comercio:', gpsComercio);
-        
-        if (gpsComercio && String(gpsComercio).trim() !== '') {
-          const resultado = await calcularDistanciaCarretera(gpsComercio, appData.userLocation);
-          return {
-            ...comercio,
-            distancia: resultado.exito ? resultado.distancia : null,
-            duracion: resultado.exito ? resultado.duracion : null
-          };
-        } else {
-          console.log('   ⚠️ Sin GPS');
-          return {...comercio, distancia: null, duracion: null};
-        }
-      });
-
-      appData.comerciosConDistancia = await Promise.all(promesas);
-      
-      const conDistancia = appData.comerciosConDistancia.filter(c => c.distancia !== null).length;
-      console.log(`\n✅ ${conDistancia}/${comerciosFiltrados.length} con distancia calculada`);
     }
 
     function renderComercios() {
