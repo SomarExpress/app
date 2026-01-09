@@ -1317,9 +1317,10 @@
         try {
           console.log('📤 Enviando confirmación al cliente:', numeroCliente);
           
-          // ENVIAR VÍA GOOGLE APPS SCRIPT (Proxy Seguro) - AL CLIENTE
-          const response = await fetch(SCRIPT_URL, {
+          // ENVIAR VÍA GOOGLE APPS SCRIPT (modo no-cors)
+          fetch(SCRIPT_URL, {
             method: 'POST',
+            mode: 'no-cors', // ← IMPORTANTE
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               action: 'enviarWhatsApp',
@@ -1327,9 +1328,13 @@
               mensaje: mensajeCompleto,
               imagenUrl: 'https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png'
             })
-          });
+          }).catch(err => console.warn('Error envío WhatsApp:', err));
 
-          console.log('✅ Confirmación enviada al cliente');
+          console.log('✅ Solicitud de confirmación enviada');
+          
+          // Esperar 2 segundos para que se procese
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
           alert('✅ ¡Pedido confirmado!\n\nRecibirás un mensaje de confirmación en WhatsApp.');
           
         } catch (error) {
