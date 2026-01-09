@@ -478,57 +478,56 @@
     // Función para calcular distancia por carretera usando OSRM
     async function calcularDistanciaCarretera(comercioGPS, usuarioGPS) {
       try {
-        if (!comercioGPS || !usuarioGPS) {
-          console.log('GPS faltante:', {comercioGPS, usuarioGPS});
+        if (!comercioGPS || !usuarioGPS || comercioGPS === '' || usuarioGPS === '') {
           return { exito: false };
         }
 
-        // Limpiar y validar coordenadas del comercio
-        const comercioCoords = comercioGPS.toString().trim().split(',');
-        if (comercioCoords.length !== 2) {
-          console.log('Formato GPS comercio inválido:', comercioGPS);
+        // Limpiar coordenadas - REMOVER TODOS LOS ESPACIOS
+        const comercioStr = String(comercioGPS).trim().replace(/\s+/g, '');
+        const usuarioStr = String(usuarioGPS).trim().replace(/\s+/g, '');
+        
+        // Validar formato básico
+        if (!comercioStr.includes(',') || !usuarioStr.includes(',')) {
+          console.log('❌ Formato GPS inválido');
           return { exito: false };
         }
-        const [comercioLat, comercioLon] = comercioCoords.map(s => s.trim());
+
+        const [comercioLat, comercioLon] = comercioStr.split(',').map(s => parseFloat(s.trim()));
+        const [usuarioLat, usuarioLon] = usuarioStr.split(',').map(s => parseFloat(s.trim()));
         
-        // Limpiar y validar coordenadas del usuario
-        const usuarioCoords = usuarioGPS.toString().trim().split(',');
-        if (usuarioCoords.length !== 2) {
-          console.log('Formato GPS usuario inválido:', usuarioGPS);
-          return { exito: false };
-        }
-        const [usuarioLat, usuarioLon] = usuarioCoords.map(s => s.trim());
-        
-        // Validar que sean números
+        // Validar que sean números válidos
         if (isNaN(comercioLat) || isNaN(comercioLon) || isNaN(usuarioLat) || isNaN(usuarioLon)) {
-          console.log('Coordenadas no numéricas');
+          console.log('❌ Coordenadas no son números válidos');
           return { exito: false };
         }
         
-        // OSRM espera: longitud,latitud (no latitud,longitud)
-        const url = `https://router.project-osrm.org/route/v1/driving/${comercioLon},${comercioLat};${usuarioLon},${usuarioLat}?overview=false`;
+        // Validar rangos de coordenadas (Honduras aproximadamente)
+        if (Math.abs(comercioLat) > 90 || Math.abs(comercioLon) > 180 || 
+            Math.abs(usuarioLat) > 90 || Math.abs(usuarioLon) > 180) {
+          console.log('❌ Coordenadas fuera de rango');
+          return { exito: false };
+        }
         
-        console.log('URL OSRM:', url);
+        // OSRM espera: longitud,latitud
+        const url = `https://router.project-osrm.org/route/v1/driving/${comercioLon},${comercioLat};${usuarioLon},${usuarioLat}?overview=false`;
         
         const response = await fetch(url);
         const data = await response.json();
-        
-        console.log('Respuesta OSRM:', data);
         
         if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
           const distanciaMetros = data.routes[0].distance;
           const distanciaKm = (distanciaMetros / 1000).toFixed(1);
           const duracionMinutos = Math.round(data.routes[0].duration / 60);
           
-          console.log('Distancia calculada:', {distanciaKm, duracionMinutos});
+          console.log(`✅ ${distanciaKm} km, ${duracionMinutos} min`);
           
           return { distancia: distanciaKm, duracion: duracionMinutos, exito: true };
         }
         
-        console.log('OSRM no retornó rutas válidas');
+        console.log('❌ OSRM no retornó rutas:', data.code);
         return { exito: false };
       } catch (error) {
-        console.error('Error calculando distancia:', error);
+        console.error('❌ Error calculando distancia:', error);
         return { exito: false };
       }
     }
@@ -542,7 +541,7 @@
             const lon = position.coords.longitude;
             appData.userLocation = `${lat},${lon}`;
             
-            console.log('Ubicación usuario obtenida:', appData.userLocation);
+            console.log('📍 Ubicación usuario:', appData.userLocation);
             
             try {
               const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
@@ -564,13 +563,15 @@
           },
           (error) => {
             console.error('Error ubicación:', error);
-            appData.userAddress = 'Tegucigalpa, HN';
+            appData.userAddress = 'Choloma, Cortés';
+            appData.userLocation = '15.6100,-87.9533'; // Coordenadas de Choloma
             document.getElementById('locationText').textContent = appData.userAddress;
           },
           { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
       } else {
-        appData.userAddress = 'Tegucigalpa, HN';
+        appData.userAddress = 'Choloma, Cortés';
+        appData.userLocation = '15.6100,-87.9533';
         document.getElementById('locationText').textContent = appData.userAddress;
       }
     }
@@ -638,7 +639,6 @@
       renderCategoriasCards();
       setupEventListeners();
       
-      // Iniciar auto-scroll del carrusel de banners
       autoScrollBanners();
     }
 
@@ -655,7 +655,6 @@
         }
       }, 4000);
       
-      // Pausar al interactuar
       carousel.addEventListener('touchstart', () => clearInterval(scrollInterval));
       carousel.addEventListener('mouseenter', () => clearInterval(scrollInterval));
       carousel.addEventListener('mouseleave', () => {
@@ -708,12 +707,13 @@
       const list = document.getElementById('categoriasList');
       const loader = document.getElementById('categoriasLoader');
       
-      // Mostrar skeleton
       loader.classList.remove('hidden');
+      loader.classList.add('grid');
       list.innerHTML = '';
       
       setTimeout(() => {
         loader.classList.add('hidden');
+        loader.classList.remove('grid');
         
         list.innerHTML = appData.categorias.map(cat => {
           const categoriaRowId = cat['🔒 Row ID'] || cat['Row ID'] || cat.ROWID || '';
@@ -750,8 +750,9 @@
       document.getElementById('comerciosSection').classList.remove('hidden');
       document.getElementById('categoriaTitulo').textContent = nombreCategoria;
       
-      // Mostrar skeleton mientras se calculan distancias
-      document.getElementById('comerciosLoader').classList.remove('hidden');
+      const loader = document.getElementById('comerciosLoader');
+      loader.classList.remove('hidden');
+      loader.classList.add('grid');
       document.getElementById('comerciosList').innerHTML = '';
       
       await calcularDistanciasComercios();
@@ -761,46 +762,46 @@
     async function calcularDistanciasComercios() {
       const comerciosFiltrados = appData.comercios.filter(c => c.CATEGORIA == appData.selectedCategoria);
       
-      console.log('=== INICIANDO CÁLCULO DE DISTANCIAS ===');
-      console.log('Ubicación usuario:', appData.userLocation);
-      console.log('Total comercios a calcular:', comerciosFiltrados.length);
+      console.log('\n🚀 === CÁLCULO DE DISTANCIAS ===');
+      console.log('📍 Usuario:', appData.userLocation);
+      console.log('🏪 Comercios:', comerciosFiltrados.length);
       
       if (!appData.userLocation) {
-        console.log('Sin ubicación de usuario, saltando cálculo');
+        console.log('⚠️ Sin ubicación de usuario');
         appData.comerciosConDistancia = comerciosFiltrados.map(c => ({...c, distancia: null, duracion: null}));
         return;
       }
 
-      const promesas = comerciosFiltrados.map(async (comercio) => {
-        console.log(`\n--- Comercio: ${comercio.COMERCIO} ---`);
-        console.log('GPS Comercio:', comercio.GPS);
+      const promesas = comerciosFiltrados.map(async (comercio, index) => {
+        console.log(`\n[${index + 1}/${comerciosFiltrados.length}] ${comercio.COMERCIO}`);
         
-        if (comercio.GPS && comercio.GPS.toString().trim() !== '') {
-          const resultado = await calcularDistanciaCarretera(comercio.GPS, appData.userLocation);
-          console.log('Resultado:', resultado);
-          
+        // BUSCAR EN MÚLTIPLES NOMBRES DE COLUMNA POSIBLES
+        const gpsComercio = comercio['GPS COMERCIO'] || comercio['GPS_COMERCIO'] || comercio.GPS || comercio['GPS COORDENADAS'];
+        
+        console.log('   GPS Comercio:', gpsComercio);
+        
+        if (gpsComercio && String(gpsComercio).trim() !== '') {
+          const resultado = await calcularDistanciaCarretera(gpsComercio, appData.userLocation);
           return {
             ...comercio,
             distancia: resultado.exito ? resultado.distancia : null,
             duracion: resultado.exito ? resultado.duracion : null
           };
         } else {
-          console.log('Comercio sin GPS');
+          console.log('   ⚠️ Sin GPS');
           return {...comercio, distancia: null, duracion: null};
         }
       });
 
       appData.comerciosConDistancia = await Promise.all(promesas);
       
-      console.log('\n=== RESUMEN FINAL ===');
-      console.log('Comercios con distancia calculada:', appData.comerciosConDistancia.filter(c => c.distancia !== null).length);
-      console.log('Comercios sin distancia:', appData.comerciosConDistancia.filter(c => c.distancia === null).length);
+      const conDistancia = appData.comerciosConDistancia.filter(c => c.distancia !== null).length;
+      console.log(`\n✅ ${conDistancia}/${comerciosFiltrados.length} con distancia calculada`);
     }
 
     function renderComercios() {
       let comerciosFiltrados = [...appData.comerciosConDistancia];
       
-      // Filtrar por búsqueda
       if (appData.searchTermComercio) {
         const searchLower = appData.searchTermComercio.toLowerCase();
         comerciosFiltrados = comerciosFiltrados.filter(c => 
@@ -810,7 +811,6 @@
         );
       }
       
-      // Ordenar
       if (appData.sortComercio === 'distance') {
         comerciosFiltrados.sort((a, b) => {
           if (a.distancia === null) return 1;
@@ -825,6 +825,7 @@
       const loader = document.getElementById('comerciosLoader');
       
       loader.classList.add('hidden');
+      loader.classList.remove('grid');
       
       if (comerciosFiltrados.length === 0) {
         list.innerHTML = `
@@ -840,8 +841,6 @@
         const abierto = c['ABIERTO?'] === 'SI' || c['ABIERTO?'] === true || c['ABIERTO?'] === 'TRUE';
         const imageUrl = getImageUrl(c.IMAGEN, c.COMERCIO);
         const placeholderUrl = 'https://via.placeholder.com/300/1A1A1A/FFFFFF?text=' + encodeURIComponent(c.COMERCIO.substring(0, 2));
-        
-        console.log(`Renderizando ${c.COMERCIO} - Distancia: ${c.distancia}, Duración: ${c.duracion}`);
         
         return `
           <div class="comercio-card bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer ${!abierto ? 'opacity-60' : ''} fade-in" data-id="${c.ID}">
@@ -901,7 +900,6 @@
     function renderProductos() {
       let productos = appData.productos.filter(p => p.COMERCIO == appData.currentComercio.ID);
       
-      // Filtrar por búsqueda
       if (appData.searchTermProducto) {
         const searchLower = appData.searchTermProducto.toLowerCase();
         productos = productos.filter(p => 
@@ -910,7 +908,6 @@
         );
       }
       
-      // Ordenar productos
       if (appData.sortProducto === 'price-asc') {
         productos.sort((a, b) => parseFloat(a.PRECIO || 0) - parseFloat(b.PRECIO || 0));
       } else if (appData.sortProducto === 'price-desc') {
@@ -922,12 +919,13 @@
       const list = document.getElementById('productosList');
       const loader = document.getElementById('productosLoader');
 
-      // Mostrar skeleton
       loader.classList.remove('hidden');
+      loader.classList.add('grid');
       list.innerHTML = '';
       
       setTimeout(() => {
         loader.classList.add('hidden');
+        loader.classList.remove('grid');
         
         if (productos.length === 0) {
           if (appData.searchTermProducto) {
@@ -960,7 +958,7 @@
                 <p class="text-sm text-gray-600 mb-3 line-clamp-2">${p.DESCRIPCION || ''}</p>
                 <div class="flex justify-between items-center">
                   <span class="text-xl font-bold brand-orange">L.${parseFloat(p.PRECIO || 0).toFixed(2)}</span>
-                  <button class="add-to-cart bg-brand-orange text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-600 transition" data-producto='${JSON.stringify(p)}'>
+                  <button class="add-to-cart bg-brand-orange text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-600 transition" data-producto='${JSON.stringify(p).replace(/'/g, "&#39;")}'>
                     Agregar
                   </button>
                 </div>
@@ -971,7 +969,7 @@
 
         document.querySelectorAll('.add-to-cart').forEach(btn => {
           btn.addEventListener('click', (e) => {
-            const producto = JSON.parse(e.target.dataset.producto);
+            const producto = JSON.parse(e.target.dataset.producto.replace(/&#39;/g, "'"));
             addToCart(producto);
           });
         });
@@ -996,13 +994,15 @@
       }
       updateCartUI();
       
-      // Animación de feedback
       const btn = event.target;
+      const originalText = btn.textContent;
       btn.textContent = '✓ Agregado';
       btn.classList.add('bg-green-500');
+      btn.classList.remove('bg-brand-orange');
       setTimeout(() => {
-        btn.textContent = 'Agregar';
+        btn.textContent = originalText;
         btn.classList.remove('bg-green-500');
+        btn.classList.add('bg-brand-orange');
       }, 1000);
     }
 
@@ -1011,7 +1011,6 @@
       const cartCountEl = document.getElementById('cartCount');
       cartCountEl.textContent = count;
       
-      // Animación del contador
       cartCountEl.classList.add('scale-in');
       setTimeout(() => cartCountEl.classList.remove('scale-in'), 200);
     }
@@ -1238,7 +1237,6 @@
     }
 
     function finalizarPedido(result, datos) {
-      // CONFETTI ANIMATION
       confetti({
         particleCount: 100,
         spread: 70,
