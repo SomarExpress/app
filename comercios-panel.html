@@ -23,6 +23,12 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
+
+
+    #updateNotification {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
     .brand-orange { color: #FF8C00; }
     .bg-brand-orange { background-color: #FF8C00; }
     
@@ -1516,19 +1522,88 @@ function calcularTarifaOtrasCiudades(km) {
     });
   </script>
 
-<!-- Service Worker Registration -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js')
-          .then((registration) => {
-            console.log('✅ Service Worker registrado:', registration);
-          })
-          .catch((error) => {
-            console.log('❌ Error al registrar Service Worker:', error);
+// ============================================
+// SERVICE WORKER CON ACTUALIZACIÓN AUTOMÁTICA
+// ============================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then((registration) => {
+        console.log('✅ Service Worker registrado');
+
+        // Verificar actualizaciones cada 5 minutos
+        setInterval(() => {
+          registration.update();
+        }, 5 * 60 * 1000);
+
+        // Detectar cuando hay nueva versión
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          console.log('🔄 Nueva versión encontrada...');
+
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // Nueva versión lista
+              mostrarNotificacionActualizacion();
+            }
           });
+        });
+      })
+      .catch((error) => {
+        console.log('❌ Error al registrar Service Worker:', error);
       });
-    }
+
+    // Detectar cuando el Service Worker toma control
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      console.log('🔄 Recargando para aplicar actualización...');
+      window.location.reload();
+    });
+  });
+}
+
+// Mostrar notificación de actualización
+function mostrarNotificacionActualizacion() {
+  const notif = document.createElement('div');
+  notif.id = 'updateNotification';
+  notif.innerHTML = `
+    <div style="position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; animation: slideDown 0.3s ease-out; max-width: 90%; width: 400px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 24px;">🎉</div>
+        <div style="flex: 1;">
+          <p style="font-weight: bold; margin: 0; font-size: 15px;">Nueva versión disponible</p>
+          <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9;">Click para actualizar ahora</p>
+        </div>
+        <button onclick="actualizarAhora()" style="background: white; color: #059669; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px;">
+          Actualizar
+        </button>
+      </div>
+    </div>
+    <style>
+      @keyframes slideDown {
+        from { transform: translate(-50%, -100%); }
+        to { transform: translate(-50%, 0); }
+      }
+    </style>
+  `;
+  document.body.appendChild(notif);
+
+  // Auto-actualizar después de 10 segundos si no hace click
+  setTimeout(() => {
+    actualizarAhora();
+  }, 10000);
+}
+
+function actualizarAhora() {
+  const notif = document.getElementById('updateNotification');
+  if (notif) notif.remove();
+
+  if (navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage('SKIP_WAITING');
+  }
+}
 
     // Prompt de instalación
     let deferredPrompt;
