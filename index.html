@@ -748,30 +748,41 @@ let authData = {
       }
     }
 
-    function getImageUrl(imageUrl, defaultText) {
-      if (!imageUrl || imageUrl.trim() === '') {
-        return `https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=${encodeURIComponent(defaultText)}`;
-      }
-      
-      if (imageUrl.startsWith('COMERCIOS_Images/') || imageUrl.startsWith('data:image/') || imageUrl.includes('IMAGEN.')) {
-        return `https://via.placeholder.com/400x250/FF8C00/FFFFFF?text=${encodeURIComponent(defaultText)}`;
-      }
-      
-      if (imageUrl.includes('drive.google.com')) {
-        let fileId = '';
-        if (imageUrl.includes('/file/d/')) {
-          fileId = imageUrl.split('/file/d/')[1].split('/')[0];
-        } else if (imageUrl.includes('?id=')) {
-          fileId = imageUrl.split('?id=')[1].split('&')[0];
-        } else if (imageUrl.includes('uc?id=')) {
-          fileId = imageUrl.split('uc?id=')[1].split('&')[0];
-        }
-        if (fileId) {
-          return `https://drive.google.com/uc?export=view&id=${fileId}`;
-        }
-      }
-      return imageUrl;
+function getImageUrl(imageUrl, defaultText) {
+  if (!imageUrl || imageUrl.trim() === '') {
+    // Extraer iniciales del texto
+    const palabras = defaultText.split(' ');
+    const iniciales = palabras.length > 1 
+      ? palabras[0].charAt(0) + palabras[palabras.length - 1].charAt(0)
+      : palabras[0].substring(0, 2);
+    
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(iniciales)}&background=FF8C00&color=fff&size=400&bold=true`;
+  }
+  
+  if (imageUrl.startsWith('COMERCIOS_Images/') || imageUrl.startsWith('data:image/') || imageUrl.includes('IMAGEN.')) {
+    const palabras = defaultText.split(' ');
+    const iniciales = palabras.length > 1 
+      ? palabras[0].charAt(0) + palabras[palabras.length - 1].charAt(0)
+      : palabras[0].substring(0, 2);
+    
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(iniciales)}&background=FF8C00&color=fff&size=400&bold=true`;
+  }
+  
+  if (imageUrl.includes('drive.google.com')) {
+    let fileId = '';
+    if (imageUrl.includes('/file/d/')) {
+      fileId = imageUrl.split('/file/d/')[1].split('/')[0];
+    } else if (imageUrl.includes('?id=')) {
+      fileId = imageUrl.split('?id=')[1].split('&')[0];
+    } else if (imageUrl.includes('uc?id=')) {
+      fileId = imageUrl.split('uc?id=')[1].split('&')[0];
     }
+    if (fileId) {
+      return `https://drive.google.com/uc?export=view&id=${fileId}`;
+    }
+  }
+  return imageUrl;
+}
 
 
         // ============================================
@@ -1087,7 +1098,7 @@ async function cargarPerfilUsuario() {
           if (!categoriaRowId) return '';
           
           const imageUrl = getImageUrl(cat.IMAGEN, cat.CATEGORIA);
-          const placeholderUrl = 'https://via.placeholder.com/200/FF8C00/FFFFFF?text=' + encodeURIComponent(cat.CATEGORIA.substring(0, 2));
+          const placeholderUrl = 'https://placehold.co/200/FF8C00/FFFFFF/png?text=' + encodeURIComponent(cat.CATEGORIA.substring(0, 2));
           
           return `
             <div class="categoria-card cursor-pointer group fade-in" data-categoria="${cat.CATEGORIA}" data-rowid="${categoriaRowId}">
@@ -1169,7 +1180,7 @@ async function cargarPerfilUsuario() {
       list.innerHTML = comerciosFiltrados.map(c => {
         const abierto = c['ABIERTO?'] === 'SI' || c['ABIERTO?'] === true || c['ABIERTO?'] === 'TRUE';
         const imageUrl = getImageUrl(c.IMAGEN, c.COMERCIO);
-        const placeholderUrl = 'https://via.placeholder.com/300/1A1A1A/FFFFFF?text=' + encodeURIComponent(c.COMERCIO.substring(0, 2));
+        const placeholderUrl = 'https://placehold.co/300/1A1A1A/FFFFFF/png?text=' + encodeURIComponent(c.COMERCIO.substring(0, 2));
         
         return `
           <div class="comercio-card bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer ${!abierto ? 'opacity-60' : ''} fade-in" data-id="${c.ID}">
@@ -1210,7 +1221,7 @@ async function cargarPerfilUsuario() {
       const header = document.getElementById('comercioHeader');
       const imageUrl = getImageUrl(appData.currentComercio.IMAGEN, appData.currentComercio.COMERCIO);
       const iniciales = (appData.currentComercio.COMERCIO || 'C').substring(0, 2);
-      const placeholderUrl = 'https://via.placeholder.com/80/1A1A1A/FFFFFF?text=' + encodeURIComponent(iniciales);
+      const placeholderUrl = 'https://placehold.co/300/1A1A1A/FFFFFF/png?text=' + encodeURIComponent(iniciales);
       
       header.innerHTML = `
         <div class="flex items-center gap-4 fade-in">
@@ -1277,7 +1288,7 @@ async function cargarPerfilUsuario() {
 
         list.innerHTML = productos.map(p => {
           const imageUrl = getImageUrl(p.IMAGEN, p.NOMBRE);
-          const placeholderUrl = 'https://via.placeholder.com/300/FF8C00/FFFFFF?text=' + encodeURIComponent((p.NOMBRE || 'P').substring(0, 1));
+          const placeholderUrl = 'https://placehold.co/300/1A1A1A/FFFFFF/png?text=' + encodeURIComponent((p.NOMBRE || 'P').substring(0, 1));
           
           return `
             <div class="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition fade-in">
