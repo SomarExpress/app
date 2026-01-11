@@ -819,14 +819,11 @@ async function verificarCodigoIngresado(codigo) {
     submitBtn.textContent = 'Verificando...';
     submitBtn.disabled = true;
 
-    const response = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'verificarCodigo',
-        numero: authData.numeroTemporal,
-        codigo: codigo
-      })
+    // USAR GET CON PARÁMETROS URL EN LUGAR DE POST
+    const url = `${SCRIPT_URL}?action=verificarCodigo&numero=${encodeURIComponent(authData.numeroTemporal)}&codigo=${encodeURIComponent(codigo)}`;
+    
+    const response = await fetch(url, {
+      method: 'GET'  // ← CAMBIAR A GET
     });
 
     const result = await response.json();
@@ -851,6 +848,8 @@ async function verificarCodigoIngresado(codigo) {
   } catch (error) {
     console.error('Error:', error);
     alert('⚠️ Error al verificar código');
+    submitBtn.textContent = 'Verificar Código';
+    submitBtn.disabled = false;
   }
 }
 
@@ -860,18 +859,17 @@ async function completarRegistroUsuario(nombre, direccion) {
     submitBtn.textContent = 'Registrando...';
     submitBtn.disabled = true;
 
-    const response = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'completarRegistro',
-        datos: {
-          celular: authData.numeroTemporal,
-          nombre: nombre,
-          direccion: direccion,
-          ubicacionGPS: appData.userLocation
-        }
-      })
+    // USAR GET CON PARÁMETROS URL
+    const params = new URLSearchParams({
+      action: 'completarRegistro',
+      celular: authData.numeroTemporal,
+      nombre: nombre,
+      direccion: direccion,
+      ubicacionGPS: appData.userLocation || ''
+    });
+
+    const response = await fetch(`${SCRIPT_URL}?${params.toString()}`, {
+      method: 'GET'
     });
 
     const result = await response.json();
@@ -891,6 +889,8 @@ async function completarRegistroUsuario(nombre, direccion) {
   } catch (error) {
     console.error('Error:', error);
     alert('⚠️ Error al completar registro');
+    submitBtn.textContent = 'Completar Registro';
+    submitBtn.disabled = false;
   }
 }
 
