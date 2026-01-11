@@ -1,0 +1,22 @@
+{
+  "name": "Somar Express - Clientes",
+  "short_name": "Somar Clientes",
+  "description": "Solicita envíos con Somar Express",
+  "start_url": "./clientes.html",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FF8C00",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
