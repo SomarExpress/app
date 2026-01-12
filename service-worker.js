@@ -1,25 +1,29 @@
-const CACHE_NAME = 'somar-express-v1.0.5'; // ← Incrementa este número en cada actualización
+const CACHE_NAME = 'somar-express-v1.0.6';
 const urlsToCache = [
   './',
   './comercios-panel.html',
+  './manifest.json',
   'https://cdn.tailwindcss.com',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
 ];
 
-// Instalación - forzar activación inmediata
+// Instalación
 self.addEventListener('install', (event) => {
-  console.log('📦 Instalando nueva versión...');
+  console.log('📦 Instalando Service Worker v1.0.6...');
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting()) // ← Activar inmediatamente
+      .then((cache) => {
+        console.log('✅ Archivos en caché');
+        return cache.addAll(urlsToCache);
+      })
+      .then(() => self.skipWaiting())
   );
 });
 
-// Activación - limpiar cachés antiguos
+// Activación
 self.addEventListener('activate', (event) => {
-  console.log('✅ Activando nueva versión...');
+  console.log('🔄 Activando Service Worker...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -30,30 +34,26 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim()) // ← Tomar control inmediato
+    }).then(() => self.clients.claim())
   );
 });
 
-// Fetch - Network First con fallback a caché
+// Fetch
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Clonar respuesta para guardar en caché
         const responseClone = response.clone();
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseClone);
         });
         return response;
       })
-      .catch(() => {
-        // Si falla la red, usar caché
-        return caches.match(event.request);
-      })
+      .catch(() => caches.match(event.request))
   );
 });
 
-// Notificar a los clientes cuando hay actualización
+// Mensaje para skip waiting
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') {
     self.skipWaiting();

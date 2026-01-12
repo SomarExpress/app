@@ -17,17 +17,14 @@
   <link rel="icon" type="image/png" href="https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png">
   <link rel="apple-touch-icon" href="https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png">
   
-
   <title>Somar Express - Panel Comercios</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
-
-
     #updateNotification {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
 
     .brand-orange { color: #FF8C00; }
     .bg-brand-orange { background-color: #FF8C00; }
@@ -68,28 +65,25 @@
     }
 
     #mapPreviewRecogida, #mapPreviewEntrega, #mapInteractive {
-  height: 250px;
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
-  z-index: 1;
-}
+      height: 250px;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
 
-/* Fix para evitar que el mapa se sobreponga */
-#contentNuevoEnvio {
-  position: relative;
-  z-index: 10;
-}
+    #contentNuevoEnvio {
+      position: relative;
+      z-index: 10;
+    }
 
-/* Los tabs deben estar por encima */
-.bg-white.border-b.sticky {
-  z-index: 40 !important;
-}
+    .bg-white.border-b.sticky {
+      z-index: 40 !important;
+    }
 
-/* El header también */
-header {
-  z-index: 50 !important;
-}
+    header {
+      z-index: 50 !important;
+    }
 
     .status-badge {
       display: inline-block;
@@ -277,7 +271,7 @@ header {
               ✓ Usar mi ubicación guardada
             </button>
             <button type="button" id="cambiarRecogida" class="flex-1 border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 transition">
-              📝 Cambiar
+              🔄 Cambiar
             </button>
           </div>
           <div id="recogidaCustom" class="hidden">
@@ -298,13 +292,11 @@ header {
             </button>
           </label>
           
-          <!-- Instrucciones claras -->
           <div class="bg-blue-50 border-l-4 border-blue-400 p-3 mb-3 text-sm">
             <p class="font-semibold text-blue-800 mb-1">📱 ¿Tu cliente te mandó la ubicación por WhatsApp?</p>
             <p class="text-blue-700">Pega aquí lo que te envió (link o coordenadas) y nosotros lo procesamos</p>
           </div>
           
-          <!-- Input flexible -->
           <div class="relative">
             <textarea id="linkEntrega" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pr-10 focus:border-brand-orange focus:outline-none transition resize-none" placeholder="Pega aquí:
 • Link de Google Maps
@@ -315,7 +307,6 @@ header {
             </div>
           </div>
           
-          <!-- Feedback visual -->
           <div id="ubicacionDetectada" class="hidden bg-green-50 border-2 border-green-300 rounded-xl p-3 mt-2 mb-2">
             <div class="flex items-start gap-2">
               <span class="text-xl">✅</span>
@@ -336,10 +327,8 @@ header {
             </div>
           </div>
           
-          <!-- Preview del mapa -->
           <div id="mapPreviewEntrega" class="hidden mb-2"></div>
           
-          <!-- Opción alternativa -->
           <div class="text-center my-3">
             <p class="text-xs text-gray-500 mb-2">- O -</p>
           </div>
@@ -447,7 +436,6 @@ header {
           </div>
         </div>
 
-        <!-- Botón Submit -->
         <button type="submit" class="w-full bg-brand-orange text-white py-4 rounded-xl font-bold text-lg hover:bg-orange-600 transition shadow-lg">
           🚀 Crear Envío
         </button>
@@ -555,10 +543,7 @@ header {
       envios: []
     };
 
-    // ============================================
     // AUTENTICACIÓN
-    // ============================================
-
     function verificarSesion() {
       const comercioGuardado = localStorage.getItem('somarComercioUser');
       if (comercioGuardado) {
@@ -666,7 +651,7 @@ header {
           document.getElementById('comercioName').textContent = appData.comercio.nombre;
           document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
           appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
-          alert(`¡Comercio registrado exitosamente!`);
+          alert('¡Comercio registrado exitosamente!');
         } else {
           alert(result.error || 'Error al registrar');
           submitBtn.textContent = 'Registrar Comercio';
@@ -685,16 +670,12 @@ header {
       }
     }
 
-    // ============================================
-    // EXTRACCIÓN DE COORDENADAS - MEJORADA PARA WHATSAPP
-    // ============================================
-
+    // EXTRACCIÓN DE COORDENADAS
     async function extraerCoordenadasDeLink(input) {
       try {
         input = input.trim();
         console.log('🔍 Procesando entrada:', input);
 
-        // CASO 1: Son solo coordenadas (14.0818, -87.2068)
         const soloCoordMatch = input.match(/^\s*([0-9]{1,2}\.[0-9]+)\s*,\s*(-?[0-9]{1,3}\.[0-9]+)\s*$/);
         if (soloCoordMatch) {
           const lat = parseFloat(soloCoordMatch[1]);
@@ -706,10 +687,8 @@ header {
           }
         }
 
-        // CASO 2: Link acortado - Intentar procesarlo
         if (input.includes('goo.gl') || input.includes('maps.app.goo.gl')) {
           console.log('⚠️ Link acortado detectado');
-          
           return { 
             exito: false, 
             error: 'LINK_ACORTADO',
@@ -717,7 +696,6 @@ header {
           };
         }
 
-        // CASO 3: Link normal de Google Maps
         return await extraerCoordenadasDeURL(input);
 
       } catch (error) {
@@ -727,40 +705,24 @@ header {
     }
 
     async function extraerCoordenadasDeURL(url) {
-      // Caso A: Coordenadas en query params (?q=lat,lon)
       const qMatch = url.match(/[?&]q=([0-9.-]+),([0-9.-]+)/);
       if (qMatch) {
         console.log('✅ Coordenadas encontradas (q)');
-        return {
-          lat: parseFloat(qMatch[1]),
-          lon: parseFloat(qMatch[2]),
-          exito: true
-        };
+        return { lat: parseFloat(qMatch[1]), lon: parseFloat(qMatch[2]), exito: true };
       }
 
-      // Caso B: Coordenadas en path (@lat,lon)
       const atMatch = url.match(/@([0-9.-]+),([0-9.-]+)/);
       if (atMatch) {
         console.log('✅ Coordenadas encontradas (@)');
-        return {
-          lat: parseFloat(atMatch[1]),
-          lon: parseFloat(atMatch[2]),
-          exito: true
-        };
+        return { lat: parseFloat(atMatch[1]), lon: parseFloat(atMatch[2]), exito: true };
       }
 
-      // Caso C: Formato place (/place/)
       const placeMatch = url.match(/\/place\/.*?@([0-9.-]+),([0-9.-]+)/);
       if (placeMatch) {
         console.log('✅ Coordenadas encontradas (place)');
-        return {
-          lat: parseFloat(placeMatch[1]),
-          lon: parseFloat(placeMatch[2]),
-          exito: true
-        };
+        return { lat: parseFloat(placeMatch[1]), lon: parseFloat(placeMatch[2]), exito: true };
       }
 
-      // Caso D: Coordenadas en cualquier parte
       const coordMatch = url.match(/([0-9]{1,2}\.[0-9]{4,})[,\s]+(-?[0-9]{1,3}\.[0-9]{4,})/);
       if (coordMatch) {
         const lat = parseFloat(coordMatch[1]);
@@ -773,22 +735,15 @@ header {
       }
 
       console.log('❌ No se encontraron coordenadas en la URL');
-      return { 
-        exito: false, 
-        error: 'No se detectaron coordenadas válidas'
-      };
+      return { exito: false, error: 'No se detectaron coordenadas válidas' };
     }
 
-    // ============================================
     // CÁLCULO DE TARIFAS
-    // ============================================
-
     function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
       const R = 6371;
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
         Math.sin(dLon / 2) * Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
@@ -816,150 +771,132 @@ header {
       ];
 
       for (const ciudad of ciudades) {
-        const distancia = Math.sqrt(
-          Math.pow(lat - ciudad.lat, 2) + Math.pow(lon - ciudad.lon, 2)
-        );
-        
+        const distancia = Math.sqrt(Math.pow(lat - ciudad.lat, 2) + Math.pow(lon - ciudad.lon, 2));
         if (distancia < ciudad.radio) {
           console.log(`✅ Ciudad detectada: ${ciudad.nombre}`);
           return ciudad.nombre;
         }
       }
 
-      if (lat >= 15.3 && lat <= 16.0 && lon >= -88.5 && lon <= -87.3) {
-        return 'Cortés';
-      } else if (lat >= 13.8 && lat <= 14.4 && lon >= -87.5 && lon <= -86.8) {
-        return 'Francisco Morazán';
-      } else if (lat >= 15.5 && lat <= 16.0 && lon >= -87.0 && lon <= -86.0) {
-        return 'Atlántida';
-      } else if (lat >= 14.4 && lat <= 15.0 && lon >= -86.8 && lon <= -86.0) {
-        return 'Olancho';
-      } else if (lat >= 13.0 && lat <= 13.8 && lon >= -87.5 && lon <= -86.8) {
-        return 'Choluteca';
-      }
+      if (lat >= 15.3 && lat <= 16.0 && lon >= -88.5 && lon <= -87.3) return 'Cortés';
+      else if (lat >= 13.8 && lat <= 14.4 && lon >= -87.5 && lon <= -86.8) return 'Francisco Morazán';
+      else if (lat >= 15.5 && lat <= 16.0 && lon >= -87.0 && lon <= -86.0) return 'Atlántida';
+      else if (lat >= 14.4 && lat <= 15.0 && lon >= -86.8 && lon <= -86.0) return 'Olancho';
+      else if (lat >= 13.0 && lat <= 13.8 && lon >= -87.5 && lon <= -86.8) return 'Choluteca';
 
       console.log('⚠️ Ciudad no detectada, usando genérico');
       return 'Honduras';
     }
 
-    // ============================================
-// NUEVA FUNCIÓN: OSRM para distancia real
-// ============================================
-async function calcularDistanciaOSRM(lat1, lon1, lat2, lon2) {
-  try {
-    const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`;
-    console.log('🌐 Consultando OSRM...');
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('OSRM failed');
-    const data = await response.json();
-    if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) throw new Error('No route');
-    const distanciaKm = data.routes[0].distance / 1000;
-    console.log(`✅ OSRM: ${distanciaKm.toFixed(2)} km por carretera`);
-    return distanciaKm;
-  } catch (error) {
-    console.error('❌ OSRM error:', error);
-    throw error;
-  }
-}
-
-// ============================================
-// NUEVAS FUNCIONES: Tarifas por rangos
-// ============================================
-function calcularTarifaCholoma(km) {
-  const tabla = [
-    { min: 0, max: 3, tarifa: 50 },
-    { min: 3, max: 7, tarifa: 75 },
-    { min: 7, max: 9, tarifa: 90 },
-    { min: 9, max: 11, tarifa: 105 },
-    { min: 11, max: 13, tarifa: 120 },
-    { min: 13, max: 15, tarifa: 135 }
-  ];
-  for (const r of tabla) {
-    if (km >= r.min && km < r.max) {
-      console.log(`✅ Choloma ${r.min}-${r.max}km: L.${r.tarifa}`);
-      return r.tarifa;
+    async function calcularDistanciaOSRM(lat1, lon1, lat2, lon2) {
+      try {
+        const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`;
+        console.log('🌐 Consultando OSRM...');
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('OSRM failed');
+        const data = await response.json();
+        if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) throw new Error('No route');
+        const distanciaKm = data.routes[0].distance / 1000;
+        console.log(`✅ OSRM: ${distanciaKm.toFixed(2)} km por carretera`);
+        return distanciaKm;
+      } catch (error) {
+        console.error('❌ OSRM error:', error);
+        throw error;
+      }
     }
-  }
-  const calc = 30 + (km * 6.8);
-  const redondeado = Math.round(calc / 5) * 5;
-  console.log(`📊 Choloma fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
-  return redondeado;
-}
 
-function calcularTarifaOtrasCiudades(km) {
-  const tabla = [
-    { min: 0, max: 11, tarifa: 125 },
-    { min: 11, max: 13, tarifa: 135 },
-    { min: 13, max: 15, tarifa: 150 },
-    { min: 15, max: 17, tarifa: 165 },
-    { min: 17, max: 19, tarifa: 180 },
-    { min: 19, max: 21, tarifa: 195 }
-  ];
-  for (const r of tabla) {
-    if (km >= r.min && km < r.max) {
-      console.log(`✅ Otras ${r.min}-${r.max}km: L.${r.tarifa}`);
-      return r.tarifa;
+    function calcularTarifaCholoma(km) {
+      const tabla = [
+        { min: 0, max: 3, tarifa: 50 },
+        { min: 3, max: 7, tarifa: 75 },
+        { min: 7, max: 9, tarifa: 90 },
+        { min: 9, max: 11, tarifa: 105 },
+        { min: 11, max: 13, tarifa: 120 },
+        { min: 13, max: 15, tarifa: 135 }
+      ];
+      for (const r of tabla) {
+        if (km >= r.min && km < r.max) {
+          console.log(`✅ Choloma ${r.min}-${r.max}km: L.${r.tarifa}`);
+          return r.tarifa;
+        }
+      }
+      const calc = 30 + (km * 6.8);
+      const redondeado = Math.round(calc / 5) * 5;
+      console.log(`📊 Choloma fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
+      return redondeado;
     }
-  }
-  const calc = 40 + (km * 7.5);
-  const redondeado = Math.round(calc / 5) * 5;
-  console.log(`📊 Otras fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
-  return redondeado;
-}
+
+    function calcularTarifaOtrasCiudades(km) {
+      const tabla = [
+        { min: 0, max: 11, tarifa: 125 },
+        { min: 11, max: 13, tarifa: 135 },
+        { min: 13, max: 15, tarifa: 150 },
+        { min: 15, max: 17, tarifa: 165 },
+        { min: 17, max: 19, tarifa: 180 },
+        { min: 19, max: 21, tarifa: 195 }
+      ];
+      for (const r of tabla) {
+        if (km >= r.min && km < r.max) {
+          console.log(`✅ Otras ${r.min}-${r.max}km: L.${r.tarifa}`);
+          return r.tarifa;
+        }
+      }
+      const calc = 40 + (km * 7.5);
+      const redondeado = Math.round(calc / 5) * 5;
+      console.log(`📊 Otras fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
+      return redondeado;
+    }
+
     async function calcularTarifa(ubicacionRecogida, ubicacionEntrega) {
-  if (!ubicacionRecogida || !ubicacionEntrega) {
-    console.log('⚠️ Faltan ubicaciones');
-    return;
-  }
+      if (!ubicacionRecogida || !ubicacionEntrega) {
+        console.log('⚠️ Faltan ubicaciones');
+        return;
+      }
 
-  try {
-    const [lat1, lon1] = ubicacionRecogida.split(',').map(Number);
-    const [lat2, lon2] = ubicacionEntrega.split(',').map(Number);
+      try {
+        const [lat1, lon1] = ubicacionRecogida.split(',').map(Number);
+        const [lat2, lon2] = ubicacionEntrega.split(',').map(Number);
 
-    if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) {
-      console.error('❌ Coordenadas inválidas');
-      return;
+        if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) {
+          console.error('❌ Coordenadas inválidas');
+          return;
+        }
+
+        const ciudadOrigen = obtenerCiudad(lat1, lon1);
+        const ciudadDestino = obtenerCiudad(lat2, lon2);
+
+        console.log(`📍 Origen: ${ciudadOrigen}, Destino: ${ciudadDestino}`);
+
+        let distanciaKm;
+        try {
+          distanciaKm = await calcularDistanciaOSRM(lat1, lon1, lat2, lon2);
+        } catch (error) {
+          console.warn('⚠️ OSRM fallback a Haversine');
+          distanciaKm = calcularDistanciaHaversine(lat1, lon1, lat2, lon2);
+        }
+
+        const esCholoma = ciudadOrigen.toLowerCase().includes('choloma') && 
+                          ciudadDestino.toLowerCase().includes('choloma');
+
+        const tarifaTotal = esCholoma ? 
+          calcularTarifaCholoma(distanciaKm) : 
+          calcularTarifaOtrasCiudades(distanciaKm);
+
+        document.getElementById('ciudadOrigen').textContent = ciudadOrigen;
+        document.getElementById('ciudadDestino').textContent = ciudadDestino;
+        document.getElementById('distanciaKm').textContent = distanciaKm.toFixed(2) + ' km';
+        document.getElementById('tarifaTotal').textContent = tarifaTotal.toFixed(2);
+        document.getElementById('tarifaResumen').classList.remove('hidden');
+
+        console.log(`✅ Tarifa: L.${tarifaTotal.toFixed(2)}`);
+      } catch (error) {
+        console.error('❌ Error:', error);
+      }
     }
 
-    const ciudadOrigen = obtenerCiudad(lat1, lon1);
-    const ciudadDestino = obtenerCiudad(lat2, lon2);
-
-    console.log(`📍 Origen: ${ciudadOrigen}, Destino: ${ciudadDestino}`);
-
-    // USAR OSRM para distancia por carretera
-    let distanciaKm;
-    try {
-      distanciaKm = await calcularDistanciaOSRM(lat1, lon1, lat2, lon2);
-    } catch (error) {
-      console.warn('⚠️ OSRM fallback a Haversine');
-      distanciaKm = calcularDistanciaHaversine(lat1, lon1, lat2, lon2);
-    }
-
-    const esCholoma = ciudadOrigen.toLowerCase().includes('choloma') && 
-                      ciudadDestino.toLowerCase().includes('choloma');
-
-    const tarifaTotal = esCholoma ? 
-      calcularTarifaCholoma(distanciaKm) : 
-      calcularTarifaOtrasCiudades(distanciaKm);
-
-    document.getElementById('ciudadOrigen').textContent = ciudadOrigen;
-    document.getElementById('ciudadDestino').textContent = ciudadDestino;
-    document.getElementById('distanciaKm').textContent = distanciaKm.toFixed(2) + ' km';
-    document.getElementById('tarifaTotal').textContent = tarifaTotal.toFixed(2);
-    document.getElementById('tarifaResumen').classList.remove('hidden');
-
-    console.log(`✅ Tarifa: L.${tarifaTotal.toFixed(2)}`);
-  } catch (error) {
-    console.error('❌ Error:', error);
-  }
-}
-
-    // ============================================
     // MAPAS
-    // ============================================
-
     function mostrarMapaPreview(lat, lon, containerId) {
-      console.log(`📍 Mostrando mapa preview en ${containerId}:`, lat, lon);
+      console.log(`🗺️ Mostrando mapa preview en ${containerId}:`, lat, lon);
       
       const container = document.getElementById(containerId);
       if (!container) {
@@ -1103,10 +1040,7 @@ function calcularTarifaOtrasCiudades(km) {
       }, 250);
     }
 
-    // ============================================
     // GESTIÓN DE ENVÍOS
-    // ============================================
-
     async function cargarMisEnvios() {
       try {
         const url = `${SCRIPT_URL}?action=obtenerEnviosComercio&idComercio=${appData.comercio.id}`;
@@ -1269,14 +1203,10 @@ function calcularTarifaOtrasCiudades(km) {
       }
     }
 
-    // ============================================
     // EVENT LISTENERS
-    // ============================================
-
     window.addEventListener('DOMContentLoaded', () => {
       verificarSesion();
 
-      // Auth
       document.getElementById('authPhoneForm').addEventListener('submit', (e) => {
         e.preventDefault();
         enviarCodigoVerificacion(document.getElementById('authPhone').value);
@@ -1318,7 +1248,6 @@ function calcularTarifaOtrasCiudades(km) {
 
       document.getElementById('logoutBtn').addEventListener('click', cerrarSesion);
 
-      // Tabs
       document.getElementById('tabNuevoEnvio').addEventListener('click', () => {
         document.getElementById('tabNuevoEnvio').classList.add('border-brand-orange', 'brand-orange');
         document.getElementById('tabNuevoEnvio').classList.remove('border-transparent', 'text-gray-500');
@@ -1338,7 +1267,6 @@ function calcularTarifaOtrasCiudades(km) {
         cargarMisEnvios();
       });
 
-      // Tipo de servicio
       document.querySelectorAll('input[name="tipoServicio"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
           const montoSection = document.getElementById('montoSection');
@@ -1352,7 +1280,6 @@ function calcularTarifaOtrasCiudades(km) {
         });
       });
 
-      // Ubicación de recogida
       document.getElementById('cambiarRecogida').addEventListener('click', () => {
         document.getElementById('recogidaCustom').classList.remove('hidden');
       });
@@ -1362,7 +1289,6 @@ function calcularTarifaOtrasCiudades(km) {
         appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
       });
 
-      // Link de entrega - OPTIMIZADO PARA WHATSAPP
       let linkEntregaTimeout;
       document.getElementById('linkEntrega').addEventListener('input', (e) => {
         clearTimeout(linkEntregaTimeout);
@@ -1412,7 +1338,6 @@ function calcularTarifaOtrasCiudades(km) {
         }
       });
 
-      // Mapa interactivo
       document.getElementById('usarMapaInteractivo').addEventListener('click', () => {
         inicializarMapaInteractivo();
       });
@@ -1467,14 +1392,13 @@ function calcularTarifaOtrasCiudades(km) {
         }
         
         setTimeout(() => {
-  mostrarMapaPreview(latlng.lat, latlng.lng, 'mapPreviewEntrega');
-  setTimeout(async () => {
-    await calcularTarifa(appData.ubicacionRecogida, appData.ubicacionEntrega);
-  }, 500);
-}, 300);
+          mostrarMapaPreview(latlng.lat, latlng.lng, 'mapPreviewEntrega');
+          setTimeout(async () => {
+            await calcularTarifa(appData.ubicacionRecogida, appData.ubicacionEntrega);
+          }, 500);
+        }, 300);
       });
 
-      // Ayuda WhatsApp
       document.getElementById('abrirAyudaWhatsapp').addEventListener('click', () => {
         document.getElementById('ayudaWhatsappModal').classList.remove('hidden');
       });
@@ -1483,7 +1407,6 @@ function calcularTarifaOtrasCiudades(km) {
         document.getElementById('ayudaWhatsappModal').classList.add('hidden');
       });
 
-      // Foto
       document.getElementById('uploadArea').addEventListener('click', () => {
         document.getElementById('fotoPaquete').click();
       });
@@ -1513,106 +1436,92 @@ function calcularTarifaOtrasCiudades(km) {
         document.getElementById('uploadPreview').classList.add('hidden');
       });
 
-      // Submit envío
       document.getElementById('nuevoEnvioForm').addEventListener('submit', procesarEnvio);
 
-      // Filtros y refrescar
       document.getElementById('filtroEstado').addEventListener('change', renderizarEnvios);
       document.getElementById('refrescarEnvios').addEventListener('click', cargarMisEnvios);
     });
-  </script>
 
-// ============================================
-// SERVICE WORKER CON ACTUALIZACIÓN AUTOMÁTICA
-// ============================================
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js')
-      .then((registration) => {
-        console.log('✅ Service Worker registrado');
+    // SERVICE WORKER
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then((registration) => {
+            console.log('✅ Service Worker registrado');
 
-        // Verificar actualizaciones cada 5 minutos
-        setInterval(() => {
-          registration.update();
-        }, 5 * 60 * 1000);
+            setInterval(() => {
+              registration.update();
+            }, 5 * 60 * 1000);
 
-        // Detectar cuando hay nueva versión
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          console.log('🔄 Nueva versión encontrada...');
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              console.log('🔄 Nueva versión encontrada...');
 
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // Nueva versión lista
-              mostrarNotificacionActualizacion();
-            }
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  mostrarNotificacionActualizacion();
+                }
+              });
+            });
+          })
+          .catch((error) => {
+            console.log('❌ Error al registrar Service Worker:', error);
           });
+
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (refreshing) return;
+          refreshing = true;
+          console.log('🔄 Recargando para aplicar actualización...');
+          window.location.reload();
         });
-      })
-      .catch((error) => {
-        console.log('❌ Error al registrar Service Worker:', error);
       });
+    }
 
-    // Detectar cuando el Service Worker toma control
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return;
-      refreshing = true;
-      console.log('🔄 Recargando para aplicar actualización...');
-      window.location.reload();
-    });
-  });
-}
-
-// Mostrar notificación de actualización
-function mostrarNotificacionActualizacion() {
-  const notif = document.createElement('div');
-  notif.id = 'updateNotification';
-  notif.innerHTML = `
-    <div style="position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; animation: slideDown 0.3s ease-out; max-width: 90%; width: 400px;">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <div style="font-size: 24px;">🎉</div>
-        <div style="flex: 1;">
-          <p style="font-weight: bold; margin: 0; font-size: 15px;">Nueva versión disponible</p>
-          <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9;">Click para actualizar ahora</p>
+    function mostrarNotificacionActualizacion() {
+      const notif = document.createElement('div');
+      notif.id = 'updateNotification';
+      notif.innerHTML = `
+        <div style="position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; animation: slideDown 0.3s ease-out; max-width: 90%; width: 400px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="font-size: 24px;">🎉</div>
+            <div style="flex: 1;">
+              <p style="font-weight: bold; margin: 0; font-size: 15px;">Nueva versión disponible</p>
+              <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9;">Click para actualizar ahora</p>
+            </div>
+            <button onclick="actualizarAhora()" style="background: white; color: #059669; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px;">
+              Actualizar
+            </button>
+          </div>
         </div>
-        <button onclick="actualizarAhora()" style="background: white; color: #059669; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px;">
-          Actualizar
-        </button>
-      </div>
-    </div>
-    <style>
-      @keyframes slideDown {
-        from { transform: translate(-50%, -100%); }
-        to { transform: translate(-50%, 0); }
+        <style>
+          @keyframes slideDown {
+            from { transform: translate(-50%, -100%); }
+            to { transform: translate(-50%, 0); }
+          }
+        </style>
+      `;
+      document.body.appendChild(notif);
+
+      setTimeout(() => {
+        actualizarAhora();
+      }, 10000);
+    }
+
+    function actualizarAhora() {
+      const notif = document.getElementById('updateNotification');
+      if (notif) notif.remove();
+
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage('SKIP_WAITING');
       }
-    </style>
-  `;
-  document.body.appendChild(notif);
+    }
 
-  // Auto-actualizar después de 10 segundos si no hace click
-  setTimeout(() => {
-    actualizarAhora();
-  }, 10000);
-}
-
-function actualizarAhora() {
-  const notif = document.getElementById('updateNotification');
-  if (notif) notif.remove();
-
-  if (navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage('SKIP_WAITING');
-  }
-}
-
-    // Prompt de instalación
     let deferredPrompt;
     
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      
-      // Mostrar banner de instalación
       mostrarBannerInstalacion();
     });
 
@@ -1666,7 +1575,6 @@ function actualizarAhora() {
       }
     }
 
-    // Detectar cuando ya está instalada
     window.addEventListener('appinstalled', () => {
       console.log('✅ App instalada exitosamente');
       cerrarBanner();
