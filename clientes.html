@@ -647,6 +647,47 @@ body.cart-active {
     </div>
   </div>
 
+  <!-- Modal Cambio de Comercio -->
+<div id="cambioComercioModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-md w-full scale-in">
+    <div class="p-6">
+      <div class="text-center mb-4">
+        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold mb-2">¡Atención!</h2>
+        <p class="text-gray-600 mb-4">Ya tienes productos en tu carrito</p>
+      </div>
+      
+      <div class="bg-orange-50 border-l-4 border-brand-orange p-4 rounded-lg mb-4">
+        <p class="text-sm text-gray-700 mb-2">
+          <span class="font-bold">Carrito actual:</span><br>
+          <span id="comercioActualNombre" class="text-brand-orange font-semibold"></span>
+        </p>
+        <p class="text-sm text-gray-700">
+          <span class="font-bold">Nuevo comercio:</span><br>
+          <span id="comercioNuevoNombre" class="text-blue-600 font-semibold"></span>
+        </p>
+      </div>
+      
+      <p class="text-sm text-gray-600 text-center mb-6">
+        ¿Deseas vaciar tu carrito actual y agregar productos del nuevo comercio?
+      </p>
+      
+      <div class="flex gap-3">
+        <button id="cancelarCambioComercio" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-bold transition">
+          Cancelar
+        </button>
+        <button id="confirmarCambioComercio" class="flex-1 bg-brand-orange text-white py-3 rounded-xl font-bold hover:bg-orange-600 transition">
+          Vaciar y Agregar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
   <!-- Modal Producto Personalizado -->
   <div id="customProductModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full scale-in">
@@ -697,6 +738,9 @@ body.cart-active {
       sortProducto: 'default',
       comerciosConDistancia: []
     };
+
+    // Variable para manejar cambio de comercio
+let productoPendiente = null;
 
     // SISTEMA DE AUTENTICACIÓN
 let authData = {
@@ -1636,34 +1680,60 @@ async function cargarPerfilUsuario() {
     }
 
     function addToCart(producto) {
-      const comercio = appData.comercios.find(c => c.ID == producto.COMERCIO);
-      const productoConNombre = {
-        ...producto,
-        NOMBRE_COMERCIO: comercio ? comercio.COMERCIO : 'Desconocido'
-      };
-      
-      const existing = appData.cart.find(item => 
-        item.NOMBRE === producto.NOMBRE && item.COMERCIO === producto.COMERCIO
-      );
-      
-      if (existing) {
-        existing.cantidad++;
-      } else {
-        appData.cart.push({...productoConNombre, cantidad: 1});
-      }
-      updateCartUI();
-      
-      const btn = event.target;
-      const originalText = btn.textContent;
-      btn.textContent = '✓ Agregado';
-      btn.classList.add('bg-green-500');
-      btn.classList.remove('bg-brand-orange');
-      setTimeout(() => {
-        btn.textContent = originalText;
-        btn.classList.remove('bg-green-500');
-        btn.classList.add('bg-brand-orange');
-      }, 1000);
-    }
+  // Verificar si hay productos en el carrito de otro comercio
+  if (appData.cart.length > 0 && appData.cart[0].COMERCIO !== producto.COMERCIO) {
+    // Guardar producto pendiente
+    productoPendiente = producto;
+    
+    // Obtener nombres de comercios
+    const comercioActual = appData.comercios.find(c => c.ID == appData.cart[0].COMERCIO);
+    const comercioNuevo = appData.comercios.find(c => c.ID == producto.COMERCIO);
+    
+    // Actualizar modal con nombres
+    document.getElementById('comercioActualNombre').textContent = comercioActual ? comercioActual.COMERCIO : 'Comercio actual';
+    document.getElementById('comercioNuevoNombre').textContent = comercioNuevo ? comercioNuevo.COMERCIO : 'Nuevo comercio';
+    
+    // Mostrar modal de advertencia
+    document.getElementById('cambioComercioModal').classList.remove('hidden');
+    return;
+  }
+  
+  // Si es del mismo comercio o carrito vacío, agregar normalmente
+  agregarProductoAlCarrito(producto);
+}
+
+// Función auxiliar para agregar producto
+function agregarProductoAlCarrito(producto) {
+  const comercio = appData.comercios.find(c => c.ID == producto.COMERCIO);
+  const productoConNombre = {
+    ...producto,
+    NOMBRE_COMERCIO: comercio ? comercio.COMERCIO : 'Desconocido'
+  };
+  
+  const existing = appData.cart.find(item => 
+    item.NOMBRE === producto.NOMBRE && item.COMERCIO === producto.COMERCIO
+  );
+  
+  if (existing) {
+    existing.cantidad++;
+  } else {
+    appData.cart.push({...productoConNombre, cantidad: 1});
+  }
+  
+  updateCartUI();
+  
+  // Feedback visual en el botón
+  const btn = event.target;
+  const originalText = btn.textContent;
+  btn.textContent = '✓ Agregado';
+  btn.classList.add('bg-green-500');
+  btn.classList.remove('bg-brand-orange');
+  setTimeout(() => {
+    btn.textContent = originalText;
+    btn.classList.remove('bg-green-500');
+    btn.classList.add('bg-brand-orange');
+  }, 1000);
+}
 
     function updateCartUI() {
   const count = appData.cart.reduce((sum, item) => sum + item.cantidad, 0);
@@ -1857,6 +1927,36 @@ async function cargarPerfilUsuario() {
       document.getElementById('cartBtn').addEventListener('click', () => {
         document.getElementById('cartModal').classList.remove('hidden');
         renderCart();
+        // Event Listeners del Modal de Cambio de Comercio
+document.getElementById('cancelarCambioComercio').addEventListener('click', () => {
+  document.getElementById('cambioComercioModal').classList.add('hidden');
+  productoPendiente = null;
+});
+
+document.getElementById('confirmarCambioComercio').addEventListener('click', () => {
+  // Vaciar carrito actual
+  appData.cart = [];
+  
+  // Agregar producto nuevo
+  if (productoPendiente) {
+    agregarProductoAlCarrito(productoPendiente);
+    productoPendiente = null;
+  }
+  
+  // Cerrar modal
+  document.getElementById('cambioComercioModal').classList.add('hidden');
+  
+  // Mostrar notificación
+  alert('✅ Carrito actualizado con productos del nuevo comercio');
+});
+
+// Cerrar modal al hacer click fuera
+document.getElementById('cambioComercioModal').addEventListener('click', (e) => {
+  if (e.target.id === 'cambioComercioModal') {
+    document.getElementById('cambioComercioModal').classList.add('hidden');
+    productoPendiente = null;
+  }
+});
       });
 
 // Abrir carrito desde barra flotante
@@ -1951,6 +2051,8 @@ document.getElementById('openFloatingCart').addEventListener('click', () => {
           DESCRIPCION: 'Producto personalizado',
           IMAGEN: ''
         });
+
+        addToCart(productoPersonalizado);
 
         document.getElementById('customProductModal').classList.add('hidden');
         document.getElementById('customProductForm').reset();
