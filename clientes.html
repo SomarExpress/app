@@ -185,6 +185,64 @@
       background: rgba(0, 0, 0, 0.7);
       backdrop-filter: blur(8px);
     }
+
+    /* Barra Flotante del Carrito */
+#floatingCart {
+  animation: slideUpCart 0.3s ease-out;
+  transition: transform 0.3s ease;
+}
+
+@keyframes slideUpCart {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+#floatingCart.hide {
+  animation: slideDownCart 0.3s ease-out;
+  transform: translateY(100%);
+}
+
+@keyframes slideDownCart {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+
+/* Espacio para que el contenido no quede debajo de la barra */
+body.cart-active {
+  padding-bottom: 80px;
+}
+
+/* Pulso suave cuando se agrega item */
+.cart-pulse {
+  animation: cartPulse 0.5s ease;
+}
+
+@keyframes cartPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Responsive para móviles */
+@media (max-width: 640px) {
+  #floatingCart .flex.items-center.gap-4 {
+    gap: 8px;
+  }
+  
+  #floatingCart .text-lg {
+    font-size: 16px;
+  }
+  
+  #openFloatingCart {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  
+  #openFloatingCart svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
   </style>
 </head>
 <body class="bg-gray-50">
@@ -378,6 +436,36 @@
       </button>
     </div>
   </section>
+
+<!-- Barra Flotante del Carrito -->
+<div id="floatingCart" class="hidden fixed bottom-0 left-0 right-0 bg-white shadow-2xl border-t-2 border-brand-orange z-40 safe-bottom">
+  <div class="max-w-7xl mx-auto px-4 py-3">
+    <div class="flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-brand-orange text-white w-10 h-10 rounded-full flex items-center justify-center font-bold">
+          <span id="floatingCartCount">0</span>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-gray-800">Mi Carrito</p>
+          <p class="text-xs text-gray-500"><span id="floatingCartItems">0</span> producto(s)</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <div class="text-right">
+          <p class="text-xs text-gray-500">Total</p>
+          <p class="text-lg font-bold brand-orange">L.<span id="floatingCartTotal">0.00</span></p>
+        </div>
+        <button id="openFloatingCart" class="bg-brand-orange text-white px-6 py-3 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg flex items-center gap-2">
+          Ver Carrito
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- Modal Carrito -->
   <div id="cartModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end md:items-center justify-center">
@@ -1578,13 +1666,43 @@ async function cargarPerfilUsuario() {
     }
 
     function updateCartUI() {
-      const count = appData.cart.reduce((sum, item) => sum + item.cantidad, 0);
-      const cartCountEl = document.getElementById('cartCount');
-      cartCountEl.textContent = count;
-      
-      cartCountEl.classList.add('scale-in');
-      setTimeout(() => cartCountEl.classList.remove('scale-in'), 200);
-    }
+  const count = appData.cart.reduce((sum, item) => sum + item.cantidad, 0);
+  const total = appData.cart.reduce((sum, item) => sum + (parseFloat(item.PRECIO || 0) * item.cantidad), 0);
+  
+  // Actualizar badge del header
+  const cartCountEl = document.getElementById('cartCount');
+  cartCountEl.textContent = count;
+  cartCountEl.classList.add('scale-in');
+  setTimeout(() => cartCountEl.classList.remove('scale-in'), 200);
+  
+  // Actualizar barra flotante
+  const floatingCart = document.getElementById('floatingCart');
+  const floatingCartCount = document.getElementById('floatingCartCount');
+  const floatingCartItems = document.getElementById('floatingCartItems');
+  const floatingCartTotal = document.getElementById('floatingCartTotal');
+  
+  if (count > 0) {
+    // Mostrar barra flotante
+    floatingCart.classList.remove('hidden', 'hide');
+    document.body.classList.add('cart-active');
+    
+    // Actualizar valores
+    floatingCartCount.textContent = count;
+    floatingCartItems.textContent = count;
+    floatingCartTotal.textContent = total.toFixed(2);
+    
+    // Efecto de pulso
+    floatingCart.classList.add('cart-pulse');
+    setTimeout(() => floatingCart.classList.remove('cart-pulse'), 500);
+  } else {
+    // Ocultar barra flotante con animación
+    floatingCart.classList.add('hide');
+    setTimeout(() => {
+      floatingCart.classList.add('hidden');
+      document.body.classList.remove('cart-active');
+    }, 300);
+  }
+}
 
     function renderCart() {
       const container = document.getElementById('cartItems');
@@ -1740,6 +1858,12 @@ async function cargarPerfilUsuario() {
         document.getElementById('cartModal').classList.remove('hidden');
         renderCart();
       });
+
+// Abrir carrito desde barra flotante
+document.getElementById('openFloatingCart').addEventListener('click', () => {
+  document.getElementById('cartModal').classList.remove('hidden');
+  renderCart();
+});
 
       document.getElementById('closeCartBtn').addEventListener('click', () => {
         document.getElementById('cartModal').classList.add('hidden');
