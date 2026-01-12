@@ -1,7 +1,7 @@
 {
   "name": "Somar Express - Panel Comercios",
   "short_name": "Somar Comercios",
-  "description": "Gestiona tus envÃ­os con Somar Express",
+  "description": "Gestiona tus envíos con Somar Express",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
