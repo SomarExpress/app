@@ -491,21 +491,59 @@
             <textarea id="notasEspeciales" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="3" placeholder="Ej: Tocar el timbre 2 veces, dejar en la puerta, sin cebolla, etc."></textarea>
           </div>
 
-          <!-- Resumen Total -->
-          <div class="mb-6 p-4 bg-gray-50 rounded-xl">
-            <div class="flex justify-between text-sm mb-2">
-              <span>Subtotal:</span>
-              <span class="font-semibold">L.<span id="checkoutSubtotal">0.00</span></span>
-            </div>
-            <div class="flex justify-between text-sm mb-2 hidden" id="propinaRow">
-              <span>Propina:</span>
-              <span class="font-semibold brand-orange">L.<span id="checkoutPropina">0.00</span></span>
-            </div>
-            <div class="flex justify-between text-lg font-bold border-t pt-2 mt-2">
-              <span>TOTAL:</span>
-              <span class="brand-orange">L.<span id="checkoutTotal">0.00</span></span>
-            </div>
-          </div>
+          <!-- Resumen de Tarifa de Envío -->
+<div id="tarifaDeliveryResumen" class="hidden mb-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
+  <h3 class="font-bold mb-3 flex items-center gap-2">
+    🚚 Tarifa de Envío
+    <span id="modoNocturnoIndicador" class="hidden text-xs bg-purple-600 text-white px-2 py-1 rounded-full">🌙 Modo Nocturno</span>
+  </h3>
+  <div class="space-y-2 text-sm">
+    <div class="flex justify-between">
+      <span class="text-gray-700">Origen:</span>
+      <span class="font-semibold" id="tarifaCiudadOrigen">-</span>
+    </div>
+    <div class="flex justify-between">
+      <span class="text-gray-700">Destino:</span>
+      <span class="font-semibold" id="tarifaCiudadDestino">-</span>
+    </div>
+    <div class="flex justify-between">
+      <span class="text-gray-700">Distancia:</span>
+      <span class="font-semibold" id="tarifaDistanciaKm">-</span>
+    </div>
+    <div class="flex justify-between">
+      <span class="text-gray-700">Tarifa Base:</span>
+      <span class="font-semibold">L.<span id="tarifaBase">0.00</span></span>
+    </div>
+    <div id="recargoNocturnoRow" class="hidden flex justify-between text-purple-700">
+      <span class="font-semibold">🌙 Recargo Nocturno (7pm-6am):</span>
+      <span class="font-bold">+L.<span id="tarifaRecargoNocturno">0.00</span></span>
+    </div>
+    <div class="flex justify-between border-t pt-2 mt-2">
+      <span class="text-gray-700 font-bold">Total Envío:</span>
+      <span class="font-bold text-lg text-blue-600">L.<span id="tarifaTotalEnvio">0.00</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- Resumen Total -->
+<div class="mb-6 p-4 bg-gray-50 rounded-xl">
+  <div class="flex justify-between text-sm mb-2">
+    <span>Subtotal Productos:</span>
+    <span class="font-semibold">L.<span id="checkoutSubtotal">0.00</span></span>
+  </div>
+  <div id="tarifaEnvioRow" class="hidden flex justify-between text-sm mb-2">
+    <span>Tarifa de Envío:</span>
+    <span class="font-semibold text-blue-600">L.<span id="checkoutTarifaEnvio">0.00</span></span>
+  </div>
+  <div class="flex justify-between text-sm mb-2 hidden" id="propinaRow">
+    <span>Propina:</span>
+    <span class="font-semibold brand-orange">L.<span id="checkoutPropina">0.00</span></span>
+  </div>
+  <div class="flex justify-between text-lg font-bold border-t pt-2 mt-2">
+    <span>TOTAL A PAGAR:</span>
+    <span class="brand-orange">L.<span id="checkoutTotal">0.00</span></span>
+  </div>
+</div>
 
           <!-- Botones -->
           <div class="flex gap-3">
@@ -724,6 +762,183 @@ let authData = {
 
       renderComercios();
     }
+
+    // AÑADIR DESPUÉS DE calcularDistanciasComercios()
+
+// CÁLCULO DE TARIFAS
+function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function obtenerCiudad(lat, lon) {
+  const ciudades = [
+    { nombre: 'Choloma', lat: 15.61, lon: -87.95, radio: 0.10 },
+    { nombre: 'San Pedro Sula', lat: 15.50, lon: -88.03, radio: 0.15 },
+    { nombre: 'Tegucigalpa', lat: 14.08, lon: -87.21, radio: 0.15 },
+    { nombre: 'La Ceiba', lat: 15.78, lon: -86.80, radio: 0.10 },
+    { nombre: 'El Progreso', lat: 15.40, lon: -87.80, radio: 0.08 },
+    { nombre: 'Comayagua', lat: 14.45, lon: -87.64, radio: 0.10 },
+    { nombre: 'Puerto Cortés', lat: 15.85, lon: -87.94, radio: 0.08 },
+    { nombre: 'Villanueva', lat: 15.32, lon: -88.00, radio: 0.08 },
+    { nombre: 'La Lima', lat: 15.43, lon: -87.91, radio: 0.06 },
+    { nombre: 'Choluteca', lat: 13.30, lon: -87.19, radio: 0.10 },
+    { nombre: 'Danlí', lat: 14.03, lon: -86.58, radio: 0.08 },
+    { nombre: 'Juticalpa', lat: 14.66, lon: -86.22, radio: 0.08 },
+    { nombre: 'Santa Rosa de Copán', lat: 14.77, lon: -88.78, radio: 0.08 },
+    { nombre: 'Siguatepeque', lat: 14.60, lon: -87.84, radio: 0.08 },
+    { nombre: 'Tocoa', lat: 15.66, lon: -86.00, radio: 0.08 },
+    { nombre: 'Tela', lat: 15.78, lon: -87.46, radio: 0.08 }
+  ];
+
+  for (const ciudad of ciudades) {
+    const distancia = Math.sqrt(Math.pow(lat - ciudad.lat, 2) + Math.pow(lon - ciudad.lon, 2));
+    if (distancia < ciudad.radio) {
+      console.log(`✅ Ciudad detectada: ${ciudad.nombre}`);
+      return ciudad.nombre;
+    }
+  }
+
+  if (lat >= 15.3 && lat <= 16.0 && lon >= -88.5 && lon <= -87.3) return 'Cortés';
+  else if (lat >= 13.8 && lat <= 14.4 && lon >= -87.5 && lon <= -86.8) return 'Francisco Morazán';
+  else if (lat >= 15.5 && lat <= 16.0 && lon >= -87.0 && lon <= -86.0) return 'Atlántida';
+  else if (lat >= 14.4 && lat <= 15.0 && lon >= -86.8 && lon <= -86.0) return 'Olancho';
+  else if (lat >= 13.0 && lat <= 13.8 && lon >= -87.5 && lon <= -86.8) return 'Choluteca';
+
+  console.log('⚠️ Ciudad no detectada, usando genérico');
+  return 'Honduras';
+}
+
+async function calcularDistanciaOSRM(lat1, lon1, lat2, lon2) {
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`;
+    console.log('🌐 Consultando OSRM...');
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('OSRM failed');
+    const data = await response.json();
+    if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) throw new Error('No route');
+    const distanciaKm = data.routes[0].distance / 1000;
+    console.log(`✅ OSRM: ${distanciaKm.toFixed(2)} km por carretera`);
+    return distanciaKm;
+  } catch (error) {
+    console.error('❌ OSRM error:', error);
+    throw error;
+  }
+}
+
+function calcularTarifaCholoma(km) {
+  const tabla = [
+    { min: 0, max: 3, tarifa: 50 },
+    { min: 3, max: 7, tarifa: 75 },
+    { min: 7, max: 9, tarifa: 90 },
+    { min: 9, max: 11, tarifa: 105 },
+    { min: 11, max: 13, tarifa: 120 },
+    { min: 13, max: 15, tarifa: 135 }
+  ];
+  for (const r of tabla) {
+    if (km >= r.min && km < r.max) {
+      console.log(`✅ Choloma ${r.min}-${r.max}km: L.${r.tarifa}`);
+      return r.tarifa;
+    }
+  }
+  const calc = 30 + (km * 6.8);
+  const redondeado = Math.round(calc / 5) * 5;
+  console.log(`📊 Choloma fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
+  return redondeado;
+}
+
+function calcularTarifaOtrasCiudades(km) {
+  const tabla = [
+    { min: 0, max: 11, tarifa: 125 },
+    { min: 11, max: 13, tarifa: 135 },
+    { min: 13, max: 15, tarifa: 150 },
+    { min: 15, max: 17, tarifa: 165 },
+    { min: 17, max: 19, tarifa: 180 },
+    { min: 19, max: 21, tarifa: 195 }
+  ];
+  for (const r of tabla) {
+    if (km >= r.min && km < r.max) {
+      console.log(`✅ Otras ${r.min}-${r.max}km: L.${r.tarifa}`);
+      return r.tarifa;
+    }
+  }
+  const calc = 40 + (km * 7.5);
+  const redondeado = Math.round(calc / 5) * 5;
+  console.log(`📊 Otras fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
+  return redondeado;
+}
+
+function esModoNocturno() {
+  const ahora = new Date();
+  const hora = ahora.getHours();
+  return hora >= 19 || hora < 6; // 7pm a 6am
+}
+
+async function calcularTarifaDelivery(comercioGPS, usuarioGPS) {
+  if (!comercioGPS || !usuarioGPS) {
+    console.log('⚠️ Faltan ubicaciones para calcular tarifa');
+    return null;
+  }
+
+  try {
+    const [lat1, lon1] = comercioGPS.split(',').map(Number);
+    const [lat2, lon2] = usuarioGPS.split(',').map(Number);
+
+    if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) {
+      console.error('❌ Coordenadas inválidas');
+      return null;
+    }
+
+    const ciudadOrigen = obtenerCiudad(lat1, lon1);
+    const ciudadDestino = obtenerCiudad(lat2, lon2);
+
+    console.log(`📍 Origen: ${ciudadOrigen}, Destino: ${ciudadDestino}`);
+
+    let distanciaKm;
+    try {
+      distanciaKm = await calcularDistanciaOSRM(lat1, lon1, lat2, lon2);
+    } catch (error) {
+      console.warn('⚠️ OSRM fallback a Haversine');
+      distanciaKm = calcularDistanciaHaversine(lat1, lon1, lat2, lon2);
+    }
+
+    const esCholoma = ciudadOrigen.toLowerCase().includes('choloma') && 
+                      ciudadDestino.toLowerCase().includes('choloma');
+
+    let tarifaBase = esCholoma ? 
+      calcularTarifaCholoma(distanciaKm) : 
+      calcularTarifaOtrasCiudades(distanciaKm);
+
+    // APLICAR RECARGO NOCTURNO
+    let recargoNocturno = 0;
+    if (esModoNocturno()) {
+      recargoNocturno = 15;
+      console.log('🌙 Modo Nocturno activado: +L.15');
+    }
+
+    const tarifaTotal = tarifaBase + recargoNocturno;
+
+    return {
+      ciudadOrigen,
+      ciudadDestino,
+      distanciaKm: distanciaKm.toFixed(2),
+      tarifaBase: tarifaBase.toFixed(2),
+      recargoNocturno: recargoNocturno.toFixed(2),
+      tarifaTotal: tarifaTotal.toFixed(2),
+      esModoNocturno: esModoNocturno()
+    };
+
+  } catch (error) {
+    console.error('❌ Error calculando tarifa:', error);
+    return null;
+  }
+}
 
     function obtenerUbicacion() {
       if (navigator.geolocation) {
@@ -1434,21 +1649,57 @@ async function cargarPerfilUsuario() {
       });
     }
 
-    function actualizarTotalesCheckout() {
-      const subtotal = appData.cart.reduce((sum, item) => sum + (parseFloat(item.PRECIO || 0) * item.cantidad), 0);
-      const propina = parseFloat(document.getElementById('propinaCustom').value) || 0;
-      const total = subtotal + propina;
+    async function actualizarTotalesCheckout() {
+  const subtotal = appData.cart.reduce((sum, item) => sum + (parseFloat(item.PRECIO || 0) * item.cantidad), 0);
+  const propina = parseFloat(document.getElementById('propinaCustom').value) || 0;
+  
+  // CALCULAR TARIFA DE ENVÍO
+  let tarifaEnvio = 0;
+  if (appData.currentComercio && appData.userLocation) {
+    const comercioGPS = appData.currentComercio['GPS COMERCIO'] || appData.currentComercio['GPS_COMERCIO'] || appData.currentComercio.GPS;
+    
+    if (comercioGPS) {
+      const resultadoTarifa = await calcularTarifaDelivery(comercioGPS, appData.userLocation);
       
-      document.getElementById('checkoutSubtotal').textContent = subtotal.toFixed(2);
-      document.getElementById('checkoutPropina').textContent = propina.toFixed(2);
-      document.getElementById('checkoutTotal').textContent = total.toFixed(2);
-      
-      if (propina > 0) {
-        document.getElementById('propinaRow').classList.remove('hidden');
-      } else {
-        document.getElementById('propinaRow').classList.add('hidden');
+      if (resultadoTarifa) {
+        tarifaEnvio = parseFloat(resultadoTarifa.tarifaTotal);
+        
+        // Mostrar resumen de tarifa
+        document.getElementById('tarifaCiudadOrigen').textContent = resultadoTarifa.ciudadOrigen;
+        document.getElementById('tarifaCiudadDestino').textContent = resultadoTarifa.ciudadDestino;
+        document.getElementById('tarifaDistanciaKm').textContent = resultadoTarifa.distanciaKm + ' km';
+        document.getElementById('tarifaBase').textContent = resultadoTarifa.tarifaBase;
+        document.getElementById('tarifaTotalEnvio').textContent = resultadoTarifa.tarifaTotal;
+        
+        // Mostrar/ocultar recargo nocturno
+        if (resultadoTarifa.esModoNocturno) {
+          document.getElementById('recargoNocturnoRow').classList.remove('hidden');
+          document.getElementById('tarifaRecargoNocturno').textContent = resultadoTarifa.recargoNocturno;
+          document.getElementById('modoNocturnoIndicador').classList.remove('hidden');
+        } else {
+          document.getElementById('recargoNocturnoRow').classList.add('hidden');
+          document.getElementById('modoNocturnoIndicador').classList.add('hidden');
+        }
+        
+        document.getElementById('tarifaDeliveryResumen').classList.remove('hidden');
+        document.getElementById('tarifaEnvioRow').classList.remove('hidden');
+        document.getElementById('checkoutTarifaEnvio').textContent = resultadoTarifa.tarifaTotal;
       }
     }
+  }
+  
+  const total = subtotal + tarifaEnvio + propina;
+  
+  document.getElementById('checkoutSubtotal').textContent = subtotal.toFixed(2);
+  document.getElementById('checkoutPropina').textContent = propina.toFixed(2);
+  document.getElementById('checkoutTotal').textContent = total.toFixed(2);
+  
+  if (propina > 0) {
+    document.getElementById('propinaRow').classList.remove('hidden');
+  } else {
+    document.getElementById('propinaRow').classList.add('hidden');
+  }
+}
 
     function setupEventListeners() {
       document.getElementById('locationBtn').addEventListener('click', () => {
@@ -1731,7 +1982,20 @@ async function cargarPerfilUsuario() {
       }
 
       const subtotal = appData.cart.reduce((sum, item) => sum + (parseFloat(item.PRECIO || 0) * item.cantidad), 0);
-      const total = subtotal + propina;
+
+// Obtener tarifa de envío
+let tarifaEnvio = 0;
+let infoTarifa = null;
+if (appData.currentComercio && appData.userLocation) {
+  const comercioGPS = appData.currentComercio['GPS COMERCIO'] || appData.currentComercio['GPS_COMERCIO'] || appData.currentComercio.GPS;
+  if (comercioGPS) {
+    infoTarifa = await calcularTarifaDelivery(comercioGPS, appData.userLocation);
+    if (infoTarifa) {
+      tarifaEnvio = parseFloat(infoTarifa.tarifaTotal);
+    }
+  }
+}
+      const total = subtotal + tarifaEnvio + propina;
 
       let montoPago = null;
       let cambio = null;
@@ -1805,6 +2069,8 @@ async function cargarPerfilUsuario() {
           descripcion: item.DESCRIPCION || ''
         })),
         subtotal,
+          tarifaEnvio,  // ← AGREGAR ESTO
+          infoTarifa,   // ← AGREGAR ESTO
         propina,
         total,
         comercio: appData.currentComercio.COMERCIO,
@@ -1861,6 +2127,14 @@ async function cargarPerfilUsuario() {
         `📦 *TUS PRODUCTOS:*\n${itemsTexto}\n\n` +
         `💵 *DESGLOSE:*\n` +
         `Subtotal: L.${datos.subtotal.toFixed(2)}\n`;
+
+if (datos.tarifaEnvio > 0) {
+  mensajeCompleto += `🚚 Tarifa de Envío: L.${datos.tarifaEnvio.toFixed(2)}`;
+  if (datos.infoTarifa && datos.infoTarifa.esModoNocturno) {
+    mensajeCompleto += ` (incluye recargo nocturno L.${datos.infoTarifa.recargoNocturno})`;
+  }
+  mensajeCompleto += `\n`;
+}
 
       if (datos.propina > 0) {
         mensajeCompleto += `Propina: L.${datos.propina.toFixed(2)}\n`;
