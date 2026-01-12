@@ -1,7 +1,7 @@
 {
   "name": "Somar Express - Clientes",
   "short_name": "Somar Clientes",
-  "description": "Solicita envíos con Somar Express",
+  "description": "Solicita envÃ­os con Somar Express",
   "start_url": "./clientes.html",
   "display": "standalone",
   "background_color": "#FFFFFF",
