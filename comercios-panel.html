@@ -95,13 +95,16 @@
     }
 
     .status-PENDIENTE { background: #FEF3C7; color: #92400E; }
-    .status-ACEPTADO { background: #DBEAFE; color: #1E40AF; }
+.status-PENDIENTE_ASIGNACION { background: #FED7AA; color: #9A3412; }
+.status-ACEPTADO { background: #DBEAFE; color: #1E40AF; }
     .status-EN_ESTABLECIMIENTO { background: #E0E7FF; color: #3730A3; }
     .status-PEDIDO_EN_CAMINO { background: #DDD6FE; color: #5B21B6; }
     .status-ENTREGANDO { background: #FCE7F3; color: #9F1239; }
     .status-FINALIZADO { background: #D1FAE5; color: #065F46; }
     .status-CANCELADO { background: #FEE2E2; color: #991B1B; }
   </style>
+
+  <script src="./config-seguro-comercios.js"></script>
 </head>
 <body class="bg-gray-50">
   
@@ -202,18 +205,23 @@
   <!-- Vista Principal -->
   <div id="mainContent" class="hidden">
     <!-- Tabs -->
-    <div class="bg-white border-b sticky top-16 z-40">
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="flex gap-4">
-          <button id="tabNuevoEnvio" class="tab-btn py-4 px-6 font-semibold border-b-2 border-brand-orange brand-orange">
-            Nuevo Envío
-          </button>
-          <button id="tabMisEnvios" class="tab-btn py-4 px-6 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-800">
-            Mis Envíos
-          </button>
-        </div>
-      </div>
+<div class="bg-white border-b sticky top-16 z-40">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="flex gap-4">
+      <button id="tabNuevoEnvio" class="tab-btn py-4 px-6 font-semibold border-b-2 border-brand-orange brand-orange">
+        Nuevo Envío
+      <button id="tabMisSolicitudes" class="tab-btn py-4 px-6 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-800">
+  📋 Mis Solicitudes
+      </button>
+      
+      <!-- 👇 AGREGAR ESTE BOTÓN -->
+      <button id="tabSolicitarEntrega" class="tab-btn py-4 px-6 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-800">
+        🚚 Solicitar Entrega
+      </button>
+      
     </div>
+  </div>
+</div>
 
     <!-- Contenido Tab: Nuevo Envío -->
     <div id="contentNuevoEnvio" class="max-w-3xl mx-auto p-4">
@@ -441,28 +449,42 @@
       </form>
     </div>
 
-    <!-- Contenido Tab: Mis Envíos -->
-    <div id="contentMisEnvios" class="hidden max-w-5xl mx-auto p-4">
-      <div class="mb-4 flex gap-2">
-        <select id="filtroEstado" class="border-2 border-gray-200 rounded-xl px-4 py-2 focus:border-brand-orange focus:outline-none transition">
-          <option value="">Todos los estados</option>
-          <option value="PENDIENTE">Pendiente</option>
-          <option value="ACEPTADO">Aceptado</option>
-          <option value="EN_ESTABLECIMIENTO">En Establecimiento</option>
-          <option value="PEDIDO_EN_CAMINO">Pedido en Camino</option>
-          <option value="ENTREGANDO">Entregando</option>
-          <option value="FINALIZADO">Finalizado</option>
-          <option value="CANCELADO">Cancelado</option>
-        </select>
-        <button id="refrescarEnvios" class="bg-blue-500 text-white px-4 py-2 rounded-xl font-semibold hover:bg-blue-600 transition">
-          🔄 Refrescar
-        </button>
-      </div>
-      <div id="listaEnvios" class="space-y-4">
+    <!-- Contenido Tab: Mis Solicitudes (Envíos + Entregas) -->
+    <div id="contentMisSolicitudes" class="hidden max-w-5xl mx-auto p-4">
+    <div class="mb-4 flex flex-wrap gap-2">
+  <!-- Filtro por Tipo -->
+  <select id="filtroTipo" class="border-2 border-gray-200 rounded-xl px-4 py-2 focus:border-brand-orange focus:outline-none transition">
+    <option value="">Todos los tipos</option>
+    <option value="ENVIO">📦 Envíos</option>
+    <option value="ENTREGA">🚚 Entregas/Solicitudes</option>
+  </select>
+  
+  <!-- Filtro por Estado -->
+  <select id="filtroEstado" class="border-2 border-gray-200 rounded-xl px-4 py-2 focus:border-brand-orange focus:outline-none transition">
+    <option value="">Todos los estados</option>
+    <option value="PENDIENTE">Pendiente</option>
+    <option value="PENDIENTE_ASIGNACION">Pendiente Asignación</option>
+    <option value="ACEPTADO">Aceptado</option>
+    <option value="EN_ESTABLECIMIENTO">En Establecimiento</option>
+    <option value="PEDIDO_EN_CAMINO">Pedido en Camino</option>
+    <option value="ENTREGANDO">Entregando</option>
+    <option value="FINALIZADO">Finalizado</option>
+    <option value="CANCELADO">Cancelado</option>
+  </select>
+  
+  <button id="refrescarSolicitudes" class="bg-blue-500 text-white px-4 py-2 rounded-xl font-semibold hover:bg-blue-600 transition">
+    🔄 Refrescar
+  </button>
+</div>
+<div id="listaSolicitudes" class="space-y-4">
         <div class="text-center py-12 text-gray-500">
           <p class="text-lg font-semibold">Cargando envíos...</p>
         </div>
       </div>
+
+      <!-- Contenido Tab: Solicitar Entrega -->
+      <div id="containerSolicitarEntrega" class="hidden">
+
     </div>
   </div>
 
@@ -522,9 +544,15 @@
   </div>
 
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzmnCMSGJOo5cjFB424vQ-6jNRRBQKWS3wVJlw4U-f3e_7utcXCgWf3zdrEtEFKPhL-g/exec';
-    const CLOUDINARY_CLOUD_NAME = 'drkaxsziu';
-    const CLOUDINARY_UPLOAD_PRESET = 'TRANSFERENCIAS';
+    const SCRIPT_URL = window.APP_CONFIG.apiEndpoint;
+const CLOUDINARY_CLOUD_NAME = window.APP_CONFIG.cloudinary.cloudName;
+const CLOUDINARY_UPLOAD_PRESET = window.APP_CONFIG.cloudinary.uploadPreset;
+
+// Validar origen al cargar
+if (!window.APP_SECURITY.validateOrigin()) {
+  document.body.innerHTML = '<h1 style="text-align:center;margin-top:50px;">Acceso no autorizado</h1>';
+  throw new Error('Invalid origin');
+}
 
     let appData = {
       comercio: null,
@@ -539,10 +567,10 @@
 
     // AUTENTICACIÓN
     function verificarSesion() {
-      const comercioGuardado = localStorage.getItem('somarComercioUser');
-      if (comercioGuardado) {
-        try {
-          appData.comercio = JSON.parse(comercioGuardado);
+  const comercioGuardado = window.APP_SECURITY.getSecureSession('somarComercioUser');
+  if (comercioGuardado) {
+    try {
+      appData.comercio = comercioGuardado;
           document.getElementById('authModal').classList.add('hidden');
           document.getElementById('mainContent').classList.remove('hidden');
           document.getElementById('comercioName').textContent = appData.comercio.nombre;
@@ -598,7 +626,7 @@
         if (result.success) {
           if (result.comercioExiste) {
             appData.comercio = result.datosComercio;
-            localStorage.setItem('somarComercioUser', JSON.stringify(appData.comercio));
+            window.APP_SECURITY.saveSecureSession('somarComercioUser', appData.comercio);
             document.getElementById('authModal').classList.add('hidden');
             document.getElementById('mainContent').classList.remove('hidden');
             document.getElementById('comercioName').textContent = appData.comercio.nombre;
@@ -639,7 +667,7 @@
 
         if (result.success) {
           appData.comercio = result.comercio;
-          localStorage.setItem('somarComercioUser', JSON.stringify(appData.comercio));
+          window.APP_SECURITY.saveSecureSession('somarComercioUser', appData.comercio);
           document.getElementById('authModal').classList.add('hidden');
           document.getElementById('mainContent').classList.remove('hidden');
           document.getElementById('comercioName').textContent = appData.comercio.nombre;
@@ -668,7 +696,7 @@
     async function extraerCoordenadasDeLink(input) {
       try {
         input = input.trim();
-        console.log('🔍 Procesando entrada:', input);
+        window.secureLog('🔍 Procesando entrada:', input);
 
         const soloCoordMatch = input.match(/^\s*([0-9]{1,2}\.[0-9]+)\s*,\s*(-?[0-9]{1,3}\.[0-9]+)\s*$/);
         if (soloCoordMatch) {
@@ -676,13 +704,13 @@
           const lon = parseFloat(soloCoordMatch[2]);
           
           if (lat >= 13 && lat <= 16 && lon >= -90 && lon <= -83) {
-            console.log('✅ Coordenadas directas detectadas');
+            window.secureLog('✅ Coordenadas directas detectadas');
             return { lat, lon, exito: true };
           }
         }
 
         if (input.includes('goo.gl') || input.includes('maps.app.goo.gl')) {
-          console.log('⚠️ Link acortado detectado');
+          window.secureLog('⚠️ Link acortado detectado');
           return { 
             exito: false, 
             error: 'LINK_ACORTADO',
@@ -701,19 +729,19 @@
     async function extraerCoordenadasDeURL(url) {
       const qMatch = url.match(/[?&]q=([0-9.-]+),([0-9.-]+)/);
       if (qMatch) {
-        console.log('✅ Coordenadas encontradas (q)');
+        window.secureLog('✅ Coordenadas encontradas (q)');
         return { lat: parseFloat(qMatch[1]), lon: parseFloat(qMatch[2]), exito: true };
       }
 
       const atMatch = url.match(/@([0-9.-]+),([0-9.-]+)/);
       if (atMatch) {
-        console.log('✅ Coordenadas encontradas (@)');
+        window.secureLog('✅ Coordenadas encontradas (@)');
         return { lat: parseFloat(atMatch[1]), lon: parseFloat(atMatch[2]), exito: true };
       }
 
       const placeMatch = url.match(/\/place\/.*?@([0-9.-]+),([0-9.-]+)/);
       if (placeMatch) {
-        console.log('✅ Coordenadas encontradas (place)');
+        window.secureLog('✅ Coordenadas encontradas (place)');
         return { lat: parseFloat(placeMatch[1]), lon: parseFloat(placeMatch[2]), exito: true };
       }
 
@@ -723,12 +751,12 @@
         const lon = parseFloat(coordMatch[2]);
         
         if (lat >= 13 && lat <= 16 && lon >= -90 && lon <= -83) {
-          console.log('✅ Coordenadas encontradas (patrón general)');
+          window.secureLog('✅ Coordenadas encontradas (patrón general)');
           return { lat, lon, exito: true };
         }
       }
 
-      console.log('❌ No se encontraron coordenadas en la URL');
+      window.secureLog('❌ No se encontraron coordenadas en la URL');
       return { exito: false, error: 'No se detectaron coordenadas válidas' };
     }
 
@@ -767,7 +795,7 @@
       for (const ciudad of ciudades) {
         const distancia = Math.sqrt(Math.pow(lat - ciudad.lat, 2) + Math.pow(lon - ciudad.lon, 2));
         if (distancia < ciudad.radio) {
-          console.log(`✅ Ciudad detectada: ${ciudad.nombre}`);
+          window.secureLog(`✅ Ciudad detectada: ${ciudad.nombre}`);
           return ciudad.nombre;
         }
       }
@@ -778,20 +806,20 @@
       else if (lat >= 14.4 && lat <= 15.0 && lon >= -86.8 && lon <= -86.0) return 'Olancho';
       else if (lat >= 13.0 && lat <= 13.8 && lon >= -87.5 && lon <= -86.8) return 'Choluteca';
 
-      console.log('⚠️ Ciudad no detectada, usando genérico');
+      window.secureLog('⚠️ Ciudad no detectada, usando genérico');
       return 'Honduras';
     }
 
     async function calcularDistanciaOSRM(lat1, lon1, lat2, lon2) {
       try {
         const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`;
-        console.log('🌐 Consultando OSRM...');
+        window.secureLog('🌐 Consultando OSRM...');
         const response = await fetch(url);
         if (!response.ok) throw new Error('OSRM failed');
         const data = await response.json();
         if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) throw new Error('No route');
         const distanciaKm = data.routes[0].distance / 1000;
-        console.log(`✅ OSRM: ${distanciaKm.toFixed(2)} km por carretera`);
+        window.secureLog(`✅ OSRM: ${distanciaKm.toFixed(2)} km por carretera`);
         return distanciaKm;
       } catch (error) {
         console.error('❌ OSRM error:', error);
@@ -810,13 +838,13 @@
       ];
       for (const r of tabla) {
         if (km >= r.min && km < r.max) {
-          console.log(`✅ Choloma ${r.min}-${r.max}km: L.${r.tarifa}`);
+          window.secureLog(`✅ Choloma ${r.min}-${r.max}km: L.${r.tarifa}`);
           return r.tarifa;
         }
       }
       const calc = 30 + (km * 6.8);
       const redondeado = Math.round(calc / 5) * 5;
-      console.log(`📊 Choloma fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
+      window.secureLog(`📊 Choloma fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
       return redondeado;
     }
 
@@ -831,19 +859,19 @@
       ];
       for (const r of tabla) {
         if (km >= r.min && km < r.max) {
-          console.log(`✅ Otras ${r.min}-${r.max}km: L.${r.tarifa}`);
+          window.secureLog(`✅ Otras ${r.min}-${r.max}km: L.${r.tarifa}`);
           return r.tarifa;
         }
       }
       const calc = 40 + (km * 7.5);
       const redondeado = Math.round(calc / 5) * 5;
-      console.log(`📊 Otras fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
+      window.secureLog(`📊 Otras fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
       return redondeado;
     }
 
     async function calcularTarifa(ubicacionRecogida, ubicacionEntrega) {
       if (!ubicacionRecogida || !ubicacionEntrega) {
-        console.log('⚠️ Faltan ubicaciones');
+        window.secureLog('⚠️ Faltan ubicaciones');
         return;
       }
 
@@ -859,7 +887,7 @@
         const ciudadOrigen = obtenerCiudad(lat1, lon1);
         const ciudadDestino = obtenerCiudad(lat2, lon2);
 
-        console.log(`📍 Origen: ${ciudadOrigen}, Destino: ${ciudadDestino}`);
+        window.secureLog(`📍 Origen: ${ciudadOrigen}, Destino: ${ciudadDestino}`);
 
         let distanciaKm;
         try {
@@ -882,7 +910,7 @@
         document.getElementById('tarifaTotal').textContent = tarifaTotal.toFixed(2);
         document.getElementById('tarifaResumen').classList.remove('hidden');
 
-        console.log(`✅ Tarifa: L.${tarifaTotal.toFixed(2)}`);
+        window.secureLog(`✅ Tarifa: L.${tarifaTotal.toFixed(2)}`);
       } catch (error) {
         console.error('❌ Error:', error);
       }
@@ -890,7 +918,7 @@
 
     // MAPAS
     function mostrarMapaPreview(lat, lon, containerId) {
-      console.log(`🗺️ Mostrando mapa preview en ${containerId}:`, lat, lon);
+      window.secureLog(`🗺️ Mostrando mapa preview en ${containerId}:`, lat, lon);
       
       const container = document.getElementById(containerId);
       if (!container) {
@@ -903,7 +931,7 @@
           appData.mapRecogida.off();
           appData.mapRecogida.remove();
         } catch (error) {
-          console.log('⚠️ Error limpiando mapa recogida:', error);
+          window.secureLog('⚠️ Error limpiando mapa recogida:', error);
         }
         appData.mapRecogida = null;
       }
@@ -913,7 +941,7 @@
           appData.mapEntrega.off();
           appData.mapEntrega.remove();
         } catch (error) {
-          console.log('⚠️ Error limpiando mapa entrega:', error);
+          window.secureLog('⚠️ Error limpiando mapa entrega:', error);
         }
         appData.mapEntrega = null;
       }
@@ -955,7 +983,7 @@
           }
           
           setTimeout(() => map.invalidateSize(), 150);
-          console.log(`✅ Mapa ${containerId} creado`);
+          window.secureLog(`✅ Mapa ${containerId} creado`);
           
         } catch (error) {
           console.error(`❌ Error creando mapa ${containerId}:`, error);
@@ -964,7 +992,7 @@
     }
 
     function inicializarMapaInteractivo() {
-      console.log('🗺️ Inicializando mapa interactivo...');
+      window.secureLog('🗺️ Inicializando mapa interactivo...');
       
       const modal = document.getElementById('mapModal');
       const container = document.getElementById('mapInteractive');
@@ -974,7 +1002,7 @@
           appData.mapInteractive.off();
           appData.mapInteractive.remove();
         } catch (error) {
-          console.log('⚠️ Error limpiando mapa:', error);
+          window.secureLog('⚠️ Error limpiando mapa:', error);
         }
         appData.mapInteractive = null;
         appData.markerInteractive = null;
@@ -1026,7 +1054,7 @@
           });
           
           setTimeout(() => appData.mapInteractive.invalidateSize(), 200);
-          console.log('✅ Mapa interactivo creado');
+          window.secureLog('✅ Mapa interactivo creado');
         } catch (error) {
           console.error('❌ Error:', error);
           alert('Error al cargar el mapa. Intenta de nuevo.');
@@ -1035,67 +1063,119 @@
     }
 
     // GESTIÓN DE ENVÍOS
-    async function cargarMisEnvios() {
-      try {
-        const url = `${SCRIPT_URL}?action=obtenerEnviosComercio&idComercio=${appData.comercio.id}`;
-        const response = await fetch(url);
-        const result = await response.json();
+    async function cargarMisSolicitudes() {
+  try {
+    const url = `${SCRIPT_URL}?action=obtenerEnviosComercio&idComercio=${appData.comercio.id}`;
+    const response = await fetch(url);
+    const result = await response.json();
 
-        if (result.success) {
-          appData.envios = result.envios;
-          renderizarEnvios();
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      }
+    if (result.success) {
+      appData.solicitudes = result.envios; // Incluye tanto envíos como entregas
+      renderizarSolicitudes();
     }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
 
-    function renderizarEnvios() {
-      const container = document.getElementById('listaEnvios');
-      const filtroEstado = document.getElementById('filtroEstado').value;
+    function renderizarSolicitudes() {
+  const container = document.getElementById('listaSolicitudes');
+  const filtroEstado = document.getElementById('filtroEstado').value;
+  const filtroTipo = document.getElementById('filtroTipo').value;
 
-      let enviosFiltrados = appData.envios;
-      if (filtroEstado) {
-        enviosFiltrados = enviosFiltrados.filter(e => e.estado === filtroEstado);
-      }
+  let solicitudesFiltradas = appData.solicitudes || [];
+  
+  // Filtrar por estado
+  if (filtroEstado) {
+    solicitudesFiltradas = solicitudesFiltradas.filter(s => s.estado === filtroEstado);
+  }
+  
+  // Filtrar por tipo (ENVIO o ENTREGA)
+  if (filtroTipo) {
+    if (filtroTipo === 'ENVIO') {
+      solicitudesFiltradas = solicitudesFiltradas.filter(s => !s.esEntrega && !s.tipoRegistro);
+    } else if (filtroTipo === 'ENTREGA') {
+      solicitudesFiltradas = solicitudesFiltradas.filter(s => s.esEntrega || s.tipoRegistro === 'SOLICITUD_ENTREGA');
+    }
+  }
 
-      if (enviosFiltrados.length === 0) {
-        container.innerHTML = '<div class="text-center py-12 text-gray-500"><p>No hay envíos para mostrar</p></div>';
-        return;
-      }
+  if (solicitudesFiltradas.length === 0) {
+    container.innerHTML = '<div class="text-center py-12 text-gray-500"><p>No hay solicitudes para mostrar</p></div>';
+    return;
+  }
 
-      container.innerHTML = enviosFiltrados.map(envio => `
-        <div class="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition">
-          <div class="flex justify-between items-start mb-3">
-            <div>
-              <p class="font-bold text-lg">Envío #${envio.id}</p>
-              <p class="text-sm text-gray-600">${new Date(envio.fecha).toLocaleString('es-HN')}</p>
+  container.innerHTML = solicitudesFiltradas.map(item => {
+    const esEntrega = item.esEntrega || item.tipoRegistro === 'SOLICITUD_ENTREGA';
+    const tipoIcono = esEntrega ? '🚚' : '📦';
+    const tipoTexto = esEntrega ? 'SOLICITUD ENTREGA' : 'ENVÍO';
+    
+    // Determinar subtipo de entrega
+    let subtipoEntrega = '';
+    if (esEntrega && item.tipoServicio) {
+      const subtipos = {
+        'TRASLADO_TIENDAS': '🏪 Traslado entre Tiendas',
+        'RECOGER_PAQUETE': '📦 Recoger Paquete',
+        'REALIZAR_COMPRA': '🛒 Realizar Compra'
+      };
+      subtipoEntrega = subtipos[item.tipoServicio] || '';
+    }
+    
+    return `
+      <div class="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition ${esEntrega ? 'border-l-4 border-orange-400' : ''}">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xl">${tipoIcono}</span>
+              <p class="font-bold text-lg">${tipoTexto} #${item.id || 'N/A'}</p>
             </div>
-            <span class="status-badge status-${envio.estado}">${envio.estado.replace(/_/g, ' ')}</span>
+            <p class="text-sm text-gray-600">${new Date(item.fecha || item.fechaSolicitud).toLocaleString('es-HN')}</p>
+            ${subtipoEntrega ? `<p class="text-xs text-orange-600 font-semibold mt-1">${subtipoEntrega}</p>` : ''}
           </div>
-          <div class="grid grid-cols-2 gap-2 text-sm mb-3">
+          <span class="status-badge status-${item.estado}">${item.estado.replace(/_/g, ' ')}</span>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-2 text-sm mb-3">
+          ${!esEntrega ? `
             <div>
               <p class="text-gray-500">Origen:</p>
-              <p class="font-semibold">${envio.ciudadOrigen || '-'}</p>
+              <p class="font-semibold">${item.ciudadOrigen || '-'}</p>
             </div>
             <div>
               <p class="text-gray-500">Destino:</p>
-              <p class="font-semibold">${envio.ciudadDestino || '-'}</p>
+              <p class="font-semibold">${item.ciudadDestino || '-'}</p>
             </div>
             <div>
               <p class="text-gray-500">Destinatario:</p>
-              <p class="font-semibold">${envio.nombreDestinatario}</p>
+              <p class="font-semibold">${item.nombreDestinatario || '-'}</p>
             </div>
             <div>
               <p class="text-gray-500">Tipo:</p>
-              <p class="font-semibold">${envio.tipoServicio === 'PAGO_CONTRA_ENTREGA' ? '💰 Contra Entrega' : '📦 Solo Entrega'}</p>
+              <p class="font-semibold">${item.tipoServicio === 'PAGO_CONTRA_ENTREGA' ? '💰 Contra Entrega' : '📦 Solo Entrega'}</p>
             </div>
-          </div>
-          ${envio.delivery ? `<p class="text-sm text-blue-600">🚚 Delivery: ${envio.delivery}</p>` : ''}
-          <p class="text-sm text-gray-600 mt-2">${envio.descripcionPaquete}</p>
+          ` : `
+            <div>
+              <p class="text-gray-500">Tarifa:</p>
+              <p class="font-semibold brand-orange">L.${item.tarifa || item.tarifaEstimada || '0.00'}</p>
+            </div>
+            <div>
+              <p class="text-gray-500">Método de Pago:</p>
+              <p class="font-semibold">${item.metodoPago === 'EFECTIVO' ? '💵 Efectivo' : '🏦 Transferencia'}</p>
+            </div>
+          `}
         </div>
-      `).join('');
-    }
+        
+        ${item.delivery ? `<p class="text-sm text-blue-600">🚚 Delivery: ${item.delivery}</p>` : ''}
+        <p class="text-sm text-gray-600 mt-2">${item.descripcionPaquete || item.descripcionContenido || 'Sin descripción'}</p>
+        
+        ${item.fotoUrl ? `
+          <div class="mt-3">
+            <img src="${item.fotoUrl}" alt="Foto" class="w-full max-h-40 object-cover rounded-lg cursor-pointer" onclick="window.open('${item.fotoUrl}', '_blank')">
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
 
     async function procesarEnvio(e) {
       e.preventDefault();
@@ -1243,23 +1323,37 @@
       document.getElementById('logoutBtn').addEventListener('click', cerrarSesion);
 
       document.getElementById('tabNuevoEnvio').addEventListener('click', () => {
-        document.getElementById('tabNuevoEnvio').classList.add('border-brand-orange', 'brand-orange');
-        document.getElementById('tabNuevoEnvio').classList.remove('border-transparent', 'text-gray-500');
-        document.getElementById('tabMisEnvios').classList.remove('border-brand-orange', 'brand-orange');
-        document.getElementById('tabMisEnvios').classList.add('border-transparent', 'text-gray-500');
-        document.getElementById('contentNuevoEnvio').classList.remove('hidden');
-        document.getElementById('contentMisEnvios').classList.add('hidden');
+  // Actualizar estilos de tabs
+  document.getElementById('tabNuevoEnvio').classList.add('border-brand-orange', 'brand-orange');
+  document.getElementById('tabNuevoEnvio').classList.remove('border-transparent', 'text-gray-500');
+  document.getElementById('tabMisSolicitudes').classList.remove('border-brand-orange', 'brand-orange');
+  document.getElementById('tabMisSolicitudes').classList.add('border-transparent', 'text-gray-500');
+  document.getElementById('tabSolicitarEntrega').classList.remove('border-brand-orange', 'brand-orange');
+  document.getElementById('tabSolicitarEntrega').classList.add('border-transparent', 'text-gray-500');
+  
+  // Mostrar/ocultar contenido
+  document.getElementById('contentNuevoEnvio').classList.remove('hidden');
+  document.getElementById('contentMisSolicitudes').classList.add('hidden');
+  document.getElementById('containerSolicitarEntrega').classList.add('hidden');
+});
       });
 
-      document.getElementById('tabMisEnvios').addEventListener('click', () => {
-        document.getElementById('tabMisEnvios').classList.add('border-brand-orange', 'brand-orange');
-        document.getElementById('tabMisEnvios').classList.remove('border-transparent', 'text-gray-500');
-        document.getElementById('tabNuevoEnvio').classList.remove('border-brand-orange', 'brand-orange');
-        document.getElementById('tabNuevoEnvio').classList.add('border-transparent', 'text-gray-500');
-        document.getElementById('contentMisEnvios').classList.remove('hidden');
-        document.getElementById('contentNuevoEnvio').classList.add('hidden');
-        cargarMisEnvios();
-      });
+      document.getElementById('tabMisSolicitudes').addEventListener('click', () => {
+  // Actualizar estilos de tabs
+  document.getElementById('tabMisSolicitudes').classList.add('border-brand-orange', 'brand-orange');
+  document.getElementById('tabMisSolicitudes').classList.remove('border-transparent', 'text-gray-500');
+  document.getElementById('tabNuevoEnvio').classList.remove('border-brand-orange', 'brand-orange');
+  document.getElementById('tabNuevoEnvio').classList.add('border-transparent', 'text-gray-500');
+  document.getElementById('tabSolicitarEntrega').classList.remove('border-brand-orange', 'brand-orange');
+  document.getElementById('tabSolicitarEntrega').classList.add('border-transparent', 'text-gray-500');
+  
+  // Mostrar/ocultar contenido
+  document.getElementById('contentMisSolicitudes').classList.remove('hidden');
+  document.getElementById('contentNuevoEnvio').classList.add('hidden');
+  document.getElementById('containerSolicitarEntrega').classList.add('hidden');
+  
+  cargarMisSolicitudes();
+});
 
       document.querySelectorAll('input[name="tipoServicio"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -1297,12 +1391,12 @@
           statusIndicator.classList.remove('hidden');
           
           linkEntregaTimeout = setTimeout(async () => {
-            console.log('🔍 Procesando entrada:', input);
+            window.secureLog('🔍 Procesando entrada:', input);
             const resultado = await extraerCoordenadasDeLink(input);
             statusIndicator.classList.add('hidden');
             
             if (resultado.exito) {
-              console.log('✅ Coordenadas extraídas:', resultado.lat, resultado.lon);
+              window.secureLog('✅ Coordenadas extraídas:', resultado.lat, resultado.lon);
               appData.ubicacionEntrega = `${resultado.lat},${resultado.lon}`;
               
               document.getElementById('ubicacionDetectada').classList.remove('hidden');
@@ -1315,7 +1409,7 @@
               e.target.classList.add('border-green-500');
               
             } else {
-              console.log('❌ No se encontraron coordenadas');
+              window.secureLog('❌ No se encontraron coordenadas');
               e.target.classList.remove('border-green-500');
               e.target.classList.add('border-red-500');
               
@@ -1432,16 +1526,17 @@
 
       document.getElementById('nuevoEnvioForm').addEventListener('submit', procesarEnvio);
 
-      document.getElementById('filtroEstado').addEventListener('change', renderizarEnvios);
-      document.getElementById('refrescarEnvios').addEventListener('click', cargarMisEnvios);
-    });
+      document.getElementById('filtroTipo').addEventListener('change', renderizarSolicitudes);
+document.getElementById('filtroEstado').addEventListener('change', renderizarSolicitudes);
+document.getElementById('refrescarSolicitudes').addEventListener('click', cargarMisSolicitudes);
+    
 
     // SERVICE WORKER
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js')
           .then((registration) => {
-            console.log('✅ Service Worker registrado');
+            window.secureLog('✅ Service Worker registrado');
 
             setInterval(() => {
               registration.update();
@@ -1449,7 +1544,7 @@
 
             registration.addEventListener('updatefound', () => {
               const newWorker = registration.installing;
-              console.log('🔄 Nueva versión encontrada...');
+              window.secureLog('🔄 Nueva versión encontrada...');
 
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
@@ -1459,14 +1554,14 @@
             });
           })
           .catch((error) => {
-            console.log('❌ Error al registrar Service Worker:', error);
+            window.secureLog('❌ Error al registrar Service Worker:', error);
           });
 
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
           if (refreshing) return;
           refreshing = true;
-          console.log('🔄 Recargando para aplicar actualización...');
+          window.secureLog('🔄 Recargando para aplicar actualización...');
           window.location.reload();
         });
       });
@@ -1553,7 +1648,7 @@
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((choiceResult) => {
           if (choiceResult.outcome === 'accepted') {
-            console.log('✅ Usuario aceptó instalar');
+            window.secureLog('✅ Usuario aceptó instalar');
           }
           deferredPrompt = null;
           cerrarBanner();
@@ -1570,9 +1665,11 @@
     }
 
     window.addEventListener('appinstalled', () => {
-      console.log('✅ App instalada exitosamente');
+      window.secureLog('✅ App instalada exitosamente');
       cerrarBanner();
     });
   </script>
+  <!-- Script del módulo Solicitar Entrega -->
+  <script src="./js/solicitar-entrega.js"></script>
 </body>
 </html>
