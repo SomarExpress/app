@@ -815,6 +815,7 @@ if (!window.APP_SECURITY.validateOrigin()) {
       mapInteractive: null,
       markerInteractive: null,
       envios: []
+      solicitudes: []
     };
 
     // AUTENTICACIÓN
@@ -829,6 +830,7 @@ if (!window.APP_SECURITY.validateOrigin()) {
           document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
           appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
           return true;
+          cargarMisSolicitudes();
         } catch (error) {
           localStorage.removeItem('somarComercioUser');
         }
@@ -884,6 +886,7 @@ if (!window.APP_SECURITY.validateOrigin()) {
             document.getElementById('comercioName').textContent = appData.comercio.nombre;
             document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
             appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
+            cargarMisSolicitudes(); 
             alert(`¡Bienvenido ${result.datosComercio.nombre}!`);
           } else {
             document.getElementById('authStep2').classList.add('hidden');
@@ -925,6 +928,7 @@ if (!window.APP_SECURITY.validateOrigin()) {
           document.getElementById('comercioName').textContent = appData.comercio.nombre;
           document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
           appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
+          cargarMisSolicitudes();
           alert('¡Comercio registrado exitosamente!');
         } else {
           alert(result.error || 'Error al registrar');
