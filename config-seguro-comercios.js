@@ -16,7 +16,7 @@ const CONFIG = {
   },
   
   // Modo debug (cambiar a false en producción)
-  debug: false,
+  debug: true,
   
   // Dominio permitido (validación básica)
   allowedDomain: window.location.hostname
@@ -33,7 +33,14 @@ window.secureLog = function(...args) {
 const Security = {
   // Validar origen de la app
   validateOrigin: function() {
-    const validDomains = ['localhost', '127.0.0.1', 'tudominio.com']; // Actualizar con tu dominio
+    const validDomains = [
+      'localhost', 
+      '127.0.0.1', 
+      'somarexpress.github.io',  // Tu dominio de GitHub Pages
+      'github.io',                // Cualquier subdominio de GitHub Pages
+      'vercel.app',               // Por si usas Vercel
+      'pages.dev'                 // Por si usas Cloudflare Pages
+    ];
     return validDomains.some(domain => window.location.hostname.includes(domain));
   },
   
@@ -74,3 +81,8 @@ const Security = {
 // Exportar configuración
 window.APP_CONFIG = CONFIG;
 window.APP_SECURITY = Security;
+
+// Confirmar carga exitosa
+console.log('✅ Configuración de seguridad cargada correctamente');
+console.log('🌐 Dominio actual:', window.location.hostname);
+console.log('🔒 Origen válido:', Security.validateOrigin());
