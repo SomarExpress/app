@@ -1,4 +1,4 @@
-const CACHE_NAME = 'somar-express-v1.0.8';
+const CACHE_NAME = 'somar-express-v1.0.9';
 const urlsToCache = [
   './',
   './comercios-panel.html',
@@ -91,4 +91,5 @@ self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+
 });
