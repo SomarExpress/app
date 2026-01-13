@@ -1802,7 +1802,6 @@ document.getElementById('tabSolicitarEntrega').addEventListener('click', () => {
 document.getElementById('filtroEstado').addEventListener('change', renderizarSolicitudes);
 document.getElementById('refrescarSolicitudes').addEventListener('click', cargarMisSolicitudes);
 
-document.getElementById('refrescarSolicitudes').addEventListener('click', cargarMisSolicitudes);
 
 // Inicializar módulo Solicitar Entrega cuando cargue el script
 window.addEventListener('load', () => {
@@ -1810,9 +1809,6 @@ window.addEventListener('load', () => {
     inicializarSolicitarEntrega();
   }
 });
-
-// SERVICE WORKER
-if ('serviceWorker' in navigator) {
     
 
     // SERVICE WORKER
@@ -1847,9 +1843,9 @@ if ('serviceWorker' in navigator) {
           refreshing = true;
           window.secureLog('🔄 Recargando para aplicar actualización...');
           window.location.reload();
+          });
         });
-      });
-    }
+      }
 
     function mostrarNotificacionActualizacion() {
       const notif = document.createElement('div');
