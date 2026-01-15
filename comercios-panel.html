@@ -120,7 +120,7 @@
           </div>
         </div>
         
-        <button id="logoutBtn" class="p-2 hover:bg-gray-100 rounded-full transition" title="Cerrar Sesión">
+        <button id="logoutBtn" class="p-2 hover:bg-gray-100 rounded-full transition" title="Cerrar SesiÃ³n">
           <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
           </svg>
@@ -129,28 +129,28 @@
     </div>
   </header>
 
-  <!-- Modal de Autenticación -->
+  <!-- Modal de AutenticaciÃ³n -->
   <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full scale-in">
       <div class="p-6">
-        <!-- Paso 1: Ingresar Teléfono -->
+        <!-- Paso 1: Ingresar TelÃ©fono -->
         <div id="authStep1">
           <div class="text-center mb-6">
             <img src="https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png" alt="Somar Express" class="w-24 h-24 mx-auto mb-4">
             <h2 class="text-2xl font-bold mb-2">Panel de Comercios</h2>
-            <p class="text-gray-600">Ingresa tu número para gestionar tus envíos</p>
+            <p class="text-gray-600">Ingresa tu nÃºmero para gestionar tus envÃ­os</p>
           </div>
           <form id="authPhoneForm">
             <div class="mb-4">
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Número de Celular</label>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">NÃºmero de Celular</label>
               <input type="tel" id="authPhone" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="+504 9999-9999">
-              <p class="text-xs text-gray-500 mt-1">Recibirás un código por WhatsApp</p>
+              <p class="text-xs text-gray-500 mt-1">RecibirÃ¡s un cÃ³digo por WhatsApp</p>
             </div>
             <button type="submit" class="w-full bg-brand-orange text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg">Continuar</button>
           </form>
         </div>
 
-        <!-- Paso 2: Verificar Código -->
+        <!-- Paso 2: Verificar CÃ³digo -->
         <div id="authStep2" class="hidden">
           <div class="text-center mb-6">
             <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -158,8 +158,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </div>
-            <h2 class="text-2xl font-bold mb-2">Código Enviado</h2>
-            <p class="text-gray-600">Revisa tu WhatsApp e ingresa el código</p>
+            <h2 class="text-2xl font-bold mb-2">CÃ³digo Enviado</h2>
+            <p class="text-gray-600">Revisa tu WhatsApp e ingresa el cÃ³digo</p>
             <p class="text-sm text-gray-500 mt-2">Enviado a <span id="phoneDisplay" class="font-semibold"></span></p>
           </div>
           <form id="authCodeForm">
@@ -167,7 +167,7 @@
               <input type="text" id="authCode" required maxlength="6" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-center text-2xl font-bold tracking-widest focus:border-brand-orange focus:outline-none transition" placeholder="000000">
             </div>
             <button type="submit" class="w-full bg-brand-orange text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg mb-3">Verificar</button>
-            <button type="button" id="resendCodeBtn" class="w-full text-brand-orange font-semibold hover:underline">Reenviar código</button>
+            <button type="button" id="resendCodeBtn" class="w-full text-brand-orange font-semibold hover:underline">Reenviar cÃ³digo</button>
           </form>
         </div>
 
@@ -183,15 +183,15 @@
               <input type="text" id="authNombreComercio" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="Ej: Restaurante El Buen Sabor">
             </div>
             <div class="mb-4">
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Dirección del Comercio *</label>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">DirecciÃ³n del Comercio *</label>
               <textarea id="authDireccionComercio" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="2" placeholder="Colonia, calle, referencias..."></textarea>
             </div>
             <div class="mb-4">
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Ubicación GPS del Comercio</label>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">UbicaciÃ³n GPS del Comercio</label>
               <div class="flex gap-2">
                 <input type="text" id="authUbicacionGPS" class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="Lat, Lon" readonly>
                 <button type="button" id="getLocationBtn" class="bg-blue-500 text-white px-4 rounded-xl font-semibold hover:bg-blue-600 transition">
-                  📍 Obtener
+                  ðŸ“ Obtener
                 </button>
               </div>
             </div>
@@ -209,41 +209,41 @@
   <div class="max-w-7xl mx-auto px-4">
     <div class="flex gap-4">
       <button id="tabNuevoEnvio" class="tab-btn py-4 px-6 font-semibold border-b-2 border-brand-orange brand-orange">
-        Nuevo Envío
+        Nuevo EnvÃ­o
       <button id="tabMisSolicitudes" class="tab-btn py-4 px-6 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-800">
-  📋 Mis Solicitudes
+  ðŸ“‹ Mis Solicitudes
       </button>
       
-      <!-- 👇 AGREGAR ESTE BOTÓN -->
+      <!-- ðŸ‘‡ AGREGAR ESTE BOTÃ“N -->
       <button id="tabSolicitarEntrega" class="tab-btn py-4 px-6 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-800">
-        🚚 Solicitar Entrega
+        ðŸšš Solicitar Entrega
       </button>
       
     </div>
   </div>
 </div>
 
-    <!-- Contenido Tab: Nuevo Envío -->
+    <!-- Contenido Tab: Nuevo EnvÃ­o -->
     <div id="contentNuevoEnvio" class="max-w-3xl mx-auto p-4">
       <form id="nuevoEnvioForm" class="bg-white rounded-2xl shadow-sm p-6 space-y-6">
-        <h2 class="text-2xl font-bold mb-4">Crear Nuevo Envío</h2>
+        <h2 class="text-2xl font-bold mb-4">Crear Nuevo EnvÃ­o</h2>
 
         <!-- Tipo de Servicio -->
         <div>
-          <label class="block font-semibold mb-3 text-gray-700">📦 Tipo de Servicio *</label>
+          <label class="block font-semibold mb-3 text-gray-700">ðŸ“¦ Tipo de Servicio *</label>
           <div class="grid grid-cols-2 gap-3">
             <label class="relative cursor-pointer">
               <input type="radio" name="tipoServicio" value="SOLO_ENTREGA" class="peer sr-only" checked>
               <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                <div class="text-3xl mb-2">📦</div>
+                <div class="text-3xl mb-2">ðŸ“¦</div>
                 <div class="font-semibold">Solo Entrega</div>
-                <div class="text-xs text-gray-500 mt-1">Envío simple</div>
+                <div class="text-xs text-gray-500 mt-1">EnvÃ­o simple</div>
               </div>
             </label>
             <label class="relative cursor-pointer">
               <input type="radio" name="tipoServicio" value="PAGO_CONTRA_ENTREGA" class="peer sr-only">
               <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                <div class="text-3xl mb-2">💰</div>
+                <div class="text-3xl mb-2">ðŸ’°</div>
                 <div class="font-semibold">Contra Entrega</div>
                 <div class="text-xs text-gray-500 mt-1">Cobrar al entregar</div>
               </div>
@@ -253,34 +253,34 @@
 
         <!-- Quien Paga -->
         <div>
-          <label class="block font-semibold mb-3 text-gray-700">💳 ¿Quién paga el envío? *</label>
+          <label class="block font-semibold mb-3 text-gray-700">ðŸ’³ Â¿QuiÃ©n paga el envÃ­o? *</label>
           <div class="grid grid-cols-2 gap-3">
             <label class="relative cursor-pointer">
               <input type="radio" name="quienPaga" value="DESTINATARIO" class="peer sr-only" checked>
               <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                <div class="text-2xl mb-1">👤</div>
+                <div class="text-2xl mb-1">ðŸ‘¤</div>
                 <div class="font-semibold">Destinatario</div>
               </div>
             </label>
             <label class="relative cursor-pointer">
               <input type="radio" name="quienPaga" value="COMERCIO" class="peer sr-only">
               <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                <div class="text-2xl mb-1">🏪</div>
+                <div class="text-2xl mb-1">ðŸª</div>
                 <div class="font-semibold">Yo (Comercio)</div>
               </div>
             </label>
           </div>
         </div>
 
-        <!-- Ubicación de Recogida -->
+        <!-- UbicaciÃ³n de Recogida -->
         <div>
-          <label class="block font-semibold mb-3 text-gray-700">📍 Ubicación de Recogida *</label>
+          <label class="block font-semibold mb-3 text-gray-700">ðŸ“ UbicaciÃ³n de Recogida *</label>
           <div class="flex gap-2 mb-2">
             <button type="button" id="usarUbicacionGuardada" class="flex-1 bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600 transition">
-              ✓ Usar mi ubicación guardada
+              âœ“ Usar mi ubicaciÃ³n guardada
             </button>
             <button type="button" id="cambiarRecogida" class="flex-1 border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 transition">
-              🔄 Cambiar
+              ðŸ”„ Cambiar
             </button>
           </div>
           <div id="recogidaCustom" class="hidden">
@@ -288,26 +288,26 @@
             <div id="mapPreviewRecogida" class="hidden mb-2"></div>
           </div>
           <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-xl">
-            <span class="font-semibold">📌 Actual:</span> <span id="direccionRecogidaDisplay">Cargando...</span>
+            <span class="font-semibold">ðŸ“Œ Actual:</span> <span id="direccionRecogidaDisplay">Cargando...</span>
           </div>
         </div>
 
-        <!-- Ubicación de Entrega -->
+        <!-- UbicaciÃ³n de Entrega -->
         <div>
           <label class="block font-semibold mb-3 text-gray-700 flex items-center justify-between">
-            <span>📍 Ubicación de Entrega *</span>
+            <span>ðŸ“ UbicaciÃ³n de Entrega *</span>
             <button type="button" id="abrirAyudaWhatsapp" class="text-xs text-blue-600 hover:text-blue-800 font-normal">
-              ¿Cómo obtenerla? 💡
+              Â¿CÃ³mo obtenerla? ðŸ’¡
             </button>
           </label>
           
           <div class="bg-blue-50 border-l-4 border-blue-400 p-3 mb-3 text-sm">
-            <p class="font-semibold text-blue-800 mb-1">📱 ¿Tu cliente te mandó la ubicación por WhatsApp?</p>
+            <p class="font-semibold text-blue-800 mb-1">ðŸ“± Â¿Tu cliente te mandÃ³ la ubicaciÃ³n por WhatsApp?</p>
             <p class="text-blue-700">Reenviala al Whatsapp +504 8912-5089 para que te genere las coordenadas facilmente.</p>
           </div>
           
           <div class="relative">
-            <textarea id="linkEntrega" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pr-10 focus:border-brand-orange focus:outline-none transition resize-none" placeholder="Pega aquí: Las coordenadas (14.0818, -87.2068)
+            <textarea id="linkEntrega" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pr-10 focus:border-brand-orange focus:outline-none transition resize-none" placeholder="Pega aquÃ­: Las coordenadas (14.0818, -87.2068)
 "></textarea>
             <div id="linkEntregaStatus" class="hidden absolute right-3 top-3">
               <div class="loading-small"></div>
@@ -316,9 +316,9 @@
           
           <div id="ubicacionDetectada" class="hidden bg-green-50 border-2 border-green-300 rounded-xl p-3 mt-2 mb-2">
             <div class="flex items-start gap-2">
-              <span class="text-xl">✅</span>
+              <span class="text-xl">âœ…</span>
               <div class="flex-1">
-                <p class="font-semibold text-green-800 text-sm">Ubicación detectada correctamente</p>
+                <p class="font-semibold text-green-800 text-sm">UbicaciÃ³n detectada correctamente</p>
                 <p class="text-xs text-green-700 mt-1" id="coordenadasDetectadas"></p>
               </div>
             </div>
@@ -326,9 +326,9 @@
           
           <div id="ubicacionError" class="hidden bg-red-50 border-2 border-red-300 rounded-xl p-3 mt-2 mb-2">
             <div class="flex items-start gap-2">
-              <span class="text-xl">⚠️</span>
+              <span class="text-xl">âš ï¸</span>
               <div class="flex-1">
-                <p class="font-semibold text-red-800 text-sm">No se detectó ubicación</p>
+                <p class="font-semibold text-red-800 text-sm">No se detectÃ³ ubicaciÃ³n</p>
                 <p class="text-xs text-red-700 mt-1">Verifica que hayas pegado el link completo o usa el mapa interactivo</p>
               </div>
             </div>
@@ -341,44 +341,44 @@
           </div>
           
           <button type="button" id="usarMapaInteractivo" class="w-full border-2 border-dashed border-gray-300 text-gray-600 py-3 rounded-xl font-semibold hover:border-brand-orange hover:text-brand-orange transition">
-            🗺️ Usar mapa interactivo
+            ðŸ—ºï¸ Usar mapa interactivo
           </button>
         </div>
 
         <!-- Datos del Destinatario -->
         <div class="border-t pt-6">
-          <h3 class="font-bold text-lg mb-4">👤 Datos del Destinatario</h3>
+          <h3 class="font-bold text-lg mb-4">ðŸ‘¤ Datos del Destinatario</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block font-semibold mb-2 text-sm text-gray-700">Nombre *</label>
               <input type="text" id="nombreDestinatario" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="Nombre completo">
             </div>
             <div>
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Teléfono *</label>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">TelÃ©fono *</label>
               <input type="tel" id="telefonoDestinatario" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="+504 9999-9999">
             </div>
           </div>
         </div>
 
-        <!-- Descripción del Paquete -->
+        <!-- DescripciÃ³n del Paquete -->
         <div>
-          <label class="block font-semibold mb-2 text-sm text-gray-700">📦 Descripción del Paquete *</label>
+          <label class="block font-semibold mb-2 text-sm text-gray-700">ðŸ“¦ DescripciÃ³n del Paquete *</label>
           <textarea id="descripcionPaquete" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="3" placeholder="Ej: 2 cajas de pizza, 1 refresco de 2 litros"></textarea>
         </div>
 
         <!-- Foto del Paquete -->
         <div>
-          <label class="block font-semibold mb-2 text-sm text-gray-700">📸 Foto del Paquete (Opcional)</label>
+          <label class="block font-semibold mb-2 text-sm text-gray-700">ðŸ“¸ Foto del Paquete (Opcional)</label>
           <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-brand-orange transition cursor-pointer" id="uploadArea">
             <input type="file" id="fotoPaquete" accept="image/*" class="hidden">
             <div id="uploadPlaceholder">
-              <div class="text-5xl mb-2">📸</div>
+              <div class="text-5xl mb-2">ðŸ“¸</div>
               <p class="text-sm text-gray-600 font-semibold">Click para subir foto</p>
-              <p class="text-xs text-gray-500 mt-1">JPG, PNG (máx. 5MB)</p>
+              <p class="text-xs text-gray-500 mt-1">JPG, PNG (mÃ¡x. 5MB)</p>
             </div>
             <div id="uploadPreview" class="hidden">
               <img id="previewImg" class="mx-auto max-h-40 rounded-lg mb-2">
-              <p class="text-sm text-green-600 font-semibold">✓ Foto cargada</p>
+              <p class="text-sm text-green-600 font-semibold">âœ“ Foto cargada</p>
               <button type="button" id="removeFoto" class="text-xs text-red-500 hover:text-red-700 mt-2">Cambiar imagen</button>
             </div>
           </div>
@@ -386,28 +386,28 @@
 
         <!-- Monto a Cobrar -->
         <div id="montoSection" class="hidden">
-          <label class="block font-semibold mb-2 text-sm text-gray-700">💵 Monto a Cobrar (Contra Entrega) *</label>
+          <label class="block font-semibold mb-2 text-sm text-gray-700">ðŸ’µ Monto a Cobrar (Contra Entrega) *</label>
           <div class="relative">
             <span class="absolute left-4 top-1/2 transform -translate-y-1/2 font-bold text-gray-500">L.</span>
             <input type="number" id="montoCobrar" class="w-full border-2 border-gray-200 rounded-xl pl-10 pr-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="0.00" step="0.01" min="0">
           </div>
         </div>
 
-        <!-- Tipo de Pago del Envío -->
+        <!-- Tipo de Pago del EnvÃ­o -->
         <div>
-          <label class="block font-semibold mb-3 text-gray-700">💳 Método de Pago del Envío *</label>
+          <label class="block font-semibold mb-3 text-gray-700">ðŸ’³ MÃ©todo de Pago del EnvÃ­o *</label>
           <div class="grid grid-cols-2 gap-3">
             <label class="relative cursor-pointer">
               <input type="radio" name="tipoPagoEnvio" value="EFECTIVO" class="peer sr-only" checked>
               <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                <div class="text-2xl mb-1">💵</div>
+                <div class="text-2xl mb-1">ðŸ’µ</div>
                 <div class="font-semibold">Efectivo</div>
               </div>
             </label>
             <label class="relative cursor-pointer">
               <input type="radio" name="tipoPagoEnvio" value="TRANSFERENCIA" class="peer sr-only">
               <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                <div class="text-2xl mb-1">🏦</div>
+                <div class="text-2xl mb-1">ðŸ¦</div>
                 <div class="font-semibold">Transferencia</div>
               </div>
             </label>
@@ -416,13 +416,13 @@
 
         <!-- Notas Adicionales -->
         <div>
-          <label class="block font-semibold mb-2 text-sm text-gray-700">📝 Notas Adicionales (Opcional)</label>
-          <textarea id="notasAdicionales" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="2" placeholder="Ej: Tocar el timbre, dejar en portería, etc."></textarea>
+          <label class="block font-semibold mb-2 text-sm text-gray-700">ðŸ“ Notas Adicionales (Opcional)</label>
+          <textarea id="notasAdicionales" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="2" placeholder="Ej: Tocar el timbre, dejar en porterÃ­a, etc."></textarea>
         </div>
 
         <!-- Resumen de Tarifa -->
         <div id="tarifaResumen" class="hidden bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-          <h3 class="font-bold mb-3">💰 Estimado de Tarifa</h3>
+          <h3 class="font-bold mb-3">ðŸ’° Estimado de Tarifa</h3>
           <div class="space-y-2 text-sm">
             <div class="flex justify-between">
               <span class="text-gray-700">Origen:</span>
@@ -444,26 +444,26 @@
         </div>
 
         <button type="submit" class="w-full bg-brand-orange text-white py-4 rounded-xl font-bold text-lg hover:bg-orange-600 transition shadow-lg">
-          🚀 Crear Envío
+          ðŸš€ Crear EnvÃ­o
         </button>
       </form>
     </div>
 
-    <!-- Contenido Tab: Mis Solicitudes (Envíos + Entregas) -->
+    <!-- Contenido Tab: Mis Solicitudes (EnvÃ­os + Entregas) -->
     <div id="contentMisSolicitudes" class="hidden max-w-5xl mx-auto p-4">
     <div class="mb-4 flex flex-wrap gap-2">
   <!-- Filtro por Tipo -->
   <select id="filtroTipo" class="border-2 border-gray-200 rounded-xl px-4 py-2 focus:border-brand-orange focus:outline-none transition">
     <option value="">Todos los tipos</option>
-    <option value="ENVIO">📦 Envíos</option>
-    <option value="ENTREGA">🚚 Entregas/Solicitudes</option>
+    <option value="ENVIO">ðŸ“¦ EnvÃ­os</option>
+    <option value="ENTREGA">ðŸšš Entregas/Solicitudes</option>
   </select>
   
   <!-- Filtro por Estado -->
   <select id="filtroEstado" class="border-2 border-gray-200 rounded-xl px-4 py-2 focus:border-brand-orange focus:outline-none transition">
     <option value="">Todos los estados</option>
     <option value="PENDIENTE">Pendiente</option>
-    <option value="PENDIENTE_ASIGNACION">Pendiente Asignación</option>
+    <option value="PENDIENTE_ASIGNACION">Pendiente AsignaciÃ³n</option>
     <option value="ACEPTADO">Aceptado</option>
     <option value="EN_ESTABLECIMIENTO">En Establecimiento</option>
     <option value="PEDIDO_EN_CAMINO">Pedido en Camino</option>
@@ -473,12 +473,12 @@
   </select>
   
   <button id="refrescarSolicitudes" class="bg-blue-500 text-white px-4 py-2 rounded-xl font-semibold hover:bg-blue-600 transition">
-    🔄 Refrescar
+    ðŸ”„ Refrescar
   </button>
 </div>
 <div id="listaSolicitudes" class="space-y-4">
         <div class="text-center py-12 text-gray-500">
-          <p class="text-lg font-semibold">Cargando envíos...</p>
+          <p class="text-lg font-semibold">Cargando envÃ­os...</p>
         </div>
       </div>
 
@@ -495,7 +495,7 @@
         <label class="relative cursor-pointer">
           <input type="radio" name="tipoServicioEntrega" value="TRASLADO_TIENDAS" class="peer sr-only" checked>
           <div class="border-2 border-gray-200 rounded-xl p-6 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition hover:shadow-md">
-            <div class="text-5xl mb-3">🏪</div>
+            <div class="text-5xl mb-3">ðŸª</div>
             <h3 class="font-bold text-lg mb-2">Traslado</h3>
             <p class="text-sm text-gray-600">Entre mis tiendas</p>
           </div>
@@ -505,7 +505,7 @@
         <label class="relative cursor-pointer">
           <input type="radio" name="tipoServicioEntrega" value="RECOGER_PAQUETE" class="peer sr-only">
           <div class="border-2 border-gray-200 rounded-xl p-6 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition hover:shadow-md">
-            <div class="text-5xl mb-3">📦</div>
+            <div class="text-5xl mb-3">ðŸ“¦</div>
             <h3 class="font-bold text-lg mb-2">Recoger</h3>
             <p class="text-sm text-gray-600">Un paquete</p>
           </div>
@@ -515,7 +515,7 @@
         <label class="relative cursor-pointer">
           <input type="radio" name="tipoServicioEntrega" value="REALIZAR_COMPRA" class="peer sr-only">
           <div class="border-2 border-gray-200 rounded-xl p-6 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition hover:shadow-md">
-            <div class="text-5xl mb-3">🛒</div>
+            <div class="text-5xl mb-3">ðŸ›’</div>
             <h3 class="font-bold text-lg mb-2">Compra</h3>
             <p class="text-sm text-gray-600">Por encargo</p>
           </div>
@@ -526,10 +526,10 @@
     <!-- Formulario de Solicitud -->
     <form id="formSolicitarEntrega" class="bg-white rounded-2xl shadow-sm p-6">
       
-      <!-- SECCIÓN: TRASLADO ENTRE TIENDAS -->
+      <!-- SECCIÃ“N: TRASLADO ENTRE TIENDAS -->
       <div id="seccionTrasladoTiendas" class="form-section">
         <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-          <span>🏪</span> Traslado entre Tiendas
+          <span>ðŸª</span> Traslado entre Tiendas
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -557,18 +557,18 @@
         </div>
       </div>
 
-      <!-- SECCIÓN: RECOGER PAQUETE -->
+      <!-- SECCIÃ“N: RECOGER PAQUETE -->
       <div id="seccionRecogerPaquete" class="form-section hidden">
         <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-          <span>📦</span> Recoger Paquete
+          <span>ðŸ“¦</span> Recoger Paquete
         </h3>
 
         <div class="mb-4">
-          <label class="block font-semibold mb-2 text-sm text-gray-700">Ubicación de Recogida *</label>
+          <label class="block font-semibold mb-2 text-sm text-gray-700">UbicaciÃ³n de Recogida *</label>
           <div class="flex gap-2 mb-2">
             <input type="text" id="ubicacionRecogidaPaquete" placeholder="Pega las coordenadas: 15.6100,-87.9533" required class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition">
           </div>
-          <p class="text-xs text-gray-500">También puedes usar el mapa interactivo</p>
+          <p class="text-xs text-gray-500">TambiÃ©n puedes usar el mapa interactivo</p>
         </div>
 
         <div class="mb-4">
@@ -577,46 +577,46 @@
         </div>
 
         <div class="mb-4">
-          <label class="block font-semibold mb-2 text-sm text-gray-700">Teléfono del Contacto *</label>
+          <label class="block font-semibold mb-2 text-sm text-gray-700">TelÃ©fono del Contacto *</label>
           <input type="tel" id="telefonoContactoRecogida" placeholder="+504 9999-9999" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition">
         </div>
 
         <div class="mb-4">
-          <label class="block font-semibold mb-2 text-sm text-gray-700">¿Dónde entregar el paquete? *</label>
+          <label class="block font-semibold mb-2 text-sm text-gray-700">Â¿DÃ³nde entregar el paquete? *</label>
           <select id="destinoPaquete" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition">
             <option value="">Selecciona destino</option>
             <option value="tienda1" data-gps="15.6100,-87.9533">Mi Tienda Principal - Choloma</option>
             <option value="tienda2" data-gps="15.5000,-88.0300">Sucursal SPS - San Pedro Sula</option>
             <option value="tienda3" data-gps="14.0800,-87.2100">Bodega Central - Tegucigalpa</option>
-            <option value="otra">Otra ubicación</option>
+            <option value="otra">Otra ubicaciÃ³n</option>
           </select>
         </div>
 
         <div id="otraUbicacionDestino" class="hidden mb-4">
-          <label class="block font-semibold mb-2 text-sm text-gray-700">Ubicación de Entrega</label>
+          <label class="block font-semibold mb-2 text-sm text-gray-700">UbicaciÃ³n de Entrega</label>
           <input type="text" id="ubicacionEntregaOtra" placeholder="Coordenadas: 15.6100,-87.9533" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition">
         </div>
       </div>
 
-      <!-- SECCIÓN: REALIZAR COMPRA -->
+      <!-- SECCIÃ“N: REALIZAR COMPRA -->
       <div id="seccionRealizarCompra" class="form-section hidden">
         <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-          <span>🛒</span> Realizar Compra por Encargo
+          <span>ðŸ›’</span> Realizar Compra por Encargo
         </h3>
 
         <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-lg mb-4">
           <p class="text-sm text-blue-800">
-            <span class="font-bold">📝 Nota:</span> Nuestro delivery irá al comercio indicado, comprará los productos que solicites y te los entregará. Se cobrará el costo de los productos + tarifa de envío + comisión de servicio.
+            <span class="font-bold">ðŸ“ Nota:</span> Nuestro delivery irÃ¡ al comercio indicado, comprarÃ¡ los productos que solicites y te los entregarÃ¡. Se cobrarÃ¡ el costo de los productos + tarifa de envÃ­o + comisiÃ³n de servicio.
           </p>
         </div>
 
         <div class="mb-4">
-          <label class="block font-semibold mb-2 text-sm text-gray-700">¿Dónde realizar la compra? *</label>
+          <label class="block font-semibold mb-2 text-sm text-gray-700">Â¿DÃ³nde realizar la compra? *</label>
           <input type="text" id="nombreComercioCompra" placeholder="Ej: Supermercado La Colonia" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition">
         </div>
 
         <div class="mb-4">
-          <label class="block font-semibold mb-2 text-sm text-gray-700">Ubicación del Comercio *</label>
+          <label class="block font-semibold mb-2 text-sm text-gray-700">UbicaciÃ³n del Comercio *</label>
           <input type="text" id="ubicacionComercioCompra" placeholder="Coordenadas: 15.6100,-87.9533" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition">
         </div>
 
@@ -631,11 +631,11 @@
         <div class="mb-4">
           <label class="block font-semibold mb-2 text-sm text-gray-700">Presupuesto Aproximado (L.) *</label>
           <input type="number" id="presupuestoCompra" placeholder="0.00" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" min="0" step="0.01">
-          <p class="text-xs text-gray-500 mt-1">Monto estimado para la compra (no incluye envío ni comisión)</p>
+          <p class="text-xs text-gray-500 mt-1">Monto estimado para la compra (no incluye envÃ­o ni comisiÃ³n)</p>
         </div>
 
         <div class="mb-4">
-          <label class="block font-semibold mb-2 text-sm text-gray-700">¿Dónde entregar la compra? *</label>
+          <label class="block font-semibold mb-2 text-sm text-gray-700">Â¿DÃ³nde entregar la compra? *</label>
           <select id="destinoCompra" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition">
             <option value="">Selecciona destino</option>
             <option value="tienda1" data-gps="15.6100,-87.9533">Mi Tienda Principal - Choloma</option>
@@ -645,45 +645,45 @@
         </div>
       </div>
 
-      <!-- SECCIÓN COMÚN: Descripción del Contenido -->
+      <!-- SECCIÃ“N COMÃšN: DescripciÃ³n del Contenido -->
       <div class="mb-4 mt-6 pt-6 border-t">
-        <label class="block font-semibold mb-2 text-sm text-gray-700">Descripción del Contenido *</label>
-        <textarea id="descripcionContenido" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="3" placeholder="Describe qué se va a trasladar/recoger"></textarea>
+        <label class="block font-semibold mb-2 text-sm text-gray-700">DescripciÃ³n del Contenido *</label>
+        <textarea id="descripcionContenido" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="3" placeholder="Describe quÃ© se va a trasladar/recoger"></textarea>
       </div>
 
       <!-- Foto Opcional -->
       <div class="mb-4">
-        <label class="block font-semibold mb-2 text-sm text-gray-700">📸 Foto del Paquete (Opcional)</label>
+        <label class="block font-semibold mb-2 text-sm text-gray-700">ðŸ“¸ Foto del Paquete (Opcional)</label>
         <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-brand-orange transition cursor-pointer" id="uploadAreaEntrega">
           <input type="file" id="fotoEntrega" accept="image/*" class="hidden">
           <div id="uploadPlaceholderEntrega">
-            <div class="text-5xl mb-2">📸</div>
+            <div class="text-5xl mb-2">ðŸ“¸</div>
             <p class="text-sm text-gray-600 font-semibold">Click para subir foto</p>
-            <p class="text-xs text-gray-500 mt-1">JPG, PNG (máx. 5MB)</p>
+            <p class="text-xs text-gray-500 mt-1">JPG, PNG (mÃ¡x. 5MB)</p>
           </div>
           <div id="uploadPreviewEntrega" class="hidden">
             <img id="previewImgEntrega" class="mx-auto max-h-40 rounded-lg mb-2">
-            <p class="text-sm text-green-600 font-semibold">✓ Foto cargada</p>
+            <p class="text-sm text-green-600 font-semibold">âœ“ Foto cargada</p>
             <button type="button" id="removeFotoEntrega" class="text-xs text-red-500 hover:text-red-700 mt-2">Cambiar imagen</button>
           </div>
         </div>
       </div>
 
-      <!-- Método de Pago -->
+      <!-- MÃ©todo de Pago -->
       <div class="mb-4">
-        <label class="block font-semibold mb-3 text-gray-700">💳 Método de Pago del Envío *</label>
+        <label class="block font-semibold mb-3 text-gray-700">ðŸ’³ MÃ©todo de Pago del EnvÃ­o *</label>
         <div class="grid grid-cols-2 gap-3">
           <label class="relative cursor-pointer">
             <input type="radio" name="metodoPagoEntrega" value="EFECTIVO" class="peer sr-only" checked>
             <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-              <div class="text-2xl mb-1">💵</div>
+              <div class="text-2xl mb-1">ðŸ’µ</div>
               <div class="font-semibold">Efectivo</div>
             </div>
           </label>
           <label class="relative cursor-pointer">
             <input type="radio" name="metodoPagoEntrega" value="TRANSFERENCIA" class="peer sr-only">
             <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-              <div class="text-2xl mb-1">🏦</div>
+              <div class="text-2xl mb-1">ðŸ¦</div>
               <div class="font-semibold">Transferencia</div>
             </div>
           </label>
@@ -692,15 +692,15 @@
 
       <!-- Notas Adicionales -->
       <div class="mb-6">
-        <label class="block font-semibold mb-2 text-sm text-gray-700">📝 Notas Adicionales (Opcional)</label>
+        <label class="block font-semibold mb-2 text-sm text-gray-700">ðŸ“ Notas Adicionales (Opcional)</label>
         <textarea id="notasAdicionalesEntrega" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="2" placeholder="Instrucciones especiales, horarios preferidos, etc."></textarea>
       </div>
 
       <!-- Resumen de Tarifa -->
       <div id="resumenTarifaEntrega" class="hidden mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
         <h3 class="font-bold mb-3 flex items-center gap-2">
-          💰 Estimado de Costo
-          <span id="modoNocturnoIndicadorEntrega" class="hidden text-xs bg-purple-600 text-white px-2 py-1 rounded-full">🌙 Modo Nocturno</span>
+          ðŸ’° Estimado de Costo
+          <span id="modoNocturnoIndicadorEntrega" class="hidden text-xs bg-purple-600 text-white px-2 py-1 rounded-full">ðŸŒ™ Modo Nocturno</span>
         </h3>
         <div class="space-y-2 text-sm">
           <div class="flex justify-between">
@@ -712,11 +712,11 @@
             <span class="font-semibold">L.<span id="tarifaBaseEntrega">0.00</span></span>
           </div>
           <div id="recargoNocturnoRowEntrega" class="hidden flex justify-between text-purple-700">
-            <span class="font-semibold">🌙 Recargo Nocturno:</span>
+            <span class="font-semibold">ðŸŒ™ Recargo Nocturno:</span>
             <span class="font-bold">+L.<span id="tarifaRecargoNocturnoEntrega">0.00</span></span>
           </div>
           <div id="comisionCompraRow" class="hidden flex justify-between text-green-700">
-            <span class="font-semibold">🛒 Comisión de compra (10%):</span>
+            <span class="font-semibold">ðŸ›’ ComisiÃ³n de compra (10%):</span>
             <span class="font-bold">+L.<span id="comisionCompra">0.00</span></span>
           </div>
           <div class="flex justify-between border-t pt-2 mt-2">
@@ -732,7 +732,7 @@
           Cancelar
         </button>
         <button type="submit" class="flex-1 bg-brand-orange text-white py-4 rounded-xl font-bold text-lg hover:bg-orange-600 transition shadow-lg">
-          🚀 Solicitar Entrega
+          ðŸš€ Solicitar Entrega
         </button>
       </div>
     </form>
@@ -745,7 +745,7 @@
     <div class="bg-white rounded-2xl max-w-2xl w-full scale-in">
       <div class="p-6">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold">Selecciona Ubicación en el Mapa</h2>
+          <h2 class="text-xl font-bold">Selecciona UbicaciÃ³n en el Mapa</h2>
           <button id="closeMapModal" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -755,7 +755,7 @@
         <div id="mapInteractive"></div>
         <p class="text-sm text-gray-600 mt-3 mb-4">Haz clic en el mapa o arrastra el marcador</p>
         <button id="confirmarUbicacion" class="w-full bg-brand-orange text-white py-3 rounded-xl font-bold hover:bg-orange-600 transition">
-          Confirmar Ubicación
+          Confirmar UbicaciÃ³n
         </button>
       </div>
     </div>
@@ -766,22 +766,22 @@
     <div class="bg-white rounded-2xl max-w-md w-full scale-in">
       <div class="p-6">
         <div class="text-center mb-4">
-          <span class="text-5xl">📱</span>
-          <h2 class="text-xl font-bold mt-2">¿Cómo obtener la ubicación de WhatsApp?</h2>
+          <span class="text-5xl">ðŸ“±</span>
+          <h2 class="text-xl font-bold mt-2">Â¿CÃ³mo obtener la ubicaciÃ³n de WhatsApp?</h2>
         </div>
         
         <div class="space-y-4 text-sm">
           <div class="bg-green-50 p-3 rounded-lg">
-            <p class="font-semibold text-green-800 mb-2">Si te mandaron el PIN de ubicación:</p>
+            <p class="font-semibold text-green-800 mb-2">Si te mandaron el PIN de ubicaciÃ³n:</p>
             <ol class="list-decimal list-inside text-green-700 space-y-1">
-              <li>Toca el mensaje de ubicación</li>
-              <li>Se abrirá Google Maps</li>
-              <li>Toca y mantén sobre el pin rojo</li>
-              <li>Aparecerán las coordenadas abajo</li>
+              <li>Toca el mensaje de ubicaciÃ³n</li>
+              <li>Se abrirÃ¡ Google Maps</li>
+              <li>Toca y mantÃ©n sobre el pin rojo</li>
+              <li>AparecerÃ¡n las coordenadas abajo</li>
               <li>Ej: 15.611781, -87.956879</li>
-              <li>Tócalas para copiarlas</li>
-              <li>Pégalas en el formulario</li>
-              <li>O manda la ubicación al Whatsapp para que te genere las coordenadas</li>
+              <li>TÃ³calas para copiarlas</li>
+              <li>PÃ©galas en el formulario</li>
+              <li>O manda la ubicaciÃ³n al Whatsapp para que te genere las coordenadas</li>
             </ol>
           </div>
           
@@ -818,7 +818,7 @@ if (!window.APP_SECURITY.validateOrigin()) {
       solicitudes: []
     };
 
-    // AUTENTICACIÓN
+    // AUTENTICACIÃ“N
     function verificarSesion() {
   const comercioGuardado = window.APP_SECURITY.getSecureSession('somarComercioUser');
   if (comercioGuardado) {
@@ -861,10 +861,10 @@ if (!window.APP_SECURITY.validateOrigin()) {
         document.getElementById('authStep2').classList.remove('hidden');
         submitBtn.textContent = 'Continuar';
         submitBtn.disabled = false;
-        alert('✅ Código enviado por WhatsApp');
+        alert('âœ… CÃ³digo enviado por WhatsApp');
       } catch (error) {
         console.error('Error:', error);
-        alert('⚠️ Error al enviar código');
+        alert('âš ï¸ Error al enviar cÃ³digo');
       }
     }
 
@@ -888,19 +888,19 @@ if (!window.APP_SECURITY.validateOrigin()) {
             document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
             appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
             cargarMisSolicitudes(); 
-            alert(`¡Bienvenido ${result.datosComercio.nombre}!`);
+            alert(`Â¡Bienvenido ${result.datosComercio.nombre}!`);
           } else {
             document.getElementById('authStep2').classList.add('hidden');
             document.getElementById('authStep3').classList.remove('hidden');
           }
         } else {
-          alert(result.error || 'Código incorrecto');
+          alert(result.error || 'CÃ³digo incorrecto');
           submitBtn.textContent = 'Verificar';
           submitBtn.disabled = false;
         }
       } catch (error) {
         console.error('Error:', error);
-        alert('⚠️ Error al verificar código');
+        alert('âš ï¸ Error al verificar cÃ³digo');
       }
     }
 
@@ -930,7 +930,7 @@ if (!window.APP_SECURITY.validateOrigin()) {
           document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
           appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
           cargarMisSolicitudes();
-          alert('¡Comercio registrado exitosamente!');
+          alert('Â¡Comercio registrado exitosamente!');
         } else {
           alert(result.error || 'Error al registrar');
           submitBtn.textContent = 'Registrar Comercio';
@@ -938,22 +938,22 @@ if (!window.APP_SECURITY.validateOrigin()) {
         }
       } catch (error) {
         console.error('Error:', error);
-        alert('⚠️ Error al registrar');
+        alert('âš ï¸ Error al registrar');
       }
     }
 
     function cerrarSesion() {
-      if (confirm('¿Cerrar sesión?')) {
+      if (confirm('Â¿Cerrar sesiÃ³n?')) {
         localStorage.removeItem('somarComercioUser');
         location.reload();
       }
     }
 
-    // EXTRACCIÓN DE COORDENADAS
+    // EXTRACCIÃ“N DE COORDENADAS
     async function extraerCoordenadasDeLink(input) {
       try {
         input = input.trim();
-        window.secureLog('🔍 Procesando entrada:', input);
+        window.secureLog('ðŸ” Procesando entrada:', input);
 
         const soloCoordMatch = input.match(/^\s*([0-9]{1,2}\.[0-9]+)\s*,\s*(-?[0-9]{1,3}\.[0-9]+)\s*$/);
         if (soloCoordMatch) {
@@ -961,24 +961,24 @@ if (!window.APP_SECURITY.validateOrigin()) {
           const lon = parseFloat(soloCoordMatch[2]);
           
           if (lat >= 13 && lat <= 16 && lon >= -90 && lon <= -83) {
-            window.secureLog('✅ Coordenadas directas detectadas');
+            window.secureLog('âœ… Coordenadas directas detectadas');
             return { lat, lon, exito: true };
           }
         }
 
         if (input.includes('goo.gl') || input.includes('maps.app.goo.gl')) {
-          window.secureLog('⚠️ Link acortado detectado');
+          window.secureLog('âš ï¸ Link acortado detectado');
           return { 
             exito: false, 
             error: 'LINK_ACORTADO',
-            mensaje: 'Link acortado detectado.\n\nPor favor:\n1. Abre el link en Google Maps\n2. Espera que cargue\n3. Toca y mantén sobre la ubicación\n4. Aparecerán las coordenadas abajo\n5. Cópialas y pégalas aquí\n\nO usa el mapa interactivo 🗺️'
+            mensaje: 'Link acortado detectado.\n\nPor favor:\n1. Abre el link en Google Maps\n2. Espera que cargue\n3. Toca y mantÃ©n sobre la ubicaciÃ³n\n4. AparecerÃ¡n las coordenadas abajo\n5. CÃ³pialas y pÃ©galas aquÃ­\n\nO usa el mapa interactivo ðŸ—ºï¸'
           };
         }
 
         return await extraerCoordenadasDeURL(input);
 
       } catch (error) {
-        console.error('❌ Error:', error);
+        console.error('âŒ Error:', error);
         return { exito: false, error: error.toString() };
       }
     }
@@ -986,19 +986,19 @@ if (!window.APP_SECURITY.validateOrigin()) {
     async function extraerCoordenadasDeURL(url) {
       const qMatch = url.match(/[?&]q=([0-9.-]+),([0-9.-]+)/);
       if (qMatch) {
-        window.secureLog('✅ Coordenadas encontradas (q)');
+        window.secureLog('âœ… Coordenadas encontradas (q)');
         return { lat: parseFloat(qMatch[1]), lon: parseFloat(qMatch[2]), exito: true };
       }
 
       const atMatch = url.match(/@([0-9.-]+),([0-9.-]+)/);
       if (atMatch) {
-        window.secureLog('✅ Coordenadas encontradas (@)');
+        window.secureLog('âœ… Coordenadas encontradas (@)');
         return { lat: parseFloat(atMatch[1]), lon: parseFloat(atMatch[2]), exito: true };
       }
 
       const placeMatch = url.match(/\/place\/.*?@([0-9.-]+),([0-9.-]+)/);
       if (placeMatch) {
-        window.secureLog('✅ Coordenadas encontradas (place)');
+        window.secureLog('âœ… Coordenadas encontradas (place)');
         return { lat: parseFloat(placeMatch[1]), lon: parseFloat(placeMatch[2]), exito: true };
       }
 
@@ -1008,16 +1008,16 @@ if (!window.APP_SECURITY.validateOrigin()) {
         const lon = parseFloat(coordMatch[2]);
         
         if (lat >= 13 && lat <= 16 && lon >= -90 && lon <= -83) {
-          window.secureLog('✅ Coordenadas encontradas (patrón general)');
+          window.secureLog('âœ… Coordenadas encontradas (patrÃ³n general)');
           return { lat, lon, exito: true };
         }
       }
 
-      window.secureLog('❌ No se encontraron coordenadas en la URL');
-      return { exito: false, error: 'No se detectaron coordenadas válidas' };
+      window.secureLog('âŒ No se encontraron coordenadas en la URL');
+      return { exito: false, error: 'No se detectaron coordenadas vÃ¡lidas' };
     }
 
-    // CÁLCULO DE TARIFAS
+    // CÃLCULO DE TARIFAS
     function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
       const R = 6371;
       const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -1037,13 +1037,13 @@ if (!window.APP_SECURITY.validateOrigin()) {
         { nombre: 'La Ceiba', lat: 15.78, lon: -86.80, radio: 0.10 },
         { nombre: 'El Progreso', lat: 15.40, lon: -87.80, radio: 0.08 },
         { nombre: 'Comayagua', lat: 14.45, lon: -87.64, radio: 0.10 },
-        { nombre: 'Puerto Cortés', lat: 15.85, lon: -87.94, radio: 0.08 },
+        { nombre: 'Puerto CortÃ©s', lat: 15.85, lon: -87.94, radio: 0.08 },
         { nombre: 'Villanueva', lat: 15.32, lon: -88.00, radio: 0.08 },
         { nombre: 'La Lima', lat: 15.43, lon: -87.91, radio: 0.06 },
         { nombre: 'Choluteca', lat: 13.30, lon: -87.19, radio: 0.10 },
-        { nombre: 'Danlí', lat: 14.03, lon: -86.58, radio: 0.08 },
+        { nombre: 'DanlÃ­', lat: 14.03, lon: -86.58, radio: 0.08 },
         { nombre: 'Juticalpa', lat: 14.66, lon: -86.22, radio: 0.08 },
-        { nombre: 'Santa Rosa de Copán', lat: 14.77, lon: -88.78, radio: 0.08 },
+        { nombre: 'Santa Rosa de CopÃ¡n', lat: 14.77, lon: -88.78, radio: 0.08 },
         { nombre: 'Siguatepeque', lat: 14.60, lon: -87.84, radio: 0.08 },
         { nombre: 'Tocoa', lat: 15.66, lon: -86.00, radio: 0.08 },
         { nombre: 'Tela', lat: 15.78, lon: -87.46, radio: 0.08 }
@@ -1052,34 +1052,34 @@ if (!window.APP_SECURITY.validateOrigin()) {
       for (const ciudad of ciudades) {
         const distancia = Math.sqrt(Math.pow(lat - ciudad.lat, 2) + Math.pow(lon - ciudad.lon, 2));
         if (distancia < ciudad.radio) {
-          window.secureLog(`✅ Ciudad detectada: ${ciudad.nombre}`);
+          window.secureLog(`âœ… Ciudad detectada: ${ciudad.nombre}`);
           return ciudad.nombre;
         }
       }
 
-      if (lat >= 15.3 && lat <= 16.0 && lon >= -88.5 && lon <= -87.3) return 'Cortés';
-      else if (lat >= 13.8 && lat <= 14.4 && lon >= -87.5 && lon <= -86.8) return 'Francisco Morazán';
-      else if (lat >= 15.5 && lat <= 16.0 && lon >= -87.0 && lon <= -86.0) return 'Atlántida';
+      if (lat >= 15.3 && lat <= 16.0 && lon >= -88.5 && lon <= -87.3) return 'CortÃ©s';
+      else if (lat >= 13.8 && lat <= 14.4 && lon >= -87.5 && lon <= -86.8) return 'Francisco MorazÃ¡n';
+      else if (lat >= 15.5 && lat <= 16.0 && lon >= -87.0 && lon <= -86.0) return 'AtlÃ¡ntida';
       else if (lat >= 14.4 && lat <= 15.0 && lon >= -86.8 && lon <= -86.0) return 'Olancho';
       else if (lat >= 13.0 && lat <= 13.8 && lon >= -87.5 && lon <= -86.8) return 'Choluteca';
 
-      window.secureLog('⚠️ Ciudad no detectada, usando genérico');
+      window.secureLog('âš ï¸ Ciudad no detectada, usando genÃ©rico');
       return 'Honduras';
     }
 
     async function calcularDistanciaOSRM(lat1, lon1, lat2, lon2) {
       try {
         const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`;
-        window.secureLog('🌐 Consultando OSRM...');
+        window.secureLog('ðŸŒ Consultando OSRM...');
         const response = await fetch(url);
         if (!response.ok) throw new Error('OSRM failed');
         const data = await response.json();
         if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) throw new Error('No route');
         const distanciaKm = data.routes[0].distance / 1000;
-        window.secureLog(`✅ OSRM: ${distanciaKm.toFixed(2)} km por carretera`);
+        window.secureLog(`âœ… OSRM: ${distanciaKm.toFixed(2)} km por carretera`);
         return distanciaKm;
       } catch (error) {
-        console.error('❌ OSRM error:', error);
+        console.error('âŒ OSRM error:', error);
         throw error;
       }
     }
@@ -1095,13 +1095,13 @@ if (!window.APP_SECURITY.validateOrigin()) {
       ];
       for (const r of tabla) {
         if (km >= r.min && km < r.max) {
-          window.secureLog(`✅ Choloma ${r.min}-${r.max}km: L.${r.tarifa}`);
+          window.secureLog(`âœ… Choloma ${r.min}-${r.max}km: L.${r.tarifa}`);
           return r.tarifa;
         }
       }
       const calc = 30 + (km * 6.8);
       const redondeado = Math.round(calc / 5) * 5;
-      window.secureLog(`📊 Choloma fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
+      window.secureLog(`ðŸ“Š Choloma fuera de tabla: ${calc.toFixed(2)} â†’ L.${redondeado}`);
       return redondeado;
     }
 
@@ -1116,19 +1116,19 @@ if (!window.APP_SECURITY.validateOrigin()) {
       ];
       for (const r of tabla) {
         if (km >= r.min && km < r.max) {
-          window.secureLog(`✅ Otras ${r.min}-${r.max}km: L.${r.tarifa}`);
+          window.secureLog(`âœ… Otras ${r.min}-${r.max}km: L.${r.tarifa}`);
           return r.tarifa;
         }
       }
       const calc = 40 + (km * 7.5);
       const redondeado = Math.round(calc / 5) * 5;
-      window.secureLog(`📊 Otras fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
+      window.secureLog(`ðŸ“Š Otras fuera de tabla: ${calc.toFixed(2)} â†’ L.${redondeado}`);
       return redondeado;
     }
 
     async function calcularTarifa(ubicacionRecogida, ubicacionEntrega) {
       if (!ubicacionRecogida || !ubicacionEntrega) {
-        window.secureLog('⚠️ Faltan ubicaciones');
+        window.secureLog('âš ï¸ Faltan ubicaciones');
         return;
       }
 
@@ -1137,20 +1137,20 @@ if (!window.APP_SECURITY.validateOrigin()) {
         const [lat2, lon2] = ubicacionEntrega.split(',').map(Number);
 
         if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) {
-          console.error('❌ Coordenadas inválidas');
+          console.error('âŒ Coordenadas invÃ¡lidas');
           return;
         }
 
         const ciudadOrigen = obtenerCiudad(lat1, lon1);
         const ciudadDestino = obtenerCiudad(lat2, lon2);
 
-        window.secureLog(`📍 Origen: ${ciudadOrigen}, Destino: ${ciudadDestino}`);
+        window.secureLog(`ðŸ“ Origen: ${ciudadOrigen}, Destino: ${ciudadDestino}`);
 
         let distanciaKm;
         try {
           distanciaKm = await calcularDistanciaOSRM(lat1, lon1, lat2, lon2);
         } catch (error) {
-          console.warn('⚠️ OSRM fallback a Haversine');
+          console.warn('âš ï¸ OSRM fallback a Haversine');
           distanciaKm = calcularDistanciaHaversine(lat1, lon1, lat2, lon2);
         }
 
@@ -1167,19 +1167,19 @@ if (!window.APP_SECURITY.validateOrigin()) {
         document.getElementById('tarifaTotal').textContent = tarifaTotal.toFixed(2);
         document.getElementById('tarifaResumen').classList.remove('hidden');
 
-        window.secureLog(`✅ Tarifa: L.${tarifaTotal.toFixed(2)}`);
+        window.secureLog(`âœ… Tarifa: L.${tarifaTotal.toFixed(2)}`);
       } catch (error) {
-        console.error('❌ Error:', error);
+        console.error('âŒ Error:', error);
       }
     }
 
     // MAPAS
     function mostrarMapaPreview(lat, lon, containerId) {
-      window.secureLog(`🗺️ Mostrando mapa preview en ${containerId}:`, lat, lon);
+      window.secureLog(`ðŸ—ºï¸ Mostrando mapa preview en ${containerId}:`, lat, lon);
       
       const container = document.getElementById(containerId);
       if (!container) {
-        console.error('❌ Contenedor no encontrado:', containerId);
+        console.error('âŒ Contenedor no encontrado:', containerId);
         return;
       }
 
@@ -1188,7 +1188,7 @@ if (!window.APP_SECURITY.validateOrigin()) {
           appData.mapRecogida.off();
           appData.mapRecogida.remove();
         } catch (error) {
-          window.secureLog('⚠️ Error limpiando mapa recogida:', error);
+          window.secureLog('âš ï¸ Error limpiando mapa recogida:', error);
         }
         appData.mapRecogida = null;
       }
@@ -1198,7 +1198,7 @@ if (!window.APP_SECURITY.validateOrigin()) {
           appData.mapEntrega.off();
           appData.mapEntrega.remove();
         } catch (error) {
-          window.secureLog('⚠️ Error limpiando mapa entrega:', error);
+          window.secureLog('âš ï¸ Error limpiando mapa entrega:', error);
         }
         appData.mapEntrega = null;
       }
@@ -1227,7 +1227,7 @@ if (!window.APP_SECURITY.validateOrigin()) {
           });
           
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap',
+            attribution: 'Â© OpenStreetMap',
             maxZoom: 18
           }).addTo(map);
           
@@ -1240,16 +1240,16 @@ if (!window.APP_SECURITY.validateOrigin()) {
           }
           
           setTimeout(() => map.invalidateSize(), 150);
-          window.secureLog(`✅ Mapa ${containerId} creado`);
+          window.secureLog(`âœ… Mapa ${containerId} creado`);
           
         } catch (error) {
-          console.error(`❌ Error creando mapa ${containerId}:`, error);
+          console.error(`âŒ Error creando mapa ${containerId}:`, error);
         }
       }, 250);
     }
 
     function inicializarMapaInteractivo() {
-      window.secureLog('🗺️ Inicializando mapa interactivo...');
+      window.secureLog('ðŸ—ºï¸ Inicializando mapa interactivo...');
       
       const modal = document.getElementById('mapModal');
       const container = document.getElementById('mapInteractive');
@@ -1259,7 +1259,7 @@ if (!window.APP_SECURITY.validateOrigin()) {
           appData.mapInteractive.off();
           appData.mapInteractive.remove();
         } catch (error) {
-          window.secureLog('⚠️ Error limpiando mapa:', error);
+          window.secureLog('âš ï¸ Error limpiando mapa:', error);
         }
         appData.mapInteractive = null;
         appData.markerInteractive = null;
@@ -1298,7 +1298,7 @@ if (!window.APP_SECURITY.validateOrigin()) {
           });
           
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap',
+            attribution: 'Â© OpenStreetMap',
             maxZoom: 18
           }).addTo(appData.mapInteractive);
 
@@ -1311,114 +1311,34 @@ if (!window.APP_SECURITY.validateOrigin()) {
           });
           
           setTimeout(() => appData.mapInteractive.invalidateSize(), 200);
-          window.secureLog('✅ Mapa interactivo creado');
+          window.secureLog('âœ… Mapa interactivo creado');
         } catch (error) {
-          console.error('❌ Error:', error);
+          console.error('âŒ Error:', error);
           alert('Error al cargar el mapa. Intenta de nuevo.');
         }
       }, 250);
     }
 
-    // GESTIÓN DE ENVÍOS
-async function cargarMisSolicitudes() {
-  console.log('🔄 Iniciando carga de solicitudes...');
-  
-  // VALIDACIÓN: Verificar que existe el comercio
-  if (!appData.comercio) {
-    console.error('❌ ERROR: appData.comercio no existe');
-    document.getElementById('listaSolicitudes').innerHTML = `
-      <div class="text-center py-12">
-        <p class="text-red-600 font-bold">Error: No se detectó sesión de comercio</p>
-        <button onclick="location.reload()" class="mt-4 bg-brand-orange text-white px-6 py-2 rounded-lg">
-          Recargar
-        </button>
-      </div>
-    `;
-    return;
-  }
-  
-  // OBTENER ID: Probar diferentes nombres de campo
-  let idComercio = appData.comercio.id || 
-                   appData.comercio.ID || 
-                   appData.comercio.celular || 
-                   appData.comercio.CELULAR;
-  
-  console.log('📦 Datos del comercio:', appData.comercio);
-  console.log('🆔 ID a usar:', idComercio);
-  
-  if (!idComercio) {
-    console.error('❌ ERROR: No se encontró ID del comercio');
-    document.getElementById('listaSolicitudes').innerHTML = `
-      <div class="text-center py-12">
-        <p class="text-red-600 font-bold">Error: No se encontró ID del comercio</p>
-        <p class="text-sm text-gray-600 mt-2">Datos disponibles: ${JSON.stringify(appData.comercio)}</p>
-      </div>
-    `;
-    return;
-  }
-  
+    // GESTIÃ“N DE ENVÃOS
+    async function cargarMisSolicitudes() {
   try {
-    const url = `${SCRIPT_URL}?action=obtenerEnviosComercio&idComercio=${idComercio}`;
-    console.log('🌐 Llamando URL:', url);
-    
+    const url = `${SCRIPT_URL}?action=obtenerEnviosComercio&idComercio=${appData.comercio.id}`;
     const response = await fetch(url);
-    console.log('📡 Status:', response.status);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
     const result = await response.json();
-    console.log('📊 Respuesta completa:', result);
 
     if (result.success) {
-      console.log('✅ Datos recibidos:', result.envios);
-      appData.solicitudes = result.envios || [];
+      appData.solicitudes = result.envios; // Incluye tanto envÃ­os como entregas
       renderizarSolicitudes();
-    } else {
-      console.error('❌ Backend error:', result.error);
-      document.getElementById('listaSolicitudes').innerHTML = `
-        <div class="text-center py-12">
-          <p class="text-red-600 font-bold">Error del servidor</p>
-          <p class="text-sm text-gray-600 mt-2">${result.error || 'Desconocido'}</p>
-        </div>
-      `;
     }
   } catch (error) {
-    console.error('❌ Error completo:', error);
-    document.getElementById('listaSolicitudes').innerHTML = `
-      <div class="text-center py-12">
-        <p class="text-red-600 font-bold">Error al cargar solicitudes</p>
-        <p class="text-sm text-gray-600 mt-2">${error.message}</p>
-        <button onclick="cargarMisSolicitudes()" class="mt-4 bg-brand-orange text-white px-6 py-2 rounded-lg">
-          Reintentar
-        </button>
-      </div>
-    `;
+    console.error('Error:', error);
   }
 }
 
-  function renderizarSolicitudes() {
-  console.log('🎨 Renderizando solicitudes...');
-  
+    function renderizarSolicitudes() {
   const container = document.getElementById('listaSolicitudes');
-  
-  // VALIDACIÓN: Verificar que existe el contenedor
-  if (!container) {
-    console.error('❌ ERROR: No se encontró el contenedor listaSolicitudes');
-    return;
-  }
-  
-  // VALIDACIÓN: Verificar que hay datos
-  if (!appData.solicitudes) {
-    console.warn('⚠️ appData.solicitudes no existe, inicializando...');
-    appData.solicitudes = [];
-  }
-  
-  console.log('📋 Total solicitudes:', appData.solicitudes.length);
-  
-  const filtroEstado = document.getElementById('filtroEstado')?.value || '';
-  const filtroTipo = document.getElementById('filtroTipo')?.value || '';
+  const filtroEstado = document.getElementById('filtroEstado').value;
+  const filtroTipo = document.getElementById('filtroTipo').value;
 
   let solicitudesFiltradas = appData.solicitudes || [];
   
@@ -1443,16 +1363,16 @@ async function cargarMisSolicitudes() {
 
   container.innerHTML = solicitudesFiltradas.map(item => {
     const esEntrega = item.esEntrega || item.tipoRegistro === 'SOLICITUD_ENTREGA';
-    const tipoIcono = esEntrega ? '🚚' : '📦';
-    const tipoTexto = esEntrega ? 'SOLICITUD ENTREGA' : 'ENVÍO';
+    const tipoIcono = esEntrega ? 'ðŸšš' : 'ðŸ“¦';
+    const tipoTexto = esEntrega ? 'SOLICITUD ENTREGA' : 'ENVÃO';
     
     // Determinar subtipo de entrega
     let subtipoEntrega = '';
     if (esEntrega && item.tipoServicio) {
       const subtipos = {
-        'TRASLADO_TIENDAS': '🏪 Traslado entre Tiendas',
-        'RECOGER_PAQUETE': '📦 Recoger Paquete',
-        'REALIZAR_COMPRA': '🛒 Realizar Compra'
+        'TRASLADO_TIENDAS': 'ðŸª Traslado entre Tiendas',
+        'RECOGER_PAQUETE': 'ðŸ“¦ Recoger Paquete',
+        'REALIZAR_COMPRA': 'ðŸ›’ Realizar Compra'
       };
       subtipoEntrega = subtipos[item.tipoServicio] || '';
     }
@@ -1487,7 +1407,7 @@ async function cargarMisSolicitudes() {
             </div>
             <div>
               <p class="text-gray-500">Tipo:</p>
-              <p class="font-semibold">${item.tipoServicio === 'PAGO_CONTRA_ENTREGA' ? '💰 Contra Entrega' : '📦 Solo Entrega'}</p>
+              <p class="font-semibold">${item.tipoServicio === 'PAGO_CONTRA_ENTREGA' ? 'ðŸ’° Contra Entrega' : 'ðŸ“¦ Solo Entrega'}</p>
             </div>
           ` : `
             <div>
@@ -1495,14 +1415,14 @@ async function cargarMisSolicitudes() {
               <p class="font-semibold brand-orange">L.${item.tarifa || item.tarifaEstimada || '0.00'}</p>
             </div>
             <div>
-              <p class="text-gray-500">Método de Pago:</p>
-              <p class="font-semibold">${item.metodoPago === 'EFECTIVO' ? '💵 Efectivo' : '🏦 Transferencia'}</p>
+              <p class="text-gray-500">MÃ©todo de Pago:</p>
+              <p class="font-semibold">${item.metodoPago === 'EFECTIVO' ? 'ðŸ’µ Efectivo' : 'ðŸ¦ Transferencia'}</p>
             </div>
           `}
         </div>
         
-        ${item.delivery ? `<p class="text-sm text-blue-600">🚚 Delivery: ${item.delivery}</p>` : ''}
-        <p class="text-sm text-gray-600 mt-2">${item.descripcionPaquete || item.descripcionContenido || 'Sin descripción'}</p>
+        ${item.delivery ? `<p class="text-sm text-blue-600">ðŸšš Delivery: ${item.delivery}</p>` : ''}
+        <p class="text-sm text-gray-600 mt-2">${item.descripcionPaquete || item.descripcionContenido || 'Sin descripciÃ³n'}</p>
         
         ${item.fotoUrl ? `
           <div class="mt-3">
@@ -1518,12 +1438,12 @@ async function cargarMisSolicitudes() {
       e.preventDefault();
 
       if (!appData.ubicacionRecogida) {
-        alert('⚠️ Debes configurar la ubicación de recogida');
+        alert('âš ï¸ Debes configurar la ubicaciÃ³n de recogida');
         return;
       }
 
       if (!appData.ubicacionEntrega) {
-        alert('⚠️ Debes pegar la ubicación de entrega que te mandó tu cliente por WhatsApp');
+        alert('âš ï¸ Debes pegar la ubicaciÃ³n de entrega que te mandÃ³ tu cliente por WhatsApp');
         document.getElementById('linkEntrega').focus();
         return;
       }
@@ -1595,21 +1515,21 @@ async function cargarMisSolicitudes() {
           })
         });
 
-        alert('✅ Envío registrado exitosamente');
+        alert('âœ… EnvÃ­o registrado exitosamente');
         document.getElementById('nuevoEnvioForm').reset();
         document.getElementById('tarifaResumen').classList.add('hidden');
         document.getElementById('uploadPlaceholder').classList.remove('hidden');
         document.getElementById('uploadPreview').classList.add('hidden');
         document.getElementById('ubicacionDetectada').classList.add('hidden');
-        submitBtn.textContent = '🚀 Crear Envío';
+        submitBtn.textContent = 'ðŸš€ Crear EnvÃ­o';
         submitBtn.disabled = false;
         appData.ubicacionEntrega = null;
 
         document.getElementById('tabMisEnvios').click();
       } catch (error) {
         console.error('Error:', error);
-        alert('⚠️ Error al registrar envío');
-        submitBtn.textContent = '🚀 Crear Envío';
+        alert('âš ï¸ Error al registrar envÃ­o');
+        submitBtn.textContent = 'ðŸš€ Crear EnvÃ­o';
         submitBtn.disabled = false;
       }
     }
@@ -1652,7 +1572,7 @@ async function cargarMisSolicitudes() {
               const gps = `${position.coords.latitude},${position.coords.longitude}`;
               document.getElementById('authUbicacionGPS').value = gps;
             },
-            () => alert('No se pudo obtener ubicación')
+            () => alert('No se pudo obtener ubicaciÃ³n')
           );
         }
       });
@@ -1706,7 +1626,7 @@ document.getElementById('tabSolicitarEntrega').addEventListener('click', () => {
   document.getElementById('contentNuevoEnvio').classList.add('hidden');
   document.getElementById('contentMisSolicitudes').classList.add('hidden');
   
-  // Inicializar módulo si existe la función
+  // Inicializar mÃ³dulo si existe la funciÃ³n
   if (typeof inicializarSolicitarEntrega === 'function') {
     inicializarSolicitarEntrega();
   }
@@ -1748,12 +1668,12 @@ document.getElementById('tabSolicitarEntrega').addEventListener('click', () => {
           statusIndicator.classList.remove('hidden');
           
           linkEntregaTimeout = setTimeout(async () => {
-            window.secureLog('🔍 Procesando entrada:', input);
+            window.secureLog('ðŸ” Procesando entrada:', input);
             const resultado = await extraerCoordenadasDeLink(input);
             statusIndicator.classList.add('hidden');
             
             if (resultado.exito) {
-              window.secureLog('✅ Coordenadas extraídas:', resultado.lat, resultado.lon);
+              window.secureLog('âœ… Coordenadas extraÃ­das:', resultado.lat, resultado.lon);
               appData.ubicacionEntrega = `${resultado.lat},${resultado.lon}`;
               
               document.getElementById('ubicacionDetectada').classList.remove('hidden');
@@ -1766,7 +1686,7 @@ document.getElementById('tabSolicitarEntrega').addEventListener('click', () => {
               e.target.classList.add('border-green-500');
               
             } else {
-              window.secureLog('❌ No se encontraron coordenadas');
+              window.secureLog('âŒ No se encontraron coordenadas');
               e.target.classList.remove('border-green-500');
               e.target.classList.add('border-red-500');
               
@@ -1809,7 +1729,7 @@ document.getElementById('tabSolicitarEntrega').addEventListener('click', () => {
 
       document.getElementById('confirmarUbicacion').addEventListener('click', () => {
         if (!appData.markerInteractive) {
-          alert('⚠️ Error: No se ha seleccionado ubicación');
+          alert('âš ï¸ Error: No se ha seleccionado ubicaciÃ³n');
           return;
         }
 
@@ -1860,7 +1780,7 @@ document.getElementById('tabSolicitarEntrega').addEventListener('click', () => {
         const file = e.target.files[0];
         if (file) {
           if (file.size > 5 * 1024 * 1024) {
-            alert('⚠️ Imagen muy grande. Máximo 5MB');
+            alert('âš ï¸ Imagen muy grande. MÃ¡ximo 5MB');
             e.target.value = '';
             return;
           }
@@ -1888,41 +1808,10 @@ document.getElementById('filtroEstado').addEventListener('change', renderizarSol
 document.getElementById('refrescarSolicitudes').addEventListener('click', cargarMisSolicitudes);
 
 
-// Inicializar módulo Solicitar Entrega cuando cargue el script
+// Inicializar mÃ³dulo Solicitar Entrega cuando cargue el script
 window.addEventListener('load', () => {
   if (typeof inicializarSolicitarEntrega === 'function') {
     inicializarSolicitarEntrega();
-  }
-});
-
-// INICIALIZACIÓN GLOBAL AL CARGAR
-window.addEventListener('DOMContentLoaded', () => {
-  console.log('🎯 DOM Cargado completamente');
-  console.log('📦 Config:', {
-    SCRIPT_URL: typeof SCRIPT_URL !== 'undefined',
-    APP_CONFIG: typeof window.APP_CONFIG !== 'undefined',
-    APP_SECURITY: typeof window.APP_SECURITY !== 'undefined'
-  });
-  
-  // Verificar que los contenedores existen
-  const checks = [
-    'listaSolicitudes',
-    'containerSolicitarEntrega',
-    'contentSolicitarEntrega',
-    'formSolicitarEntrega'
-  ];
-  
-  checks.forEach(id => {
-    const el = document.getElementById(id);
-    console.log(`🔍 ${id}:`, el ? '✅ Existe' : '❌ NO existe');
-  });
-  
-  // Verificar que el script de solicitar-entrega se cargó
-  if (typeof inicializarSolicitarEntrega === 'function') {
-    console.log('✅ Módulo solicitar-entrega.js cargado correctamente');
-  } else {
-    console.error('❌ Módulo solicitar-entrega.js NO se cargó');
-    console.error('Verifica que el archivo exista en: /js/solicitar-entrega.js');
   }
 });
     
@@ -1932,7 +1821,7 @@ window.addEventListener('DOMContentLoaded', () => {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js')
           .then((registration) => {
-            window.secureLog('✅ Service Worker registrado');
+            window.secureLog('âœ… Service Worker registrado');
 
             setInterval(() => {
               registration.update();
@@ -1940,7 +1829,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
             registration.addEventListener('updatefound', () => {
               const newWorker = registration.installing;
-              window.secureLog('🔄 Nueva versión encontrada...');
+              window.secureLog('ðŸ”„ Nueva versiÃ³n encontrada...');
 
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
@@ -1950,14 +1839,14 @@ window.addEventListener('DOMContentLoaded', () => {
             });
           })
           .catch((error) => {
-            window.secureLog('❌ Error al registrar Service Worker:', error);
+            window.secureLog('âŒ Error al registrar Service Worker:', error);
           });
 
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
           if (refreshing) return;
           refreshing = true;
-          window.secureLog('🔄 Recargando para aplicar actualización...');
+          window.secureLog('ðŸ”„ Recargando para aplicar actualizaciÃ³n...');
           window.location.reload();
           });
         });
@@ -1969,9 +1858,9 @@ window.addEventListener('DOMContentLoaded', () => {
       notif.innerHTML = `
         <div style="position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; animation: slideDown 0.3s ease-out; max-width: 90%; width: 400px;">
           <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="font-size: 24px;">🎉</div>
+            <div style="font-size: 24px;">ðŸŽ‰</div>
             <div style="flex: 1;">
-              <p style="font-weight: bold; margin: 0; font-size: 15px;">Nueva versión disponible</p>
+              <p style="font-weight: bold; margin: 0; font-size: 15px;">Nueva versiÃ³n disponible</p>
               <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9;">Click para actualizar ahora</p>
             </div>
             <button onclick="actualizarAhora()" style="background: white; color: #059669; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px;">
@@ -2019,7 +1908,7 @@ window.addEventListener('DOMContentLoaded', () => {
             <img src="https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png" style="width: 48px; height: 48px; border-radius: 12px; background: white; padding: 4px;">
             <div style="flex: 1;">
               <p style="font-weight: bold; margin: 0; font-size: 16px;">Instalar Somar Express</p>
-              <p style="margin: 0; font-size: 13px; opacity: 0.9;">Acceso rápido desde tu pantalla de inicio</p>
+              <p style="margin: 0; font-size: 13px; opacity: 0.9;">Acceso rÃ¡pido desde tu pantalla de inicio</p>
             </div>
             <button onclick="instalarApp()" style="background: white; color: #FF8C00; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px;">
               Instalar
@@ -2044,7 +1933,7 @@ window.addEventListener('DOMContentLoaded', () => {
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((choiceResult) => {
           if (choiceResult.outcome === 'accepted') {
-            window.secureLog('✅ Usuario aceptó instalar');
+            window.secureLog('âœ… Usuario aceptÃ³ instalar');
           }
           deferredPrompt = null;
           cerrarBanner();
@@ -2061,11 +1950,446 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     window.addEventListener('appinstalled', () => {
-      window.secureLog('✅ App instalada exitosamente');
+      window.secureLog('âœ… App instalada exitosamente');
       cerrarBanner();
     });
   </script>
-  <!-- Script del módulo Solicitar Entrega -->
-  <script src="./js/solicitar-entrega.js"></script>
+  <!-- Script del mÃ³dulo Solicitar Entrega -->
+  <script>
+// ========================================
+// MÓDULO: SOLICITAR ENTREGA (INTEGRADO)
+// ========================================
+// ========================================
+// MÃ“DULO: SOLICITAR ENTREGA - JAVASCRIPT
+// Para comercios-panel.html
+// ========================================
+
+// Variables globales del mÃ³dulo
+let datosEntrega = {
+  tipoServicio: 'TRASLADO_TIENDAS',
+  ubicacionOrigen: null,
+  ubicacionDestino: null,
+  tarifa: 0
+};
+
+// ========================================
+// INICIALIZACIÃ“N DEL MÃ“DULO
+// ========================================
+function inicializarSolicitarEntrega() {
+  console.log('ðŸ“¦ Inicializando mÃ³dulo Solicitar Entrega...');
+  
+  // Event listeners para tipo de servicio
+  document.querySelectorAll('input[name="tipoServicioEntrega"]').forEach(radio => {
+    radio.addEventListener('change', cambiarTipoServicio);
+  });
+
+  // Event listeners para selects de tiendas
+  document.getElementById('tiendaOrigen')?.addEventListener('change', calcularTarifaTraslado);
+  document.getElementById('tiendaDestino')?.addEventListener('change', calcularTarifaTraslado);
+
+  // Event listeners para recoger paquete
+  document.getElementById('ubicacionRecogidaPaquete')?.addEventListener('input', debounce(validarUbicacionRecogida, 500));
+  document.getElementById('destinoPaquete')?.addEventListener('change', manejarDestinoPaquete);
+
+  // Event listeners para realizar compra
+  document.getElementById('presupuestoCompra')?.addEventListener('input', calcularComisionCompra);
+  document.getElementById('destinoCompra')?.addEventListener('change', calcularTarifaCompra);
+
+  // Upload de foto
+  document.getElementById('uploadAreaEntrega')?.addEventListener('click', () => {
+    document.getElementById('fotoEntrega').click();
+  });
+
+  document.getElementById('fotoEntrega')?.addEventListener('change', manejarFotoEntrega);
+  document.getElementById('removeFotoEntrega')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    removerFotoEntrega();
+  });
+
+  // Botones
+  document.getElementById('cancelarSolicitudEntrega')?.addEventListener('click', cancelarSolicitudEntrega);
+  document.getElementById('formSolicitarEntrega')?.addEventListener('submit', procesarSolicitudEntrega);
+}
+
+// ========================================
+// CAMBIAR TIPO DE SERVICIO
+// ========================================
+function cambiarTipoServicio(e) {
+  const tipoServicio = e.target.value;
+  datosEntrega.tipoServicio = tipoServicio;
+  
+  // Ocultar todas las secciones
+  document.getElementById('seccionTrasladoTiendas').classList.add('hidden');
+  document.getElementById('seccionRecogerPaquete').classList.add('hidden');
+  document.getElementById('seccionRealizarCompra').classList.add('hidden');
+  document.getElementById('resumenTarifaEntrega').classList.add('hidden');
+  
+  // Mostrar secciÃ³n correspondiente
+  switch(tipoServicio) {
+    case 'TRASLADO_TIENDAS':
+      document.getElementById('seccionTrasladoTiendas').classList.remove('hidden');
+      break;
+    case 'RECOGER_PAQUETE':
+      document.getElementById('seccionRecogerPaquete').classList.remove('hidden');
+      break;
+    case 'REALIZAR_COMPRA':
+      document.getElementById('seccionRealizarCompra').classList.remove('hidden');
+      break;
+  }
+  
+  // Reset tarifa
+  datosEntrega.tarifa = 0;
+  datosEntrega.ubicacionOrigen = null;
+  datosEntrega.ubicacionDestino = null;
+}
+
+// ========================================
+// CALCULAR TARIFA - TRASLADO ENTRE TIENDAS
+// ========================================
+async function calcularTarifaTraslado() {
+  const origenSelect = document.getElementById('tiendaOrigen');
+  const destinoSelect = document.getElementById('tiendaDestino');
+  
+  if (!origenSelect.value || !destinoSelect.value) {
+    document.getElementById('resumenTarifaEntrega').classList.add('hidden');
+    return;
+  }
+  
+  if (origenSelect.value === destinoSelect.value) {
+    alert('âš ï¸ La tienda de origen y destino no pueden ser la misma');
+    destinoSelect.value = '';
+    return;
+  }
+  
+  const gpsOrigen = origenSelect.options[origenSelect.selectedIndex].dataset.gps;
+  const gpsDestino = destinoSelect.options[destinoSelect.selectedIndex].dataset.gps;
+  
+  if (!gpsOrigen || !gpsDestino) {
+    console.error('âŒ Falta GPS en las tiendas');
+    return;
+  }
+  
+  datosEntrega.ubicacionOrigen = gpsOrigen;
+  datosEntrega.ubicacionDestino = gpsDestino;
+  
+  // Calcular tarifa usando la funciÃ³n existente
+  const resultado = await calcularTarifaDelivery(gpsOrigen, gpsDestino);
+  
+  if (resultado) {
+    mostrarResumenTarifa(resultado);
+  }
+}
+
+// ========================================
+// VALIDAR UBICACIÃ“N DE RECOGIDA (PAQUETE)
+// ========================================
+async function validarUbicacionRecogida() {
+  const input = document.getElementById('ubicacionRecogidaPaquete').value.trim();
+  
+  if (input.length < 10) return;
+  
+  // Extraer coordenadas
+  const coordMatch = input.match(/([0-9]{1,2}\.[0-9]+)\s*,\s*(-?[0-9]{1,3}\.[0-9]+)/);
+  
+  if (coordMatch) {
+    const lat = parseFloat(coordMatch[1]);
+    const lon = parseFloat(coordMatch[2]);
+    
+    if (lat >= 13 && lat <= 16 && lon >= -90 && lon <= -83) {
+      datosEntrega.ubicacionOrigen = `${lat},${lon}`;
+      console.log('âœ… UbicaciÃ³n de recogida vÃ¡lida:', datosEntrega.ubicacionOrigen);
+      
+      // Si ya hay destino, calcular tarifa
+      const destinoSelect = document.getElementById('destinoPaquete');
+      if (destinoSelect.value && destinoSelect.value !== 'otra') {
+        calcularTarifaPaquete();
+      }
+    }
+  }
+}
+
+// ========================================
+// MANEJAR DESTINO DEL PAQUETE
+// ========================================
+function manejarDestinoPaquete() {
+  const destinoSelect = document.getElementById('destinoPaquete');
+  const otraUbicacion = document.getElementById('otraUbicacionDestino');
+  
+  if (destinoSelect.value === 'otra') {
+    otraUbicacion.classList.remove('hidden');
+  } else {
+    otraUbicacion.classList.add('hidden');
+    
+    if (destinoSelect.value) {
+      const gpsDestino = destinoSelect.options[destinoSelect.selectedIndex].dataset.gps;
+      datosEntrega.ubicacionDestino = gpsDestino;
+      calcularTarifaPaquete();
+    }
+  }
+}
+
+// ========================================
+// CALCULAR TARIFA - RECOGER PAQUETE
+// ========================================
+async function calcularTarifaPaquete() {
+  if (!datosEntrega.ubicacionOrigen || !datosEntrega.ubicacionDestino) {
+    return;
+  }
+  
+  const resultado = await calcularTarifaDelivery(datosEntrega.ubicacionOrigen, datosEntrega.ubicacionDestino);
+  
+  if (resultado) {
+    mostrarResumenTarifa(resultado);
+  }
+}
+
+// ========================================
+// CALCULAR COMISIÃ“N DE COMPRA
+// ========================================
+function calcularComisionCompra() {
+  const presupuesto = parseFloat(document.getElementById('presupuestoCompra').value) || 0;
+  const comision = presupuesto * 0.10; // 10% de comisiÃ³n
+  
+  document.getElementById('comisionCompra').textContent = comision.toFixed(2);
+  
+  if (presupuesto > 0) {
+    document.getElementById('comisionCompraRow').classList.remove('hidden');
+  } else {
+    document.getElementById('comisionCompraRow').classList.add('hidden');
+  }
+  
+  // Recalcular total
+  const tarifaBase = parseFloat(document.getElementById('tarifaBaseEntrega').textContent) || 0;
+  const recargo = parseFloat(document.getElementById('tarifaRecargoNocturnoEntrega').textContent) || 0;
+  const total = tarifaBase + recargo + comision;
+  document.getElementById('tarifaTotalEntrega').textContent = total.toFixed(2);
+}
+
+// ========================================
+// CALCULAR TARIFA - REALIZAR COMPRA
+// ========================================
+async function calcularTarifaCompra() {
+  const ubicacionComercio = document.getElementById('ubicacionComercioCompra').value.trim();
+  const destinoSelect = document.getElementById('destinoCompra');
+  
+  if (!ubicacionComercio || !destinoSelect.value) {
+    return;
+  }
+  
+  const gpsDestino = destinoSelect.options[destinoSelect.selectedIndex].dataset.gps;
+  
+  datosEntrega.ubicacionOrigen = ubicacionComercio;
+  datosEntrega.ubicacionDestino = gpsDestino;
+  
+  const resultado = await calcularTarifaDelivery(ubicacionComercio, gpsDestino);
+  
+  if (resultado) {
+    mostrarResumenTarifa(resultado);
+    calcularComisionCompra(); // Actualizar con comisiÃ³n
+  }
+}
+
+// ========================================
+// MOSTRAR RESUMEN DE TARIFA
+// ========================================
+function mostrarResumenTarifa(resultado) {
+  document.getElementById('distanciaKmEntrega').textContent = resultado.distanciaKm + ' km';
+  document.getElementById('tarifaBaseEntrega').textContent = resultado.tarifaBase;
+  document.getElementById('tarifaTotalEntrega').textContent = resultado.tarifaTotal;
+  
+  // Mostrar/ocultar recargo nocturno
+  if (resultado.esModoNocturno) {
+    document.getElementById('recargoNocturnoRowEntrega').classList.remove('hidden');
+    document.getElementById('tarifaRecargoNocturnoEntrega').textContent = resultado.recargoNocturno;
+    document.getElementById('modoNocturnoIndicadorEntrega').classList.remove('hidden');
+  } else {
+    document.getElementById('recargoNocturnoRowEntrega').classList.add('hidden');
+    document.getElementById('modoNocturnoIndicadorEntrega').classList.add('hidden');
+  }
+  
+  document.getElementById('resumenTarifaEntrega').classList.remove('hidden');
+  
+  datosEntrega.tarifa = parseFloat(resultado.tarifaTotal);
+}
+
+// ========================================
+// MANEJO DE FOTO
+// ========================================
+function manejarFotoEntrega(e) {
+  const file = e.target.files[0];
+  if (file) {
+    if (file.size > 5 * 1024 * 1024) {
+      alert('âš ï¸ La imagen es muy grande. MÃ¡ximo 5MB.');
+      e.target.value = '';
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      document.getElementById('previewImgEntrega').src = event.target.result;
+      document.getElementById('uploadPlaceholderEntrega').classList.add('hidden');
+      document.getElementById('uploadPreviewEntrega').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function removerFotoEntrega() {
+  document.getElementById('fotoEntrega').value = '';
+  document.getElementById('uploadPlaceholderEntrega').classList.remove('hidden');
+  document.getElementById('uploadPreviewEntrega').classList.add('hidden');
+}
+
+// ========================================
+// PROCESAR SOLICITUD DE ENTREGA
+// ========================================
+async function procesarSolicitudEntrega(e) {
+  e.preventDefault();
+  
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Procesando...';
+  submitBtn.disabled = true;
+  
+  try {
+    // Subir foto si existe
+    let fotoUrl = null;
+    const fotoFile = document.getElementById('fotoEntrega').files[0];
+    
+    if (fotoFile) {
+      submitBtn.textContent = 'Subiendo foto...';
+      
+      const formData = new FormData();
+      formData.append('file', fotoFile);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      formData.append('cloud_name', CLOUDINARY_CLOUD_NAME);
+      
+      const cloudinaryResponse = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      const cloudinaryData = await cloudinaryResponse.json();
+      fotoUrl = cloudinaryData.secure_url;
+    }
+    
+    // Recopilar datos segÃºn tipo de servicio
+    const datos = {
+      tipoServicio: datosEntrega.tipoServicio,
+      idComercio: appData.comercio.id,
+      nombreComercio: appData.comercio.nombre,
+      telefonoComercio: appData.comercio.celular,
+      descripcionContenido: document.getElementById('descripcionContenido').value,
+      metodoPago: document.querySelector('input[name="metodoPagoEntrega"]:checked').value,
+      notasAdicionales: document.getElementById('notasAdicionalesEntrega').value,
+      fotoUrl: fotoUrl,
+      ubicacionOrigen: datosEntrega.ubicacionOrigen,
+      ubicacionDestino: datosEntrega.ubicacionDestino,
+      tarifa: datosEntrega.tarifa,
+      fechaSolicitud: new Date().toISOString()
+    };
+    
+    // Datos especÃ­ficos segÃºn tipo
+    switch(datosEntrega.tipoServicio) {
+      case 'TRASLADO_TIENDAS':
+        const origenSelect = document.getElementById('tiendaOrigen');
+        const destinoSelect = document.getElementById('tiendaDestino');
+        datos.tiendaOrigen = origenSelect.options[origenSelect.selectedIndex].text;
+        datos.tiendaDestino = destinoSelect.options[destinoSelect.selectedIndex].text;
+        break;
+        
+      case 'RECOGER_PAQUETE':
+        datos.nombreContacto = document.getElementById('nombreContactoRecogida').value;
+        datos.telefonoContacto = document.getElementById('telefonoContactoRecogida').value;
+        const destinoPaq = document.getElementById('destinoPaquete');
+        datos.destinoPaquete = destinoPaq.options[destinoPaq.selectedIndex].text;
+        break;
+        
+      case 'REALIZAR_COMPRA':
+        datos.nombreComercioCompra = document.getElementById('nombreComercioCompra').value;
+        datos.listaProductos = document.getElementById('listaProductosCompra').value;
+        datos.presupuesto = parseFloat(document.getElementById('presupuestoCompra').value);
+        datos.comision = datos.presupuesto * 0.10;
+        const destCompra = document.getElementById('destinoCompra');
+        datos.destinoCompra = destCompra.options[destCompra.selectedIndex].text;
+        break;
+    }
+    
+    // Enviar a Google Sheets (ENVIO_COMERCIO)
+    submitBtn.textContent = 'Enviando solicitud...';
+    
+    // Agregar campos adicionales para identificar como SOLICITUD
+    datos.esEntrega = true; // Identificador para diferenciar de envÃ­os normales
+    datos.estado = 'PENDIENTE_ASIGNACION';
+    datos.tipoRegistro = 'SOLICITUD_ENTREGA'; // Campo para filtrar en Mis Solicitudes
+    
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'registrarEnvioComercio', // Usar la misma acciÃ³n para guardar en ENVIO_COMERCIO
+        datos: datos
+      })
+    });
+    
+    // Ã‰xito
+    alert('âœ… Solicitud de entrega registrada exitosamente. Pronto nos pondremos en contacto contigo.');
+    
+    // Limpiar formulario
+    document.getElementById('formSolicitarEntrega').reset();
+    document.getElementById('resumenTarifaEntrega').classList.add('hidden');
+    removerFotoEntrega();
+    datosEntrega = { tipoServicio: 'TRASLADO_TIENDAS', ubicacionOrigen: null, ubicacionDestino: null, tarifa: 0 };
+    
+    // Volver a tab de Mis Solicitudes (que mostrarÃ¡ tanto envÃ­os como entregas)
+    document.getElementById('tabMisSolicitudes')?.click();
+    
+  } catch (error) {
+    console.error('âŒ Error:', error);
+    alert('âš ï¸ Error al procesar solicitud. Intenta nuevamente.');
+  } finally {
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
+  }
+}
+
+// ========================================
+// CANCELAR SOLICITUD
+// ========================================
+function cancelarSolicitudEntrega() {
+  if (confirm('Â¿EstÃ¡s seguro que deseas cancelar? Se perderÃ¡n los datos ingresados.')) {
+    document.getElementById('formSolicitarEntrega').reset();
+    document.getElementById('resumenTarifaEntrega').classList.add('hidden');
+    removerFotoEntrega();
+    datosEntrega = { tipoServicio: 'TRASLADO_TIENDAS', ubicacionOrigen: null, ubicacionDestino: null, tarifa: 0 };
+    
+    // Volver al tab principal
+    document.getElementById('tabNuevoEnvio')?.click();
+  }
+}
+
+// ========================================
+// UTILIDADES
+// ========================================
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// ========================================
+// EXPORTAR FUNCIONES (si es necesario)
+// ========================================
+if (typeof window !== 'undefined') {
+  window.inicializarSolicitarEntrega = inicializarSolicitarEntrega;
+}
+  </script>
 </body>
 </html>
