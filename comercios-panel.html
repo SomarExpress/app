@@ -829,8 +829,9 @@ if (!window.APP_SECURITY.validateOrigin()) {
           document.getElementById('comercioName').textContent = appData.comercio.nombre;
           document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
           appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
-          return true;
           cargarMisSolicitudes();
+          return true;
+          
         } catch (error) {
           localStorage.removeItem('somarComercioUser');
         }
