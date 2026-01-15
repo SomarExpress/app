@@ -1320,25 +1320,105 @@ if (!window.APP_SECURITY.validateOrigin()) {
     }
 
     // GESTIÓN DE ENVÍOS
-    async function cargarMisSolicitudes() {
+async function cargarMisSolicitudes() {
+  console.log('🔄 Iniciando carga de solicitudes...');
+  
+  // VALIDACIÓN: Verificar que existe el comercio
+  if (!appData.comercio) {
+    console.error('❌ ERROR: appData.comercio no existe');
+    document.getElementById('listaSolicitudes').innerHTML = `
+      <div class="text-center py-12">
+        <p class="text-red-600 font-bold">Error: No se detectó sesión de comercio</p>
+        <button onclick="location.reload()" class="mt-4 bg-brand-orange text-white px-6 py-2 rounded-lg">
+          Recargar
+        </button>
+      </div>
+    `;
+    return;
+  }
+  
+  // OBTENER ID: Probar diferentes nombres de campo
+  let idComercio = appData.comercio.id || 
+                   appData.comercio.ID || 
+                   appData.comercio.celular || 
+                   appData.comercio.CELULAR;
+  
+  console.log('📦 Datos del comercio:', appData.comercio);
+  console.log('🆔 ID a usar:', idComercio);
+  
+  if (!idComercio) {
+    console.error('❌ ERROR: No se encontró ID del comercio');
+    document.getElementById('listaSolicitudes').innerHTML = `
+      <div class="text-center py-12">
+        <p class="text-red-600 font-bold">Error: No se encontró ID del comercio</p>
+        <p class="text-sm text-gray-600 mt-2">Datos disponibles: ${JSON.stringify(appData.comercio)}</p>
+      </div>
+    `;
+    return;
+  }
+  
   try {
-    const url = `${SCRIPT_URL}?action=obtenerEnviosComercio&idComercio=${appData.comercio.id}`;
+    const url = `${SCRIPT_URL}?action=obtenerEnviosComercio&idComercio=${idComercio}`;
+    console.log('🌐 Llamando URL:', url);
+    
     const response = await fetch(url);
+    console.log('📡 Status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
     const result = await response.json();
+    console.log('📊 Respuesta completa:', result);
 
     if (result.success) {
-      appData.solicitudes = result.envios; // Incluye tanto envíos como entregas
+      console.log('✅ Datos recibidos:', result.envios);
+      appData.solicitudes = result.envios || [];
       renderizarSolicitudes();
+    } else {
+      console.error('❌ Backend error:', result.error);
+      document.getElementById('listaSolicitudes').innerHTML = `
+        <div class="text-center py-12">
+          <p class="text-red-600 font-bold">Error del servidor</p>
+          <p class="text-sm text-gray-600 mt-2">${result.error || 'Desconocido'}</p>
+        </div>
+      `;
     }
   } catch (error) {
-    console.error('Error:', error);
+    console.error('❌ Error completo:', error);
+    document.getElementById('listaSolicitudes').innerHTML = `
+      <div class="text-center py-12">
+        <p class="text-red-600 font-bold">Error al cargar solicitudes</p>
+        <p class="text-sm text-gray-600 mt-2">${error.message}</p>
+        <button onclick="cargarMisSolicitudes()" class="mt-4 bg-brand-orange text-white px-6 py-2 rounded-lg">
+          Reintentar
+        </button>
+      </div>
+    `;
   }
 }
 
-    function renderizarSolicitudes() {
+  function renderizarSolicitudes() {
+  console.log('🎨 Renderizando solicitudes...');
+  
   const container = document.getElementById('listaSolicitudes');
-  const filtroEstado = document.getElementById('filtroEstado').value;
-  const filtroTipo = document.getElementById('filtroTipo').value;
+  
+  // VALIDACIÓN: Verificar que existe el contenedor
+  if (!container) {
+    console.error('❌ ERROR: No se encontró el contenedor listaSolicitudes');
+    return;
+  }
+  
+  // VALIDACIÓN: Verificar que hay datos
+  if (!appData.solicitudes) {
+    console.warn('⚠️ appData.solicitudes no existe, inicializando...');
+    appData.solicitudes = [];
+  }
+  
+  console.log('📋 Total solicitudes:', appData.solicitudes.length);
+  
+  const filtroEstado = document.getElementById('filtroEstado')?.value || '';
+  const filtroTipo = document.getElementById('filtroTipo')?.value || '';
 
   let solicitudesFiltradas = appData.solicitudes || [];
   
@@ -1814,6 +1894,37 @@ window.addEventListener('load', () => {
     inicializarSolicitarEntrega();
   }
 });
+
+// INICIALIZACIÓN GLOBAL AL CARGAR
+window.addEventListener('DOMContentLoaded', () => {
+  console.log('🎯 DOM Cargado completamente');
+  console.log('📦 Config:', {
+    SCRIPT_URL: typeof SCRIPT_URL !== 'undefined',
+    APP_CONFIG: typeof window.APP_CONFIG !== 'undefined',
+    APP_SECURITY: typeof window.APP_SECURITY !== 'undefined'
+  });
+  
+  // Verificar que los contenedores existen
+  const checks = [
+    'listaSolicitudes',
+    'containerSolicitarEntrega',
+    'contentSolicitarEntrega',
+    'formSolicitarEntrega'
+  ];
+  
+  checks.forEach(id => {
+    const el = document.getElementById(id);
+    console.log(`🔍 ${id}:`, el ? '✅ Existe' : '❌ NO existe');
+  });
+  
+  // Verificar que el script de solicitar-entrega se cargó
+  if (typeof inicializarSolicitarEntrega === 'function') {
+    console.log('✅ Módulo solicitar-entrega.js cargado correctamente');
+  } else {
+    console.error('❌ Módulo solicitar-entrega.js NO se cargó');
+    console.error('Verifica que el archivo exista en: /js/solicitar-entrega.js');
+  }
+});
     
 
     // SERVICE WORKER
@@ -1955,6 +2066,6 @@ window.addEventListener('load', () => {
     });
   </script>
   <!-- Script del módulo Solicitar Entrega -->
-  <script src="./solicitar-entrega.js"></script>
+  <script src="./js/solicitar-entrega.js"></script>
 </body>
 </html>
