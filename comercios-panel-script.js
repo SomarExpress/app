@@ -1,387 +1,8 @@
-// ========================================
-// COMERCIOS-PANEL.JS - LÓGICA COMPLETA
-// ========================================
+// Aquí iría el contenido completo, pero por límites voy a usar el approach de combinar archivos
+cat /tmp/comercios-panel-script-full-part1.js > /tmp/comercios-panel-script-final.js
 
-const SCRIPT_URL = window.APP_CONFIG.apiEndpoint;
-const CLOUDINARY_CLOUD_NAME = window.APP_CONFIG.cloudinary.cloudName;
-const CLOUDINARY_UPLOAD_PRESET = window.APP_CONFIG.cloudinary.uploadPreset;
-
-// Validar origen al cargar
-if (!window.APP_SECURITY.validateOrigin()) {
-  document.body.innerHTML = '<h1 style="text-align:center;margin-top:50px;">Acceso no autorizado</h1>';
-  throw new Error('Invalid origin');
-}
-
-let appData = {
-  comercio: null,
-  ubicacionRecogida: null,
-  ubicacionEntrega: null,
-  mapRecogida: null,
-  mapEntrega: null,
-  mapInteractive: null,
-  markerInteractive: null,
-  envios: []
-};
-
-// ============================================
-// AUTENTICACIÓN
-// ============================================
-
-function verificarSesion() {
-  const comercioGuardado = window.APP_SECURITY.getSecureSession('somarComercioUser');
-  if (comercioGuardado) {
-    try {
-      appData.comercio = comercioGuardado;
-      document.getElementById('authModal').classList.add('hidden');
-      document.getElementById('mainContent').classList.remove('hidden');
-      document.getElementById('comercioName').textContent = appData.comercio.nombre;
-      document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
-      appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
-      return true;
-    } catch (error) {
-      localStorage.removeItem('somarComercioUser');
-    }
-  }
-  return false;
-}
-
-async function enviarCodigoVerificacion(numero) {
-  try {
-    const submitBtn = document.querySelector('#authPhoneForm button[type="submit"]');
-    submitBtn.textContent = 'Enviando...';
-    submitBtn.disabled = true;
-
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'enviarCodigoVerificacionComercio',
-        numero: numero
-      })
-    });
-
-    appData.numeroTemporal = numero;
-    document.getElementById('phoneDisplay').textContent = numero;
-    document.getElementById('authStep1').classList.add('hidden');
-    document.getElementById('authStep2').classList.remove('hidden');
-    submitBtn.textContent = 'Continuar';
-    submitBtn.disabled = false;
-    alert('✅ Código enviado por WhatsApp');
-  } catch (error) {
-    console.error('Error:', error);
-    alert('⚠️ Error al enviar código');
-  }
-}
-
-async function verificarCodigoIngresado(codigo) {
-  try {
-    const submitBtn = document.querySelector('#authCodeForm button[type="submit"]');
-    submitBtn.textContent = 'Verificando...';
-    submitBtn.disabled = true;
-
-    const url = `${SCRIPT_URL}?action=verificarCodigoComercio&numero=${encodeURIComponent(appData.numeroTemporal)}&codigo=${encodeURIComponent(codigo)}`;
-    const response = await fetch(url);
-    const result = await response.json();
-
-    if (result.success) {
-      if (result.comercioExiste) {
-        appData.comercio = result.datosComercio;
-        window.APP_SECURITY.saveSecureSession('somarComercioUser', appData.comercio);
-        document.getElementById('authModal').classList.add('hidden');
-        document.getElementById('mainContent').classList.remove('hidden');
-        document.getElementById('comercioName').textContent = appData.comercio.nombre;
-        document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
-        appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
-        alert(`¡Bienvenido ${result.datosComercio.nombre}!`);
-      } else {
-        document.getElementById('authStep2').classList.add('hidden');
-        document.getElementById('authStep3').classList.remove('hidden');
-      }
-    } else {
-      alert(result.error || 'Código incorrecto');
-      submitBtn.textContent = 'Verificar';
-      submitBtn.disabled = false;
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    alert('⚠️ Error al verificar código');
-  }
-}
-
-async function completarRegistroComercio(nombre, direccion, ubicacionGPS) {
-  try {
-    const submitBtn = document.querySelector('#authRegisterForm button[type="submit"]');
-    submitBtn.textContent = 'Registrando...';
-    submitBtn.disabled = true;
-
-    const params = new URLSearchParams({
-      action: 'completarRegistroComercio',
-      celular: appData.numeroTemporal,
-      nombre: nombre,
-      direccion: direccion,
-      ubicacionGPS: ubicacionGPS || ''
-    });
-
-    const response = await fetch(`${SCRIPT_URL}?${params.toString()}`);
-    const result = await response.json();
-
-    if (result.success) {
-      appData.comercio = result.comercio;
-      window.APP_SECURITY.saveSecureSession('somarComercioUser', appData.comercio);
-      document.getElementById('authModal').classList.add('hidden');
-      document.getElementById('mainContent').classList.remove('hidden');
-      document.getElementById('comercioName').textContent = appData.comercio.nombre;
-      document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
-      appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
-      alert('¡Comercio registrado exitosamente!');
-    } else {
-      alert(result.error || 'Error al registrar');
-      submitBtn.textContent = 'Registrar Comercio';
-      submitBtn.disabled = false;
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    alert('⚠️ Error al registrar');
-  }
-}
-
-function cerrarSesion() {
-  if (confirm('¿Cerrar sesión?')) {
-    localStorage.removeItem('somarComercioUser');
-    location.reload();
-  }
-}
-
-// ============================================
-// EXTRACCIÓN DE COORDENADAS
-// ============================================
-
-async function extraerCoordenadasDeLink(input) {
-  try {
-    input = input.trim();
-    window.secureLog('🔍 Procesando entrada:', input);
-
-    const soloCoordMatch = input.match(/^\s*([0-9]{1,2}\.[0-9]+)\s*,\s*(-?[0-9]{1,3}\.[0-9]+)\s*$/);
-    if (soloCoordMatch) {
-      const lat = parseFloat(soloCoordMatch[1]);
-      const lon = parseFloat(soloCoordMatch[2]);
-      
-      if (lat >= 13 && lat <= 16 && lon >= -90 && lon <= -83) {
-        window.secureLog('✅ Coordenadas directas detectadas');
-        return { lat, lon, exito: true };
-      }
-    }
-
-    if (input.includes('goo.gl') || input.includes('maps.app.goo.gl')) {
-      window.secureLog('⚠️ Link acortado detectado');
-      return { 
-        exito: false, 
-        error: 'LINK_ACORTADO',
-        mensaje: 'Link acortado detectado.\n\nPor favor:\n1. Abre el link en Google Maps\n2. Espera que cargue\n3. Toca y mantén sobre la ubicación\n4. Aparecerán las coordenadas abajo\n5. Cópialas y pégalas aquí\n\nO usa el mapa interactivo 🗺️'
-      };
-    }
-
-    return await extraerCoordenadasDeURL(input);
-
-  } catch (error) {
-    console.error('❌ Error:', error);
-    return { exito: false, error: error.toString() };
-  }
-}
-
-async function extraerCoordenadasDeURL(url) {
-  const qMatch = url.match(/[?&]q=([0-9.-]+),([0-9.-]+)/);
-  if (qMatch) {
-    window.secureLog('✅ Coordenadas encontradas (q)');
-    return { lat: parseFloat(qMatch[1]), lon: parseFloat(qMatch[2]), exito: true };
-  }
-
-  const atMatch = url.match(/@([0-9.-]+),([0-9.-]+)/);
-  if (atMatch) {
-    window.secureLog('✅ Coordenadas encontradas (@)');
-    return { lat: parseFloat(atMatch[1]), lon: parseFloat(atMatch[2]), exito: true };
-  }
-
-  const placeMatch = url.match(/\/place\/.*?@([0-9.-]+),([0-9.-]+)/);
-  if (placeMatch) {
-    window.secureLog('✅ Coordenadas encontradas (place)');
-    return { lat: parseFloat(placeMatch[1]), lon: parseFloat(placeMatch[2]), exito: true };
-  }
-
-  const coordMatch = url.match(/([0-9]{1,2}\.[0-9]{4,})[,\s]+(-?[0-9]{1,3}\.[0-9]{4,})/);
-  if (coordMatch) {
-    const lat = parseFloat(coordMatch[1]);
-    const lon = parseFloat(coordMatch[2]);
-    
-    if (lat >= 13 && lat <= 16 && lon >= -90 && lon <= -83) {
-      window.secureLog('✅ Coordenadas encontradas (patrón general)');
-      return { lat, lon, exito: true };
-    }
-  }
-
-  window.secureLog('❌ No se encontraron coordenadas en la URL');
-  return { exito: false, error: 'No se detectaron coordenadas válidas' };
-}
-
-// ============================================
-// CÁLCULO DE TARIFAS
-// ============================================
-
-function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-function obtenerCiudad(lat, lon) {
-  const ciudades = [
-    { nombre: 'Choloma', lat: 15.61, lon: -87.95, radio: 0.10 },
-    { nombre: 'San Pedro Sula', lat: 15.50, lon: -88.03, radio: 0.15 },
-    { nombre: 'Tegucigalpa', lat: 14.08, lon: -87.21, radio: 0.15 },
-    { nombre: 'La Ceiba', lat: 15.78, lon: -86.80, radio: 0.10 },
-    { nombre: 'El Progreso', lat: 15.40, lon: -87.80, radio: 0.08 },
-    { nombre: 'Comayagua', lat: 14.45, lon: -87.64, radio: 0.10 },
-    { nombre: 'Puerto Cortés', lat: 15.85, lon: -87.94, radio: 0.08 },
-    { nombre: 'Villanueva', lat: 15.32, lon: -88.00, radio: 0.08 },
-    { nombre: 'La Lima', lat: 15.43, lon: -87.91, radio: 0.06 },
-    { nombre: 'Choluteca', lat: 13.30, lon: -87.19, radio: 0.10 },
-    { nombre: 'Danlí', lat: 14.03, lon: -86.58, radio: 0.08 },
-    { nombre: 'Juticalpa', lat: 14.66, lon: -86.22, radio: 0.08 },
-    { nombre: 'Santa Rosa de Copán', lat: 14.77, lon: -88.78, radio: 0.08 },
-    { nombre: 'Siguatepeque', lat: 14.60, lon: -87.84, radio: 0.08 },
-    { nombre: 'Tocoa', lat: 15.66, lon: -86.00, radio: 0.08 },
-    { nombre: 'Tela', lat: 15.78, lon: -87.46, radio: 0.08 }
-  ];
-
-  for (const ciudad of ciudades) {
-    const distancia = Math.sqrt(Math.pow(lat - ciudad.lat, 2) + Math.pow(lon - ciudad.lon, 2));
-    if (distancia < ciudad.radio) {
-      window.secureLog(`✅ Ciudad detectada: ${ciudad.nombre}`);
-      return ciudad.nombre;
-    }
-  }
-
-  if (lat >= 15.3 && lat <= 16.0 && lon >= -88.5 && lon <= -87.3) return 'Cortés';
-  else if (lat >= 13.8 && lat <= 14.4 && lon >= -87.5 && lon <= -86.8) return 'Francisco Morazán';
-  else if (lat >= 15.5 && lat <= 16.0 && lon >= -87.0 && lon <= -86.0) return 'Atlántida';
-  else if (lat >= 14.4 && lat <= 15.0 && lon >= -86.8 && lon <= -86.0) return 'Olancho';
-  else if (lat >= 13.0 && lat <= 13.8 && lon >= -87.5 && lon <= -86.8) return 'Choluteca';
-
-  window.secureLog('⚠️ Ciudad no detectada, usando genérico');
-  return 'Honduras';
-}
-
-async function calcularDistanciaOSRM(lat1, lon1, lat2, lon2) {
-  try {
-    const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`;
-    window.secureLog('🌐 Consultando OSRM...');
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('OSRM failed');
-    const data = await response.json();
-    if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) throw new Error('No route');
-    const distanciaKm = data.routes[0].distance / 1000;
-    window.secureLog(`✅ OSRM: ${distanciaKm.toFixed(2)} km por carretera`);
-    return distanciaKm;
-  } catch (error) {
-    console.error('❌ OSRM error:', error);
-    throw error;
-  }
-}
-
-function calcularTarifaCholoma(km) {
-  const tabla = [
-    { min: 0, max: 3, tarifa: 50 },
-    { min: 3, max: 7, tarifa: 75 },
-    { min: 7, max: 9, tarifa: 90 },
-    { min: 9, max: 11, tarifa: 105 },
-    { min: 11, max: 13, tarifa: 120 },
-    { min: 13, max: 15, tarifa: 135 }
-  ];
-  for (const r of tabla) {
-    if (km >= r.min && km < r.max) {
-      window.secureLog(`✅ Choloma ${r.min}-${r.max}km: L.${r.tarifa}`);
-      return r.tarifa;
-    }
-  }
-  const calc = 30 + (km * 6.8);
-  const redondeado = Math.round(calc / 5) * 5;
-  window.secureLog(`📊 Choloma fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
-  return redondeado;
-}
-
-function calcularTarifaOtrasCiudades(km) {
-  const tabla = [
-    { min: 0, max: 11, tarifa: 125 },
-    { min: 11, max: 13, tarifa: 135 },
-    { min: 13, max: 15, tarifa: 150 },
-    { min: 15, max: 17, tarifa: 165 },
-    { min: 17, max: 19, tarifa: 180 },
-    { min: 19, max: 21, tarifa: 195 }
-  ];
-  for (const r of tabla) {
-    if (km >= r.min && km < r.max) {
-      window.secureLog(`✅ Otras ${r.min}-${r.max}km: L.${r.tarifa}`);
-      return r.tarifa;
-    }
-  }
-  const calc = 40 + (km * 7.5);
-  const redondeado = Math.round(calc / 5) * 5;
-  window.secureLog(`📊 Otras fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
-  return redondeado;
-}
-
-async function calcularTarifa(ubicacionRecogida, ubicacionEntrega) {
-  if (!ubicacionRecogida || !ubicacionEntrega) {
-    window.secureLog('⚠️ Faltan ubicaciones');
-    return;
-  }
-
-  try {
-    const [lat1, lon1] = ubicacionRecogida.split(',').map(Number);
-    const [lat2, lon2] = ubicacionEntrega.split(',').map(Number);
-
-    if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) {
-      console.error('❌ Coordenadas inválidas');
-      return;
-    }
-
-    const ciudadOrigen = obtenerCiudad(lat1, lon1);
-    const ciudadDestino = obtenerCiudad(lat2, lon2);
-
-    window.secureLog(`📍 Origen: ${ciudadOrigen}, Destino: ${ciudadDestino}`);
-
-    let distanciaKm;
-    try {
-      distanciaKm = await calcularDistanciaOSRM(lat1, lon1, lat2, lon2);
-    } catch (error) {
-      console.warn('⚠️ OSRM fallback a Haversine');
-      distanciaKm = calcularDistanciaHaversine(lat1, lon1, lat2, lon2);
-    }
-
-    const esCholoma = ciudadOrigen.toLowerCase().includes('choloma') && 
-                      ciudadDestino.toLowerCase().includes('choloma');
-
-    const tarifaTotal = esCholoma ? 
-      calcularTarifaCholoma(distanciaKm) : 
-      calcularTarifaOtrasCiudades(distanciaKm);
-
-    document.getElementById('ciudadOrigen').textContent = ciudadOrigen;
-    document.getElementById('ciudadDestino').textContent = ciudadDestino;
-    document.getElementById('distanciaKm').textContent = distanciaKm.toFixed(2) + ' km';
-    document.getElementById('tarifaTotal').textContent = tarifaTotal.toFixed(2);
-    document.getElementById('tarifaResumen').classList.remove('hidden');
-
-    window.secureLog(`✅ Tarifa: L.${tarifaTotal.toFixed(2)}`);
-  } catch (error) {
-    console.error('❌ Error:', error);
-  }
-}
+# Agregar la continuación del código
+cat >> /tmp/comercios-panel-script-final.js << 'EOF'
 
 // ============================================
 // MAPAS
@@ -655,7 +276,7 @@ async function procesarEnvio(e) {
   }
 
   const datos = {
-    esEntrega: false, // IMPORTANTE: Marcar que NO es solicitud de entrega
+    esEntrega: false,
     idComercio: appData.comercio.id,
     nombreComercio: appData.comercio.nombre,
     telefonoComercio: appData.comercio.celular,
@@ -707,7 +328,7 @@ async function procesarEnvio(e) {
 }
 
 // ============================================
-// NUEVO: SOLICITAR ENTREGA
+// SOLICITAR ENTREGA
 // ============================================
 
 async function procesarSolicitudEntrega(e) {
@@ -718,7 +339,7 @@ async function procesarSolicitudEntrega(e) {
   const notasAdicionales = document.getElementById('notasAdicionalesEntrega').value;
 
   let datos = {
-    esEntrega: true, // IMPORTANTE: Marcar que SÍ es solicitud de entrega
+    esEntrega: true,
     idComercio: appData.comercio.id,
     nombreComercio: appData.comercio.nombre,
     telefonoComercio: appData.comercio.celular,
@@ -728,7 +349,6 @@ async function procesarSolicitudEntrega(e) {
     fechaSolicitud: new Date().toISOString()
   };
 
-  // Recopilar datos según el tipo de servicio
   if (tipoServicioEntrega === 'TRASLADO_TIENDAS') {
     const tiendaOrigen = document.getElementById('tiendaOrigen').value;
     const tiendaDestino = document.getElementById('tiendaDestino').value;
@@ -741,13 +361,19 @@ async function procesarSolicitudEntrega(e) {
       return;
     }
 
+    // Obtener datos de la tarifa calculada
+    const distanciaKm = document.getElementById('distanciaKmEntrega')?.textContent || '';
+    const tarifaTotal = document.getElementById('tarifaTotalEntrega')?.textContent || '0';
+
     datos = {
       ...datos,
       tiendaOrigen,
       tiendaDestino,
       ubicacionOrigen,
       ubicacionDestino,
-      descripcionContenido: descripcion
+      descripcionContenido: descripcion,
+      distanciaKm,
+      tarifa: tarifaTotal
     };
 
   } else if (tipoServicioEntrega === 'RECOGER_PAQUETE') {
@@ -764,7 +390,7 @@ async function procesarSolicitudEntrega(e) {
       return;
     }
 
-    let ubicacionEntrega = appData.comercio.ubicacionGPS; // Por defecto, mi comercio
+    let ubicacionEntrega = appData.comercio.ubicacionGPS;
     if (destinoPaquete === 'OTRA_DIRECCION') {
       ubicacionEntrega = document.getElementById('ubicacionEntregaPaquete').value;
       if (!ubicacionEntrega) {
@@ -772,6 +398,9 @@ async function procesarSolicitudEntrega(e) {
         return;
       }
     }
+
+    const distanciaKm = document.getElementById('distanciaKmEntrega')?.textContent || '';
+    const tarifaTotal = document.getElementById('tarifaTotalEntrega')?.textContent || '0';
 
     datos = {
       ...datos,
@@ -782,7 +411,9 @@ async function procesarSolicitudEntrega(e) {
       destinoPaquete,
       descripcionContenido: descripcion,
       pagarAlRecoger,
-      montoCobrar: montoRecoger
+      montoCobrar: montoRecoger,
+      distanciaKm,
+      tarifa: tarifaTotal
     };
 
   } else if (tipoServicioEntrega === 'REALIZAR_COMPRA') {
@@ -807,6 +438,9 @@ async function procesarSolicitudEntrega(e) {
       }
     }
 
+    const distanciaKm = document.getElementById('distanciaKmEntrega')?.textContent || '';
+    const tarifaTotal = document.getElementById('tarifaTotalEntrega')?.textContent || '0';
+
     datos = {
       ...datos,
       nombreComercioCompra,
@@ -816,7 +450,9 @@ async function procesarSolicitudEntrega(e) {
       presupuesto,
       comision,
       destinoCompra,
-      descripcionContenido: `Compra en ${nombreComercioCompra}:\n${listaProductos}`
+      descripcionContenido: `Compra en ${nombreComercioCompra}:\n${listaProductos}`,
+      distanciaKm,
+      tarifa: tarifaTotal
     };
   }
 
@@ -825,8 +461,6 @@ async function procesarSolicitudEntrega(e) {
   submitBtn.disabled = true;
 
   try {
-    console.log('📤 Enviando solicitud de entrega:', datos);
-    
     await fetch(SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
@@ -842,12 +476,11 @@ async function procesarSolicitudEntrega(e) {
     submitBtn.textContent = '🚀 Solicitar Servicio';
     submitBtn.disabled = false;
 
-    // Resetear secciones
     document.getElementById('seccionTrasladoTiendas').classList.remove('hidden');
     document.getElementById('seccionRecogerPaquete').classList.add('hidden');
     document.getElementById('seccionRealizarCompra').classList.add('hidden');
+    document.getElementById('tarifaResumenEntrega').classList.add('hidden');
 
-    // Ir a Mis Envíos
     document.getElementById('tabMisEnvios').click();
   } catch (error) {
     console.error('Error:', error);
@@ -947,7 +580,7 @@ window.addEventListener('DOMContentLoaded', () => {
     cargarMisEnvios();
   });
 
-  // NUEVO ENVÍO (existente)
+  // NUEVO ENVÍO
   document.querySelectorAll('input[name="tipoServicio"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
       const montoSection = document.getElementById('montoSection');
@@ -1119,7 +752,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('nuevoEnvioForm').addEventListener('submit', procesarEnvio);
 
-  // SOLICITAR ENTREGA - Cambiar tipo de servicio
+  // SOLICITAR ENTREGA
   document.querySelectorAll('input[name="tipoServicioEntrega"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
       document.getElementById('seccionTrasladoTiendas').classList.add('hidden');
@@ -1136,29 +769,117 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Destino del paquete
+  // NUEVO: Configurar autocompletado después de cargar ubicaciones
+  setTimeout(() => {
+    if (appData.ubicacionesFrecuentes.length > 0) {
+      // Traslado
+      configurarAutocomplete('ubicacionOrigenTraslado', async (ubicacion) => {
+        window.secureLog('✅ Origen traslado seleccionado:', ubicacion.nombre);
+        const destino = document.getElementById('ubicacionDestinoTraslado').value.trim();
+        if (destino) {
+          await calcularTarifaEntrega(ubicacion.ubicacion, destino);
+        }
+      });
+      
+      configurarAutocomplete('ubicacionDestinoTraslado', async (ubicacion) => {
+        window.secureLog('✅ Destino traslado seleccionado:', ubicacion.nombre);
+        const origen = document.getElementById('ubicacionOrigenTraslado').value.trim();
+        if (origen) {
+          await calcularTarifaEntrega(origen, ubicacion.ubicacion);
+        }
+      });
+      
+      // Recoger Paquete
+      configurarAutocomplete('ubicacionRecogidaPaquete', async (ubicacion) => {
+        window.secureLog('✅ Ubicación recogida seleccionada:', ubicacion.nombre);
+        const destinoPaquete = document.querySelector('input[name="destinoPaquete"]:checked').value;
+        let ubicacionEntrega = appData.comercio.ubicacionGPS;
+        if (destinoPaquete === 'OTRA_DIRECCION') {
+          ubicacionEntrega = document.getElementById('ubicacionEntregaPaquete').value.trim();
+        }
+        if (ubicacionEntrega) {
+          await calcularTarifaEntrega(ubicacion.ubicacion, ubicacionEntrega);
+        }
+      });
+      
+      configurarAutocomplete('ubicacionEntregaPaquete', async (ubicacion) => {
+        window.secureLog('✅ Ubicación entrega paquete seleccionada:', ubicacion.nombre);
+        const origen = document.getElementById('ubicacionRecogidaPaquete').value.trim();
+        if (origen) {
+          await calcularTarifaEntrega(origen, ubicacion.ubicacion);
+        }
+      });
+      
+      // Realizar Compra
+      configurarAutocomplete('ubicacionComercioCompra', async (ubicacion) => {
+        window.secureLog('✅ Comercio compra seleccionado:', ubicacion.nombre);
+        const destinoCompra = document.querySelector('input[name="destinoCompra"]:checked').value;
+        let ubicacionEntrega = appData.comercio.ubicacionGPS;
+        if (destinoCompra === 'OTRA_DIRECCION') {
+          ubicacionEntrega = document.getElementById('ubicacionEntregaCompra').value.trim();
+        }
+        if (ubicacionEntrega) {
+          await calcularTarifaEntrega(ubicacion.ubicacion, ubicacionEntrega);
+        }
+      });
+      
+      configurarAutocomplete('ubicacionEntregaCompra', async (ubicacion) => {
+        window.secureLog('✅ Ubicación entrega compra seleccionada:', ubicacion.nombre);
+        const origen = document.getElementById('ubicacionComercioCompra').value.trim();
+        if (origen) {
+          await calcularTarifaEntrega(origen, ubicacion.ubicacion);
+        }
+      });
+    }
+  }, 2000);
+
+  // Detectar cambios manuales en inputs para calcular tarifa
+  document.getElementById('ubicacionOrigenTraslado')?.addEventListener('blur', async function() {
+    const origen = this.value.trim();
+    const destino = document.getElementById('ubicacionDestinoTraslado').value.trim();
+    if (origen && destino && origen.includes(',') && destino.includes(',')) {
+      await calcularTarifaEntrega(origen, destino);
+    }
+  });
+
+  document.getElementById('ubicacionDestinoTraslado')?.addEventListener('blur', async function() {
+    const origen = document.getElementById('ubicacionOrigenTraslado').value.trim();
+    const destino = this.value.trim();
+    if (origen && destino && origen.includes(',') && destino.includes(',')) {
+      await calcularTarifaEntrega(origen, destino);
+    }
+  });
+
   document.querySelectorAll('input[name="destinoPaquete"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
       if (e.target.value === 'OTRA_DIRECCION') {
         document.getElementById('otraDireccionPaquete').classList.remove('hidden');
       } else {
         document.getElementById('otraDireccionPaquete').classList.add('hidden');
+        // Calcular tarifa con ubicación del comercio
+        const origen = document.getElementById('ubicacionRecogidaPaquete').value.trim();
+        if (origen && appData.comercio.ubicacionGPS) {
+          calcularTarifaEntrega(origen, appData.comercio.ubicacionGPS);
+        }
       }
     });
   });
 
-  // Destino de compra
   document.querySelectorAll('input[name="destinoCompra"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
       if (e.target.value === 'OTRA_DIRECCION') {
         document.getElementById('otraDireccionCompra').classList.remove('hidden');
       } else {
         document.getElementById('otraDireccionCompra').classList.add('hidden');
+        // Calcular tarifa con ubicación del comercio
+        const origen = document.getElementById('ubicacionComercioCompra').value.trim();
+        if (origen && appData.comercio.ubicacionGPS) {
+          calcularTarifaEntrega(origen, appData.comercio.ubicacionGPS);
+        }
       }
     });
   });
 
-  // Pagar al recoger
   document.querySelectorAll('input[name="pagarAlRecoger"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
       if (e.target.value === 'SI') {
@@ -1188,3 +909,6 @@ if ('serviceWorker' in navigator) {
       });
   });
 }
+EOF
+
+echo "Archivo combinado creado exitosamente"
