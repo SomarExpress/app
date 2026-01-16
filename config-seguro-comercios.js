@@ -7,7 +7,7 @@
 // PASO 1: Ofuscar las URLs sensibles
 const CONFIG = {
   // URL del backend ofuscada (usar Base64 como mínimo)
-  apiEndpoint: atob('aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4Z3pWSTFoS2h3ckRVNlNoeS00dWUwQVU2MFVLcDFrZUxyRVBDTnlDNGEzUlljNFBWeHhzbXdsSkRHNXdvS0lOd3NMZy9leGVj'),
+  apiEndpoint: atob('aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4OU0wbE5jVzZxREE1WDBaa0NvZzVLYXpoblRDSkc0MmxscmlIdVcwSXQ1YTZRVzBpS3dXMzNlTjRqSjVkNGVaQkVkUS9leGVj'),
   
   // Cloudinary ofuscado
   cloudinary: {
