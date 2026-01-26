@@ -200,7 +200,7 @@ async function verificarCodigoIngresado(codigo) {
         appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
         
         // NUEVO: Cargar ubicaciones
-        await cargarUbicacionesFrecuentes();
+        await cargarUbicacionesFrecuentesCorregida();
         
         alert(`¡Bienvenido ${result.datosComercio.nombre}!`);
       } else {
@@ -1126,7 +1126,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('contentNuevoEnvio').classList.add('hidden');
     document.getElementById('contentSolicitarEntrega').classList.add('hidden');
     document.getElementById('contentMisEnvios').classList.remove('hidden');
-    cargarMisEnvios();
+    cargarMisEnviosCorregida();
   });
 
   document.querySelectorAll('input[name="tipoServicio"]').forEach(radio => {
@@ -1446,5 +1446,181 @@ if ('serviceWorker' in navigator) {
       .catch((error) => {
         window.secureLog('❌ Error al registrar Service Worker:', error);
       });
+
+// =============================================
+// PARCHE PARA CORREGIR PROBLEMAS
+// Agregar al FINAL del comercios-panel-script.js
+// ANTES del cierre de DOMContentLoaded
+// =============================================
+
+// CORRECCIÓN 1: Reemplazar la función cargarUbicacionesFrecuentes
+async function cargarUbicacionesFrecuentesCorregida() {
+  try {
+    console.log('📍 Cargando ubicaciones frecuentes...');
+    
+    const response = await fetch(`${SCRIPT_URL}?action=obtenerUbicacionesFrecuentes`);
+    const result = await response.json();
+    
+    if (result.success) {
+      appData.ubicacionesFrecuentes = result.ubicaciones;
+      window.ubicacionesFrecuentes = result.ubicaciones; // Exponer globalmente para depuración
+      console.log(`✅ ${result.ubicaciones.length} ubicaciones cargadas`);
+      
+      // Configurar autocompletado inmediatamente
+      configurarTodosLosAutocompletados();
+    } else {
+      console.log('⚠️ Error cargando ubicaciones:', result.error);
+    }
+  } catch (error) {
+    console.error('❌ Error cargando ubicaciones:', error);
+  }
+}
+
+// CORRECCIÓN 2: Nueva función para configurar todos los autocompletados
+function configurarTodosLosAutocompletados() {
+  if (!appData.ubicacionesFrecuentes || appData.ubicacionesFrecuentes.length === 0) {
+    console.log('⚠️ No hay ubicaciones para configurar autocompletado');
+    return;
+  }
+  
+  console.log('🔧 Configurando autocompletados con', appData.ubicacionesFrecuentes.length, 'ubicaciones...');
+  
+  // Verificar que los inputs existan antes de configurar
+  const inputsConfig = [
+    {
+      id: 'ubicacionOrigenTraslado',
+      parejaid: 'ubicacionDestinoTraslado',
+      esOrigen: true
+    },
+    {
+      id: 'ubicacionDestinoTraslado',
+      parejaid: 'ubicacionOrigenTraslado',
+      esOrigen: false
+    },
+    {
+      id: 'ubicacionRecogidaPaquete',
+      callback: async (ubicacion) => {
+        const destinoPaquete = document.querySelector('input[name="destinoPaquete"]:checked')?.value;
+        let ubicacionEntrega = appData.comercio.ubicacionGPS;
+        if (destinoPaquete === 'OTRA_DIRECCION') {
+          ubicacionEntrega = document.getElementById('ubicacionEntregaPaquete')?.value.trim();
+        }
+        if (ubicacionEntrega) {
+          await calcularTarifaEntrega(ubicacion.ubicacion, ubicacionEntrega);
+        }
+      }
+    },
+    {
+      id: 'ubicacionEntregaPaquete',
+      parejaid: 'ubicacionRecogidaPaquete',
+      esOrigen: false
+    },
+    {
+      id: 'ubicacionComercioCompra',
+      callback: async (ubicacion) => {
+        const destinoCompra = document.querySelector('input[name="destinoCompra"]:checked')?.value;
+        let ubicacionEntrega = appData.comercio.ubicacionGPS;
+        if (destinoCompra === 'OTRA_DIRECCION') {
+          ubicacionEntrega = document.getElementById('ubicacionEntregaCompra')?.value.trim();
+        }
+        if (ubicacionEntrega) {
+          await calcularTarifaEntrega(ubicacion.ubicacion, ubicacionEntrega);
+        }
+      }
+    },
+    {
+      id: 'ubicacionEntregaCompra',
+      parejaid: 'ubicacionComercioCompra',
+      esOrigen: false
+    }
+  ];
+  
+  let configurados = 0;
+  
+  inputsConfig.forEach(config => {
+    const input = document.getElementById(config.id);
+    
+    if (input) {
+      const callback = config.callback || (async (ubicacion) => {
+        if (config.parejaid) {
+          const pareja = document.getElementById(config.parejaid)?.value.trim();
+          if (pareja) {
+            if (config.esOrigen) {
+              await calcularTarifaEntrega(ubicacion.ubicacion, pareja);
+            } else {
+              await calcularTarifaEntrega(pareja, ubicacion.ubicacion);
+            }
+          }
+        }
+      });
+      
+      configurarAutocomplete(config.id, callback);
+      configurados++;
+      console.log(`✅ Autocompletado configurado para: ${config.id}`);
+    } else {
+      console.log(`⚠️ Input no encontrado: ${config.id}`);
+    }
+  });
+  
+  console.log(`✅ Total autocompletados configurados: ${configurados}/${inputsConfig.length}`);
+}
+
+// CORRECCIÓN 3: Reemplazar cargarMisEnvios para agregar logs de depuración
+async function cargarMisEnviosCorregida() {
+  try {
+    console.log('📦 === CARGANDO MIS ENVÍOS ===');
+    console.log('Comercio ID:', appData.comercio?.id);
+    console.log('URL:', `${SCRIPT_URL}?action=obtenerEnviosComercio&idComercio=${appData.comercio.id}`);
+    
+    const url = `${SCRIPT_URL}?action=obtenerEnviosComercio&idComercio=${appData.comercio.id}`;
+    const response = await fetch(url);
+    console.log('Response status:', response.status);
+    
+    const result = await response.json();
+    console.log('Response data:', result);
+
+    if (result.success) {
+      appData.envios = result.envios || [];
+      console.log(`✅ ${appData.envios.length} envíos cargados`);
+      renderizarEnvios();
+    } else {
+      console.error('❌ Error del servidor:', result.error);
+      const container = document.getElementById('listaEnvios');
+      container.innerHTML = `
+        <div class="text-center py-12">
+          <div class="text-red-500 font-bold mb-2">Error al cargar envíos</div>
+          <div class="text-sm text-gray-600">${result.error || 'Error desconocido'}</div>
+          <button onclick="cargarMisEnviosCorregida()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+            Reintentar
+          </button>
+        </div>
+      `;
+    }
+  } catch (error) {
+    console.error('❌ Error cargando envíos:', error);
+    const container = document.getElementById('listaEnvios');
+    container.innerHTML = `
+      <div class="text-center py-12">
+        <div class="text-red-500 font-bold mb-2">Error de conexión</div>
+        <div class="text-sm text-gray-600">${error.message}</div>
+        <button onclick="cargarMisEnviosCorregida()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+          Reintentar
+        </button>
+      </div>
+    `;
+  }
+}
+
+// CORRECCIÓN 4: Exponer funciones corregidas globalmente
+window.cargarMisEnviosCorregida = cargarMisEnviosCorregida;
+window.cargarUbicacionesFrecuentesCorregida = cargarUbicacionesFrecuentesCorregida;
+window.configurarTodosLosAutocompletados = configurarTodosLosAutocompletados;
+
+console.log('✅ Parche de correcciones cargado');
+console.log('📝 Para usar las funciones corregidas:');
+console.log('   - cargarUbicacionesFrecuentesCorregida()');
+console.log('   - cargarMisEnviosCorregida()');
+console.log('   - configurarTodosLosAutocompletados()');
+
   });
 }
