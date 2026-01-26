@@ -11,8 +11,8 @@ const CONFIG = {
   
   // Cloudinary ofuscado
   cloudinary: {
-    cloudName: atob('ZHJrYXhzeml1'),
-    uploadPreset: atob('VFJBTVNGRVJFQ0lBUw==')
+    cloudName: atob('drkaxsziu'),
+    uploadPreset: atob('UEFRVUVURVNFQ09NRVJDSU9T')
   },
   
   // Modo debug (cambiar a false en producción)
