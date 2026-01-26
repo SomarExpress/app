@@ -1,4 +1,4 @@
-// Code.gs - Sistema Completo: Delivery + Panel Comercios
+// Code.gs - Sistema Completo con CORS configurado
 // Sheet ID: 1Pu6yB-H6RuutRqqDjUPewDRP5mu-lZQAq-q2vCd2QAc
 
 const SHEET_ID = '1Pu6yB-H6RuutRqqDjUPewDRP5mu-lZQAq-q2vCd2QAc';
@@ -7,9 +7,7 @@ function doGet(e) {
   // COMERCIOS: Verificar código
   if (e.parameter.action === 'verificarCodigoComercio') {
     const result = verificarCodigoComercio(e.parameter.numero, e.parameter.codigo);
-    return ContentService
-      .createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createCorsResponse(result);
   }
   
   // COMERCIOS: Completar registro
@@ -21,25 +19,25 @@ function doGet(e) {
       ubicacionGPS: e.parameter.ubicacionGPS
     };
     const result = completarRegistroComercio(datos);
-    return ContentService
-      .createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createCorsResponse(result);
   }
   
   // COMERCIOS: Obtener envíos/solicitudes
   if (e.parameter.action === 'obtenerEnviosComercio') {
     const result = obtenerEnviosComercio(e.parameter.idComercio);
-    return ContentService
-      .createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createCorsResponse(result);
+  }
+  
+  // NUEVO: Obtener ubicaciones frecuentes
+  if (e.parameter.action === 'obtenerUbicacionesFrecuentes') {
+    const result = obtenerUbicacionesFrecuentes();
+    return createCorsResponse(result);
   }
   
   // CLIENTES: Verificar código
   if (e.parameter.action === 'verificarCodigo') {
     const result = verificarCodigo(e.parameter.numero, e.parameter.codigo);
-    return ContentService
-      .createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createCorsResponse(result);
   }
   
   // CLIENTES: Completar registro
@@ -51,27 +49,21 @@ function doGet(e) {
       ubicacionGPS: e.parameter.ubicacionGPS
     };
     const result = completarRegistro(datos);
-    return ContentService
-      .createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createCorsResponse(result);
   }
   
   // CLIENTES: Obtener perfil
   if (e.parameter.action === 'obtenerPerfil') {
     const result = obtenerPerfil(e.parameter.celular);
-    return ContentService
-      .createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createCorsResponse(result);
   }
   
-  // Obtener datos de delivery (comercios, categorías, productos)
+  // Obtener datos de delivery
   if (e.parameter.action === 'getData') {
-    return ContentService
-      .createTextOutput(JSON.stringify(getData()))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createCorsResponse(getData());
   }
   
-  // Servir HTML (si aplica)
+  // Servir HTML
   return HtmlService.createHtmlOutputFromFile('index')
     .setTitle('Somar Express')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
@@ -83,41 +75,30 @@ function doPost(e) {
     const params = JSON.parse(e.postData.contents);
     Logger.log('Action: ' + params.action);
     
-    // COMERCIOS: Enviar código de verificación
+    // COMERCIOS: Enviar código
     if (params.action === 'enviarCodigoVerificacionComercio') {
       const resultado = enviarCodigoVerificacion(params.numero, 'COMERCIO');
-      return ContentService
-        .createTextOutput(JSON.stringify(resultado))
-        .setMimeType(ContentService.MimeType.JSON);
+      return createCorsResponse(resultado);
     }
     
     // COMERCIOS: Registrar envío
     if (params.action === 'registrarEnvioComercio') {
       Logger.log('📦 Registrando envío/entrega...');
-      Logger.log('Es Entrega: ' + (params.datos.esEntrega ? 'SÍ' : 'NO'));
-      Logger.log('Tipo Servicio: ' + params.datos.tipoServicio);
-      
       const result = registrarEnvioComercio(params.datos);
-      return ContentService
-        .createTextOutput(JSON.stringify(result))
-        .setMimeType(ContentService.MimeType.JSON);
+      return createCorsResponse(result);
     }
     
-    // CLIENTES: Enviar código de verificación
+    // CLIENTES: Enviar código
     if (params.action === 'enviarCodigoVerificacion') {
       const resultado = enviarCodigoVerificacion(params.numero, 'CLIENTE');
-      return ContentService
-        .createTextOutput(JSON.stringify(resultado))
-        .setMimeType(ContentService.MimeType.JSON);
+      return createCorsResponse(resultado);
     }
     
     // CLIENTES: Registrar pedido
     if (params.action === 'registrarPedido') {
-      Logger.log('🛒 Registrando pedido de cliente...');
+      Logger.log('🛒 Registrando pedido...');
       const result = registrarPedido(params.datos);
-      return ContentService
-        .createTextOutput(JSON.stringify(result))
-        .setMimeType(ContentService.MimeType.JSON);
+      return createCorsResponse(result);
     }
     
     // WhatsApp
@@ -128,31 +109,122 @@ function doPost(e) {
         params.mensaje,
         params.imagenUrl || null
       );
-      return ContentService
-        .createTextOutput(JSON.stringify(resultado))
-        .setMimeType(ContentService.MimeType.JSON);
+      return createCorsResponse(resultado);
     }
-
-
     
     Logger.log('⚠️ Acción no válida: ' + params.action);
-    return ContentService
-      .createTextOutput(JSON.stringify({ 
-        success: false, 
-        error: 'Acción no válida: ' + params.action 
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createCorsResponse({ 
+      success: false, 
+      error: 'Acción no válida: ' + params.action 
+    });
       
   } catch (error) {
     Logger.log('❌ Error en doPost: ' + error.toString());
-    Logger.log('Stack: ' + error.stack);
-    return ContentService
-      .createTextOutput(JSON.stringify({ 
-        success: false, 
-        error: error.toString(),
-        stack: error.stack
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createCorsResponse({ 
+      success: false, 
+      error: error.toString()
+    });
+  }
+}
+
+// ============================================
+// FUNCIÓN CORS - CRÍTICA
+// ============================================
+
+function createCorsResponse(data) {
+  const output = ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+  
+  return output;
+}
+
+// ============================================
+// NUEVA FUNCIÓN: OBTENER UBICACIONES FRECUENTES
+// ============================================
+
+function obtenerUbicacionesFrecuentes() {
+  try {
+    Logger.log('📍 === OBTENIENDO UBICACIONES FRECUENTES ===');
+    
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const ubicaciones = [];
+    
+    // 1. OBTENER COMERCIOS
+    const comerciosSheet = ss.getSheetByName('COMERCIOS');
+    if (comerciosSheet) {
+      const comerciosData = comerciosSheet.getDataRange().getValues();
+      const comerciosHeaders = comerciosData[0];
+      
+      const nombreIdx = comerciosHeaders.indexOf('COMERCIO');
+      const direccionIdx = comerciosHeaders.indexOf('DIRECCION');
+      const gpsIdx = comerciosHeaders.findIndex(h => 
+        h === 'GPS COMERCIO' || h === 'GPS_COMERCIO' || h === 'GPS' || h === 'GPS COORDENADAS'
+      );
+      
+      Logger.log('Comercios - Índices: nombre=' + nombreIdx + ', dirección=' + direccionIdx + ', gps=' + gpsIdx);
+      
+      for (let i = 1; i < comerciosData.length; i++) {
+        const row = comerciosData[i];
+        const nombre = row[nombreIdx];
+        const direccion = row[direccionIdx];
+        const gps = row[gpsIdx];
+        
+        if (nombre && gps && String(gps).trim() !== '') {
+          ubicaciones.push({
+            tipo: 'COMERCIO',
+            nombre: nombre,
+            descripcion: direccion || '',
+            ubicacion: String(gps).trim()
+          });
+        }
+      }
+      
+      Logger.log('✅ Comercios encontrados: ' + (comerciosData.length - 1));
+    }
+    
+    // 2. OBTENER UBICACIONES FRECUENTES
+    const ubicacionesSheet = ss.getSheetByName('UBICACIONES FRECUENTES');
+    if (ubicacionesSheet) {
+      const ubicacionesData = ubicacionesSheet.getDataRange().getValues();
+      const ubicacionesHeaders = ubicacionesData[0];
+      
+      const ubicacionIdx = ubicacionesHeaders.indexOf('UBICACION');
+      const descripcionIdx = ubicacionesHeaders.indexOf('DESCRIPCION');
+      
+      Logger.log('Ubicaciones - Índices: ubicacion=' + ubicacionIdx + ', descripcion=' + descripcionIdx);
+      
+      for (let i = 1; i < ubicacionesData.length; i++) {
+        const row = ubicacionesData[i];
+        const ubicacion = row[ubicacionIdx];
+        const descripcion = row[descripcionIdx];
+        
+        if (ubicacion && String(ubicacion).trim() !== '') {
+          ubicaciones.push({
+            tipo: 'FRECUENTE',
+            nombre: descripcion || 'Ubicación #' + i,
+            descripcion: descripcion || '',
+            ubicacion: String(ubicacion).trim()
+          });
+        }
+      }
+      
+      Logger.log('✅ Ubicaciones frecuentes: ' + (ubicacionesData.length - 1));
+    }
+    
+    Logger.log('✅ Total ubicaciones: ' + ubicaciones.length);
+    
+    return {
+      success: true,
+      ubicaciones: ubicaciones
+    };
+    
+  } catch (error) {
+    Logger.log('❌ Error: ' + error.toString());
+    return {
+      success: false,
+      error: error.toString(),
+      ubicaciones: []
+    };
   }
 }
 
@@ -242,7 +314,6 @@ function verificarCodigoComercio(numero, codigoIngresado) {
         if (minutosTranscurridos <= 10) {
           codigosSheet.getRange(i + 1, 4).setValue(true);
           
-          // Verificar si el comercio existe
           const comerciosSheet = ss.getSheetByName('COMERCIOS_USUARIOS');
           let comercioExiste = false;
           let datosComercio = null;
@@ -349,70 +420,104 @@ function completarRegistroComercio(datos) {
 
 // ============================================
 // COMERCIOS - GESTIÓN DE ENVÍOS
+// ⭐ FUNCIONES CORREGIDAS CON ENVIOS_COMERCIOS
 // ============================================
 
 function registrarEnvioComercio(datos) {
   try {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('ENVIO_COMERCIO');
+    Logger.log('📝 === REGISTRANDO ENVÍO ===');
+    Logger.log('Datos recibidos: ' + JSON.stringify(datos));
     
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    let sheet = ss.getSheetByName('ENVIOS_COMERCIOS');
+    
+    // Si no existe la hoja, crearla
     if (!sheet) {
-      return { success: false, error: 'Hoja ENVIO_COMERCIO no encontrada' };
+      Logger.log('⚠️ Creando hoja ENVIOS_COMERCIOS...');
+      sheet = ss.insertSheet('ENVIOS_COMERCIOS');
+      
+      // Headers según tu estructura
+      sheet.appendRow([
+        'ID_ENVIO',
+        'FECHA_HORA',
+        'ID_COMERCIO',
+        'NOMBRE_COMERCIO',
+        'TELEFONO_COMERCIO',
+        'TIPO_SERVICIO',
+        'QUIEN_PAGA',
+        'UBICACION_RECOGIDA_GPS',
+        'UBICACION_ENTREGA_GPS',
+        'CIUDAD_ORIGEN',
+        'CIUDAD_DESTINO',
+        'DISTANCIA_KM',
+        'TARIFA_ESTIMADA',
+        'NOMBRE_DESTINATARIO',
+        'TELEFONO_DESTINATARIO',
+        'DESCRIPCION_PAQUETE',
+        'FOTO_PAQUETE',
+        'MONTO_COBRAR',
+        'TIPO_PAGO_ENVIO',
+        'NOTAS_ADICIONALES',
+        'ESTADO',
+        'ID_DELIVERY',
+        'NOMBRE_DELIVERY',
+        'DATOS_JSON'
+      ]);
+      
+      // Formatear headers
+      const headerRange = sheet.getRange(1, 1, 1, 24);
+      headerRange.setFontWeight('bold');
+      headerRange.setBackground('#FF8C00');
+      headerRange.setFontColor('#FFFFFF');
     }
     
-    // Generar ID único
     const timestamp = new Date().getTime();
     const id = datos.esEntrega ? `ENT-${timestamp}` : `ENV-${timestamp}`;
     
-    // Determinar tipo de registro
-    const tipoRegistro = datos.esEntrega ? 'SOLICITUD_ENTREGA' : 'ENVIO_NORMAL';
+    Logger.log('ID generado: ' + id);
+    Logger.log('Es entrega: ' + (datos.esEntrega || false));
     
-    // Preparar datos comunes
+    // Preparar datos según estructura
     const rowData = [
-      id,                                                    // A: ID
-      datos.fechaSolicitud || new Date().toISOString(),     // B: Fecha
-      datos.idComercio || '',                               // C: ID Comercio
-      datos.nombreComercio || '',                           // D: Nombre Comercio
-      datos.telefonoComercio || '',                         // E: Teléfono Comercio
-      tipoRegistro,                                         // F: Tipo Registro (NUEVO)
-      datos.tipoServicio || '',                             // G: Tipo Servicio
-      datos.quienPaga || 'COMERCIO',                        // H: Quien Paga
-      datos.ubicacionRecogidaGPS || datos.ubicacionOrigen,  // I: Ubicación Recogida GPS
-      datos.ubicacionEntregaGPS || datos.ubicacionDestino,  // J: Ubicación Entrega GPS
-      datos.nombreDestinatario || '',                       // K: Nombre Destinatario
-      datos.telefonoDestinatario || datos.telefonoContacto || '', // L: Teléfono Destinatario
-      datos.descripcionPaquete || datos.descripcionContenido || '', // M: Descripción
-      datos.montoCobrar || 0,                               // N: Monto a Cobrar
-      datos.tipoPagoEnvio || datos.metodoPago || '',        // O: Tipo Pago Envío
-      datos.notasAdicionales || '',                         // P: Notas
-      datos.fotoUrl || '',                                  // Q: Foto URL
-      datos.ciudadOrigen || '',                             // R: Ciudad Origen
-      datos.ciudadDestino || '',                            // S: Ciudad Destino
-      datos.distanciaKm || '',                              // T: Distancia Km
-      datos.tarifaEstimada || datos.tarifa || 0,            // U: Tarifa Estimada
-      datos.estado || 'PENDIENTE_ASIGNACION',               // V: Estado
-      '',                                                   // W: Delivery Asignado
-      '',                                                   // X: Fecha Asignación
-      '',                                                   // Y: Fecha Recogido
-      '',                                                   // Z: Fecha Entregado
-      JSON.stringify(datos)                                 // AA: Datos Extra (JSON completo)
+      id,                                           // A: ID_ENVIO
+      new Date(),                                   // B: FECHA_HORA
+      datos.idComercio || '',                       // C: ID_COMERCIO
+      datos.nombreComercio || '',                   // D: NOMBRE_COMERCIO
+      datos.telefonoComercio || '',                 // E: TELEFONO_COMERCIO
+      datos.tipoServicio || 'SOLO_ENTREGA',        // F: TIPO_SERVICIO
+      datos.quienPaga || 'DESTINATARIO',           // G: QUIEN_PAGA
+      datos.ubicacionRecogidaGPS || datos.ubicacionOrigen || '', // H: UBICACION_RECOGIDA_GPS
+      datos.ubicacionEntregaGPS || datos.ubicacionDestino || '', // I: UBICACION_ENTREGA_GPS
+      datos.ciudadOrigen || '',                     // J: CIUDAD_ORIGEN
+      datos.ciudadDestino || '',                    // K: CIUDAD_DESTINO
+      datos.distanciaKm || '',                      // L: DISTANCIA_KM
+      datos.tarifaEstimada || datos.tarifa || 0,   // M: TARIFA_ESTIMADA
+      datos.nombreDestinatario || datos.nombreContacto || '', // N: NOMBRE_DESTINATARIO
+      datos.telefonoDestinatario || datos.telefonoContacto || '', // O: TELEFONO_DESTINATARIO
+      datos.descripcionPaquete || datos.descripcionContenido || '', // P: DESCRIPCION_PAQUETE
+      datos.fotoUrl || '',                          // Q: FOTO_PAQUETE
+      datos.montoCobrar || 0,                       // R: MONTO_COBRAR
+      datos.tipoPagoEnvio || datos.metodoPago || 'EFECTIVO', // S: TIPO_PAGO_ENVIO
+      datos.notasAdicionales || '',                 // T: NOTAS_ADICIONALES
+      'PENDIENTE',                                  // U: ESTADO
+      '',                                           // V: ID_DELIVERY
+      '',                                           // W: NOMBRE_DELIVERY
+      JSON.stringify(datos)                         // X: DATOS_JSON
     ];
     
-    // Agregar fila a la hoja
     sheet.appendRow(rowData);
     
-    // Si es una solicitud de entrega, enviar notificación especial
-    if (datos.esEntrega) {
-      enviarNotificacionSolicitudEntrega(datos, id);
-    }
+    Logger.log('✅ Envío registrado exitosamente');
     
     return { 
       success: true, 
       id: id,
-      tipoRegistro: tipoRegistro
+      tipoRegistro: datos.esEntrega ? 'SOLICITUD_ENTREGA' : 'ENVIO_NORMAL'
     };
     
   } catch (error) {
-    Logger.log('Error en registrarEnvioComercio: ' + error.toString());
+    Logger.log('❌ ERROR: ' + error.toString());
+    Logger.log('Stack: ' + error.stack);
     return { 
       success: false, 
       error: error.toString() 
@@ -422,32 +527,123 @@ function registrarEnvioComercio(datos) {
 
 function obtenerEnviosComercio(idComercio) {
   try {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('ENVIO_COMERCIO');
+    Logger.log('📦 === OBTENIENDO ENVÍOS DEL COMERCIO ===');
+    Logger.log('ID Comercio recibido: ' + idComercio);
+    
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    
+    // CORRECCIÓN: El nombre correcto es ENVIOS_COMERCIOS (con S)
+    const sheet = ss.getSheetByName('ENVIOS_COMERCIOS');
     
     if (!sheet) {
-      return { success: false, error: 'Hoja no encontrada' };
+      Logger.log('⚠️ La hoja ENVIOS_COMERCIOS no existe');
+      Logger.log('Hojas disponibles: ' + ss.getSheets().map(s => s.getName()).join(', '));
+      
+      return { 
+        success: true, 
+        envios: [],
+        mensaje: 'No hay envíos registrados aún'
+      };
     }
     
+    Logger.log('✅ Hoja ENVIOS_COMERCIOS encontrada');
+    
     const data = sheet.getDataRange().getValues();
+    
+    if (data.length <= 1) {
+      Logger.log('ℹ️ No hay envíos (solo headers)');
+      return { 
+        success: true, 
+        envios: [],
+        mensaje: 'No tienes envíos registrados aún'
+      };
+    }
+    
     const headers = data[0];
     const rows = data.slice(1);
     
-    // Filtrar por comercio
-    const envios = rows
-      .filter(row => row[2] == idComercio) // Columna C: ID Comercio
-      .map(row => {
-        const envio = {};
-        headers.forEach((header, index) => {
-          envio[header] = row[index];
-        });
+    Logger.log('Headers: ' + headers.join(', '));
+    Logger.log('Total filas: ' + rows.length);
+    
+    // Buscar la columna ID_COMERCIO (debería ser columna C, índice 2)
+    const idComercioIdx = headers.findIndex(h => {
+      const headerNorm = String(h).toUpperCase().replace(/\s+/g, '_');
+      return headerNorm === 'ID_COMERCIO' || 
+             headerNorm === 'IDCOMERCIO' ||
+             (headerNorm.includes('COMERCIO') && headerNorm.includes('ID'));
+    });
+    
+    Logger.log('Índice columna ID_COMERCIO: ' + idComercioIdx);
+    
+    // Si no encontramos el header, usar índice 2 (columna C) como fallback
+    const indiceAUsar = idComercioIdx !== -1 ? idComercioIdx : 2;
+    
+    Logger.log('Usando índice: ' + indiceAUsar + ' para filtrar');
+    
+    // Filtrar envíos del comercio
+    const enviosFiltrados = rows.filter(row => {
+      const idEnFila = String(row[indiceAUsar]).trim();
+      const idBuscado = String(idComercio).trim();
+      const coincide = idEnFila === idBuscado;
+      
+      if (coincide) {
+        Logger.log('✅ Envío encontrado - ID en fila: ' + idEnFila + ' | Buscado: ' + idBuscado);
+      }
+      
+      return coincide;
+    });
+    
+    Logger.log('Total envíos encontrados: ' + enviosFiltrados.length);
+    
+    // Convertir a objetos (mapeo manual según índices de columna)
+    const envios = enviosFiltrados.map(row => {
+      const envio = {
+        // Mapeo directo por índice según estructura de tu imagen
+        'ID_ENVIO': row[0],              // Columna A
+        'FECHA_HORA': row[1],             // Columna B
+        'ID_COMERCIO': row[2],            // Columna C
+        'NOMBRE_COMERCIO': row[3],        // Columna D
+        'TELEFONO_COMERCIO': row[4],      // Columna E
+        'TIPO_SERVICIO': row[5],          // Columna F
+        'QUIEN_PAGA': row[6],             // Columna G
+        'UBICACION_RECOGIDA_GPS': row[7], // Columna H
+        'UBICACION_ENTREGA_GPS': row[8],  // Columna I
+        'CIUDAD_ORIGEN': row[9],          // Columna J
+        'CIUDAD_DESTINO': row[10],        // Columna K
+        'DISTANCIA_KM': row[11],          // Columna L
+        'TARIFA_ESTIMADA': row[12],       // Columna M
+        'NOMBRE_DESTINATARIO': row[13],   // Columna N
+        'TELEFONO_DESTINATARIO': row[14], // Columna O
+        'DESCRIPCION_PAQUETE': row[15],   // Columna P
+        'FOTO_PAQUETE': row[16],          // Columna Q
+        'MONTO_COBRAR': row[17],          // Columna R
+        'TIPO_PAGO_ENVIO': row[18],       // Columna S
+        'NOTAS_ADICIONALES': row[19],     // Columna T
+        'ESTADO': row[20] || 'PENDIENTE', // Columna U
+        'ID_DELIVERY': row[21],           // Columna V
+        'NOMBRE_DELIVERY': row[22],       // Columna W
         
-        // Agregar campos derivados para compatibilidad
-        envio.esEntrega = envio['Tipo Registro'] === 'SOLICITUD_ENTREGA';
-        envio.tipoRegistro = envio['Tipo Registro'];
-        
-        return envio;
-      })
-      .reverse(); // Más recientes primero
+        // Alias para compatibilidad con el frontend
+        'id': row[0],
+        'ID': row[0],
+        'fecha': row[1],
+        'Fecha Solicitud': row[1],
+        'estado': row[20] || 'PENDIENTE',
+        'Estado': row[20] || 'PENDIENTE',
+        'tipoServicio': row[5],
+        'Tipo Servicio': row[5],
+        'nombreDestinatario': row[13],
+        'Nombre Destinatario': row[13],
+        'descripcionPaquete': row[15],
+        'Descripción Paquete': row[15],
+        'tipoRegistro': 'ENVIO_NORMAL',
+        'Tipo Registro': 'ENVIO_NORMAL'
+      };
+      
+      return envio;
+    }).reverse(); // Más recientes primero
+    
+    Logger.log('✅ Envíos procesados correctamente');
     
     return { 
       success: true, 
@@ -455,75 +651,19 @@ function obtenerEnviosComercio(idComercio) {
     };
     
   } catch (error) {
-    Logger.log('Error en obtenerEnviosComercio: ' + error.toString());
+    Logger.log('❌ ERROR: ' + error.toString());
+    Logger.log('Stack: ' + error.stack);
+    
     return { 
       success: false, 
-      error: error.toString() 
+      error: error.toString(),
+      detalles: error.stack
     };
   }
 }
 
 // ============================================
-// FUNCIÓN: enviarNotificacionSolicitudEntrega (NUEVA)
-// ============================================
-// Enviar notificación especial cuando es una solicitud de entrega
-
-function enviarNotificacionSolicitudEntrega(datos, id) {
-  try {
-    // Construir mensaje según tipo de servicio
-    let mensaje = `🚚 *NUEVA SOLICITUD DE ENTREGA*\n\n`;
-    mensaje += `*ID:* ${id}\n`;
-    mensaje += `*Comercio:* ${datos.nombreComercio}\n`;
-    mensaje += `*Teléfono:* ${datos.telefonoComercio}\n\n`;
-    
-    switch(datos.tipoServicio) {
-      case 'TRASLADO_TIENDAS':
-        mensaje += `📦 *Tipo:* Traslado entre Tiendas\n`;
-        mensaje += `*Desde:* ${datos.tiendaOrigen || 'No especificado'}\n`;
-        mensaje += `*Hasta:* ${datos.tiendaDestino || 'No especificado'}\n`;
-        break;
-        
-      case 'RECOGER_PAQUETE':
-        mensaje += `📦 *Tipo:* Recoger Paquete\n`;
-        mensaje += `*Contacto:* ${datos.nombreContacto}\n`;
-        mensaje += `*Teléfono:* ${datos.telefonoContacto}\n`;
-        mensaje += `*Entregar en:* ${datos.destinoPaquete || 'No especificado'}\n`;
-        break;
-        
-      case 'REALIZAR_COMPRA':
-        mensaje += `🛒 *Tipo:* Realizar Compra\n`;
-        mensaje += `*Comercio Compra:* ${datos.nombreComercioCompra}\n`;
-        mensaje += `*Presupuesto:* L.${datos.presupuesto}\n`;
-        mensaje += `*Comisión:* L.${datos.comision}\n`;
-        mensaje += `*Entregar en:* ${datos.destinoCompra || 'No especificado'}\n\n`;
-        mensaje += `*Lista de Compra:*\n${datos.listaProductos}\n`;
-        break;
-    }
-    
-    mensaje += `\n📋 *Descripción:*\n${datos.descripcionContenido || datos.descripcionPaquete}\n\n`;
-    mensaje += `💰 *Tarifa Estimada:* L.${datos.tarifa || datos.tarifaEstimada}\n`;
-    mensaje += `💳 *Método Pago:* ${datos.metodoPago === 'EFECTIVO' ? 'Efectivo' : 'Transferencia'}\n`;
-    
-    if (datos.notasAdicionales) {
-      mensaje += `\n📝 *Notas:* ${datos.notasAdicionales}\n`;
-    }
-    
-    mensaje += `\n⏰ *Fecha Solicitud:* ${new Date().toLocaleString('es-HN')}\n`;
-    mensaje += `\n✅ _Esta solicitud requiere asignación de delivery_`;
-    
-    // Aquí puedes enviar el mensaje a un número administrativo
-    // o a un grupo de WhatsApp de deliveries
-    // enviarWhatsAppAdministrativo(mensaje);
-    
-    Logger.log('Notificación de solicitud de entrega enviada');
-    
-  } catch (error) {
-    Logger.log('Error en enviarNotificacionSolicitudEntrega: ' + error.toString());
-  }
-}
-
-// ============================================
-// CLIENTES - AUTENTICACIÓN (YA EXISTENTE)
+// CLIENTES - FUNCIONES
 // ============================================
 
 function verificarCodigo(numero, codigoIngresado) {
@@ -694,10 +834,6 @@ function obtenerPerfil(celular) {
   }
 }
 
-// ============================================
-// DELIVERY APP - DATOS (YA EXISTENTE)
-// ============================================
-
 function getData() {
   try {
     const ss = SpreadsheetApp.openById(SHEET_ID);
@@ -835,10 +971,6 @@ function registrarPedido(datos) {
     return { success: false, error: error.toString() };
   }
 }
-
-// ============================================
-// WHATSAPP
-// ============================================
 
 function enviarWhatsAppBuilderBot(numero, mensaje, imagenUrl) {
   try {

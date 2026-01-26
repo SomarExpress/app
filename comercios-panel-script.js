@@ -778,6 +778,83 @@ function renderizarEnvios() {
   }).join('');
 }
 
+// ============================================
+// FUNCIÓN CORREGIDA PARA SUBIR FOTO A CLOUDINARY
+// Reemplaza la sección de subida en procesarEnvio()
+// ============================================
+
+async function subirFotoCloudinary(file) {
+  try {
+    console.log('📸 === SUBIENDO FOTO A CLOUDINARY ===');
+    console.log('Cloud Name:', CLOUDINARY_CLOUD_NAME);
+    console.log('Upload Preset:', CLOUDINARY_UPLOAD_PRESET);
+    console.log('Tamaño archivo:', (file.size / 1024 / 1024).toFixed(2) + ' MB');
+    
+    // Validar tamaño (máximo 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      throw new Error('La imagen es muy grande. Máximo 10MB');
+    }
+    
+    // Validar tipo de archivo
+    const tiposPermitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!tiposPermitidos.includes(file.type)) {
+      throw new Error('Tipo de archivo no permitido. Solo JPG, PNG o WEBP');
+    }
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('folder', 'PAQUETES_COMERCIOS'); // Organizar en carpeta
+    
+    console.log('📤 Enviando a Cloudinary...');
+    
+    const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData
+    });
+    
+    console.log('Response status:', response.status);
+    
+    // Obtener respuesta como texto primero para debugging
+    const responseText = await response.text();
+    console.log('Response text:', responseText);
+    
+    if (!response.ok) {
+      console.error('❌ Error de Cloudinary:', responseText);
+      throw new Error(`Cloudinary error ${response.status}: ${responseText}`);
+    }
+    
+    const data = JSON.parse(responseText);
+    
+    if (!data.secure_url) {
+      throw new Error('No se recibió URL de la imagen');
+    }
+    
+    console.log('✅ Foto subida exitosamente');
+    console.log('URL:', data.secure_url);
+    
+    return {
+      success: true,
+      url: data.secure_url,
+      publicId: data.public_id
+    };
+    
+  } catch (error) {
+    console.error('❌ ERROR subiendo foto:', error);
+    return {
+      success: false,
+      error: error.message || error.toString()
+    };
+  }
+}
+
+// ============================================
+// FUNCIÓN procesarEnvio() CORREGIDA
+// Reemplaza toda la función procesarEnvio en comercios-panel-script.js
+// ============================================
+
 async function procesarEnvio(e) {
   e.preventDefault();
 
@@ -801,31 +878,43 @@ async function procesarEnvio(e) {
   const tipoPagoEnvio = document.querySelector('input[name="tipoPagoEnvio"]:checked').value;
   const notasAdicionales = document.getElementById('notasAdicionales').value;
 
-  let fotoUrl = null;
-  const fotoFile = document.getElementById('fotoPaquete').files[0];
-
   const submitBtn = document.querySelector('#nuevoEnvioForm button[type="submit"]');
+  const originalText = submitBtn.textContent;
   submitBtn.textContent = 'Procesando...';
   submitBtn.disabled = true;
 
+  let fotoUrl = null;
+  const fotoFile = document.getElementById('fotoPaquete').files[0];
+
+  // Subir foto a Cloudinary si existe
   if (fotoFile) {
-    try {
-      const formData = new FormData();
-      formData.append('file', fotoFile);
-      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-      formData.append('cloud_name', CLOUDINARY_CLOUD_NAME);
-
-      const cloudinaryResponse = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
-        method: 'POST',
-        body: formData
-      });
-
-      const cloudinaryData = await cloudinaryResponse.json();
-      fotoUrl = cloudinaryData.secure_url;
-    } catch (error) {
-      console.error('Error subiendo foto:', error);
+    console.log('📸 Detectada foto, iniciando subida...');
+    submitBtn.textContent = 'Subiendo foto...';
+    
+    const resultadoSubida = await subirFotoCloudinary(fotoFile);
+    
+    if (resultadoSubida.success) {
+      fotoUrl = resultadoSubida.url;
+      console.log('✅ Foto subida correctamente:', fotoUrl);
+    } else {
+      console.error('❌ Error subiendo foto:', resultadoSubida.error);
+      
+      // Preguntar al usuario si quiere continuar sin foto
+      const continuar = confirm(
+        '⚠️ No se pudo subir la foto:\n' + 
+        resultadoSubida.error + 
+        '\n\n¿Deseas continuar sin foto?'
+      );
+      
+      if (!continuar) {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+        return;
+      }
     }
   }
+
+  submitBtn.textContent = 'Registrando envío...';
 
   const datos = {
     esEntrega: false,
@@ -850,6 +939,9 @@ async function procesarEnvio(e) {
   };
 
   try {
+    console.log('📝 Enviando datos al backend...');
+    console.log('Datos:', datos);
+    
     await fetch(SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
@@ -860,21 +952,28 @@ async function procesarEnvio(e) {
       })
     });
 
-    alert('✅ Envío registrado exitosamente');
+    console.log('✅ Envío registrado en backend');
+    
+    alert('✅ Envío registrado exitosamente' + (fotoUrl ? ' con foto' : ''));
+    
+    // Limpiar formulario
     document.getElementById('nuevoEnvioForm').reset();
     document.getElementById('tarifaResumen').classList.add('hidden');
     document.getElementById('uploadPlaceholder').classList.remove('hidden');
     document.getElementById('uploadPreview').classList.add('hidden');
     document.getElementById('ubicacionDetectada').classList.add('hidden');
-    submitBtn.textContent = '🚀 Crear Envío';
+    
+    submitBtn.textContent = originalText;
     submitBtn.disabled = false;
     appData.ubicacionEntrega = null;
 
+    // Ir a "Mis Envíos"
     document.getElementById('tabMisEnvios').click();
+    
   } catch (error) {
-    console.error('Error:', error);
-    alert('⚠️ Error al registrar envío');
-    submitBtn.textContent = '🚀 Crear Envío';
+    console.error('❌ Error al registrar envío:', error);
+    alert('⚠️ Error al registrar envío: ' + error.message);
+    submitBtn.textContent = originalText;
     submitBtn.disabled = false;
   }
 }
