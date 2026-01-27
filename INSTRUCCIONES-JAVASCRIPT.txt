@@ -1,0 +1,150 @@
+// ============================================
+// REEMPLAZAR ESTAS 2 FUNCIONES EN comercios-panel-script.js
+// ============================================
+
+// FUNCIÓN 1: Buscar "async function cargarUbicacionesFrecuentes()" y REEMPLAZAR por:
+
+async function cargarUbicacionesFrecuentes() {
+  try {
+    console.log('📍 === CARGANDO UBICACIONES FRECUENTES ===');
+    
+    const response = await fetch(`${SCRIPT_URL}?action=obtenerUbicacionesFrecuentes`);
+    const result = await response.json();
+    
+    if (result.success) {
+      appData.ubicacionesFrecuentes = result.ubicaciones;
+      window.ubicacionesFrecuentes = result.ubicaciones;
+      
+      console.log(`✅ ${result.ubicaciones.length} ubicaciones cargadas:`);
+      console.log('  - Comercios:', result.ubicaciones.filter(u => u.tipo === 'COMERCIO').length);
+      console.log('  - Frecuentes:', result.ubicaciones.filter(u => u.tipo === 'FRECUENTE').length);
+      
+      setTimeout(configurarTodosLosAutocompletados, 500);
+    } else {
+      console.log('⚠️ Error:', result.error);
+      appData.ubicacionesFrecuentes = [];
+    }
+  } catch (error) {
+    console.error('❌ Error:', error);
+    appData.ubicacionesFrecuentes = [];
+  }
+}
+
+// FUNCIÓN 2: Buscar "function configurarAutocomplete(inputId, onSelect)" y REEMPLAZAR por:
+
+function configurarAutocomplete(inputId, onSelect) {
+  const input = document.getElementById(inputId);
+  
+  if (!input) {
+    console.warn(`⚠️ Input ${inputId} no encontrado`);
+    return;
+  }
+  
+  console.log(`🔧 Configurando autocomplete: ${inputId}`);
+  
+  if (!appData.ubicacionesFrecuentes || appData.ubicacionesFrecuentes.length === 0) {
+    console.warn('⚠️ No hay ubicaciones');
+    return;
+  }
+  
+  const container = document.createElement('div');
+  container.className = 'autocomplete-container hidden';
+  container.id = `autocomplete-${inputId}`;
+  
+  const wrapper = input.parentElement;
+  if (!wrapper.classList.contains('input-autocomplete-wrapper')) {
+    const newWrapper = document.createElement('div');
+    newWrapper.className = 'input-autocomplete-wrapper';
+    input.parentNode.insertBefore(newWrapper, input);
+    newWrapper.appendChild(input);
+    newWrapper.appendChild(container);
+  } else {
+    wrapper.appendChild(container);
+  }
+  
+  input.addEventListener('input', (e) => {
+    const valor = e.target.value.toLowerCase().trim();
+    
+    if (valor.length < 2) {
+      container.classList.add('hidden');
+      return;
+    }
+    
+    const coincidencias = appData.ubicacionesFrecuentes.filter(u => {
+      const nombre = (u.nombre || '').toLowerCase();
+      const desc = (u.descripcion || '').toLowerCase();
+      const ubi = (u.ubicacion || '').toLowerCase();
+      return nombre.includes(valor) || desc.includes(valor) || ubi.includes(valor);
+    });
+    
+    console.log(`🔍 "${valor}" → ${coincidencias.length} resultados`);
+    
+    if (coincidencias.length === 0) {
+      container.innerHTML = '<div class="autocomplete-no-results">Sin resultados</div>';
+      container.classList.remove('hidden');
+      return;
+    }
+    
+    container.innerHTML = coincidencias.slice(0, 8).map(u => {
+      const icon = u.tipo === 'COMERCIO' ? '🏪' : '📍';
+      const typeClass = `type-${u.tipo}`;
+      
+      return `
+        <div class="autocomplete-item" data-ubicacion='${JSON.stringify(u).replace(/'/g, "&#39;")}'>
+          <div class="autocomplete-item-title">
+            <span>${icon}</span>
+            <span>${u.nombre}</span>
+            <span class="autocomplete-item-type ${typeClass}">${u.tipo}</span>
+          </div>
+          ${u.descripcion ? `<div class="autocomplete-item-description">${u.descripcion}</div>` : ''}
+          <div class="autocomplete-item-coords">📍 ${u.ubicacion}</div>
+        </div>
+      `;
+    }).join('');
+    
+    container.classList.remove('hidden');
+    
+    container.querySelectorAll('.autocomplete-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const ubi = JSON.parse(item.dataset.ubicacion.replace(/&#39;/g, "'"));
+        
+        console.log('✅ Seleccionado:', ubi.nombre);
+        
+        input.value = ubi.ubicacion;
+        container.classList.add('hidden');
+        
+        if (onSelect) onSelect(ubi);
+      });
+    });
+  });
+  
+  document.addEventListener('click', (e) => {
+    if (!input.contains(e.target) && !container.contains(e.target)) {
+      container.classList.add('hidden');
+    }
+  });
+  
+  console.log(`✅ Configurado: ${inputId}`);
+}
+
+// INSTRUCCIÓN 3: Dentro de "function configurarTodosLosAutocompletados()"
+// AGREGAR AL INICIO (después de los console.log):
+
+  // NUEVO ENVÍO - Ubicación Entrega
+  configurarAutocomplete('ubicacionEntregaInput', async (ubi) => {
+    appData.ubicacionEntrega = ubi.ubicacion;
+    
+    document.getElementById('ubicacionDetectada').classList.remove('hidden');
+    document.getElementById('ubicacionError').classList.add('hidden');
+    document.getElementById('coordenadasDetectadas').textContent = 
+      `${ubi.nombre} - ${ubi.ubicacion}`;
+    
+    const [lat, lon] = ubi.ubicacion.split(',').map(Number);
+    if (!isNaN(lat) && !isNaN(lon)) {
+      mostrarMapaPreview(lat, lon, 'mapPreviewEntrega');
+      
+      if (appData.ubicacionRecogida) {
+        await calcularTarifa(appData.ubicacionRecogida, appData.ubicacionEntrega);
+      }
+    }
+  });

@@ -12,7 +12,7 @@ const CONFIG = {
   // Cloudinary ofuscado
   cloudinary: {
     cloudName: atob('ZHJrYXhzeml1'),
-    uploadPreset: atob('c29tYXJfcmlkZXJz')  // somar_riders
+    uploadPreset: atob('c29tYXJfcmlkZXJz')
   },
   
   // Modo debug (cambiar a false en producciÃ³n)
