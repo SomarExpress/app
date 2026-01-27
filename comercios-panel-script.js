@@ -186,25 +186,30 @@ function configurarAutocompletadosFormularioEntrega() {
     }
   });
   
-  // 2. RECOGER PAQUETE
-  configurarAutocomplete('ubicacionRecogidaPaquete', async (ubicacion) => {
-    console.log('📦 Ubicación recogida seleccionada:', ubicacion.nombre);
-    // ✅ RELLENAR NOMBRE DEL CONTACTO AUTOMÁTICAMENTE
-  const nombreContactoInput = document.getElementById('nombreContacto');
-  if (nombreContactoInput) {
-    nombreContactoInput.value = ubicacion.nombre;
-    console.log('✅ Nombre de contacto rellenado:', ubicacion.nombre);
-  }
+// 2. RECOGER PAQUETE
+configurarAutocomplete('ubicacionRecogidaPaquete', async (ubicacion) => {
+  console.log('📦 Ubicación recogida seleccionada:', ubicacion.nombre);
   
-    const destinoPaquete = document.querySelector('input[name="destinoPaquete"]:checked')?.value;
-    let ubicacionEntrega = appData.comercio.ubicacionGPS;
-    if (destinoPaquete === 'OTRA_DIRECCION') {
-      ubicacionEntrega = document.getElementById('ubicacionEntregaPaquete').value.trim();
+  // ✅ RELLENAR NOMBRE DEL CONTACTO (CON RETRY SI ES NECESARIO)
+  setTimeout(() => {
+    const nombreContactoInput = document.getElementById('nombreContacto');
+    if (nombreContactoInput) {
+      nombreContactoInput.value = ubicacion.nombre;
+      console.log('✅ Nombre de contacto rellenado:', ubicacion.nombre);
+    } else {
+      console.warn('⚠️ Input nombreContacto no encontrado aún');
     }
-    if (ubicacionEntrega && ubicacionEntrega.includes(',')) {
-      await calcularTarifaEntrega(ubicacion.ubicacion, ubicacionEntrega);
-    }
-  });
+  }, 100);
+  
+  const destinoPaquete = document.querySelector('input[name="destinoPaquete"]:checked')?.value;
+  let ubicacionEntrega = appData.comercio.ubicacionGPS;
+  if (destinoPaquete === 'OTRA_DIRECCION') {
+    ubicacionEntrega = document.getElementById('ubicacionEntregaPaquete').value.trim();
+  }
+  if (ubicacionEntrega && ubicacionEntrega.includes(',')) {
+    await calcularTarifaEntrega(ubicacion.ubicacion, ubicacionEntrega);
+  }
+});
   
   configurarAutocomplete('ubicacionEntregaPaquete', async (ubicacion) => {
     console.log('📦 Ubicación entrega paquete seleccionada:', ubicacion.nombre);
