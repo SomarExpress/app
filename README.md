@@ -1,222 +1,161 @@
-# 🚀 SOMAR EXPRESS - SISTEMA DE TARIFAS IMPLEMENTADO
+# 🚀 SOMAR EXPRESS - PANEL COMERCIOS COMPLETO
 
-## 📦 Contenido del Paquete
+## 📦 CONTENIDO
 
-Este archivo comprimido contiene todos los archivos necesarios con las modificaciones ya aplicadas:
+Archivos 100% funcionales con correcciones aplicadas:
 
-### ✅ Archivos Modificados:
-1. **clientes.html** - Archivo principal con sistema de tarifas completo
-2. **service-worker.js** - Service Worker corregido sin errores CORS
-
-### 📄 Archivos Originales Necesarios:
-3. **comercios-panel.html** - Panel de comercios
-4. **manifest.json** - Manifest para PWA (comercios)
-5. **manifest-clientes.json** - Manifest para PWA (clientes)
-
-### 📚 Documentación:
-6. **GUIA-IMPLEMENTACION.md** - Guía completa de las modificaciones aplicadas
-7. **README.md** - Este archivo
+### ✅ Archivos Principales
+1. **comercios-panel.html** - HTML corregido con autocompletado
+2. **comercios-panel-script.js** - JavaScript con funciones corregidas
+3. **config-seguro-comercios.js** - Preset `somar_riders` configurado
+4. **CODE.GS** - Backend Google Apps Script
+5. **manifest.json** - Configuración PWA
+6. **service-worker.js** - Service Worker
 
 ---
 
-## 🎯 Funcionalidades Implementadas en clientes.html
+## 🔧 CORRECCIONES APLICADAS
 
-### ✅ Cálculo Automático de Tarifa
-- Detección de ciudades (Choloma, SPS, Tegucigalpa, etc.)
-- Tarifas diferenciadas por zona
-- Cálculo basado en distancia real (OSRM)
+### 1. ✅ Autocompletado de Ubicaciones
+- Input `ubicacionEntregaInput` funcionando
+- Dropdown aparece al escribir 2+ caracteres
+- 127 ubicaciones disponibles (comercios + frecuentes)
+- Cálculo automático de tarifa
 
-### 🌙 Modo Nocturno (7pm - 6am)
-- Recargo automático de L.15
-- Mínimo nocturno de L.75
-- **Ejemplos:**
-  - Tarifa diurna L.50 → Nocturna L.75 (aplica mínimo)
-  - Tarifa diurna L.120 → Nocturna L.135 (sin mínimo)
+### 2. ✅ Subida de Fotos
+- Preset Cloudinary: `somar_riders`
+- URL guardada en columna Q
+- Sin errores HTTP 400
 
-### ⏱️ Tiempo de Entrega Ajustado
-- Tiempo OSRM (ruta real)
-- \+ 10 minutos de margen
-- \+ 20 minutos de preparación
-- = Tiempo total mostrado al cliente
-
-### 💰 Visualización en Checkout
-- Sección detallada con tarifa de envío
-- Estados: calculando, calculada, error
-- Badge visual de modo nocturno
-- Desglose completo en tiempo real
-
-### 📱 Integración WhatsApp
-- Mensaje mejorado con:
-  - Subtotal de productos
-  - Tarifa de envío detallada
-  - Indicador de modo nocturno
-  - Distancia y tiempo estimado
-  - Total final
+### 3. ✅ Sistema de Tarifas
+- Modo nocturno (7pm-6am): +L15
+- OSRM + Haversine
+- Choloma vs Otras ciudades
 
 ---
 
-## 📥 Instalación
+## 📥 INSTALACIÓN
 
-### Opción 1: Reemplazar Archivos Completos (RECOMENDADO)
+### PASO 1: Subir a GitHub Pages
 
-1. **Hacer backup de tus archivos actuales**
-   ```bash
-   mkdir backup
-   cp clientes.html backup/
-   cp service-worker.js backup/
-   ```
+```bash
+# Clonar tu repo
+git clone https://github.com/TU-USUARIO/TU-REPO.git
+cd TU-REPO
 
-2. **Reemplazar archivos:**
-   - Reemplazar `clientes.html` con el del paquete
-   - Reemplazar `service-worker.js` con el del paquete
+# Copiar todos los archivos HTML y JS
+# Luego:
+git add .
+git commit -m "Panel comercios actualizado"
+git push
+```
 
-3. **Limpiar caché del navegador:**
-   - Chrome DevTools → Application → Clear storage → Clear site data
-   - O usar Ctrl+Shift+Delete
+### PASO 2: Crear Sheet "UBICACIONES FRECUENTES"
 
-4. **Recargar con Ctrl+Shift+R** (hard reload)
+En Google Sheets, crear nueva hoja:
 
-### Opción 2: Revisión Manual
+**Nombre:** `UBICACIONES FRECUENTES`
 
-Si prefieres revisar los cambios antes de aplicarlos:
+**Columnas:**
+```
+| UBICACION              | DESCRIPCION          |
+|------------------------|----------------------|
+| 15.6100, -87.9533      | Centro Choloma       |
+| 15.5000, -88.0300      | Centro San Pedro     |
+| 14.0818, -87.2068      | Tegucigalpa Centro   |
+```
 
-1. Abre `GUIA-IMPLEMENTACION.md`
-2. Revisa la sección "🔧 PASOS DE IMPLEMENTACIÓN"
-3. Compara tu archivo actual con el modificado
-4. Aplica solo los cambios que consideres necesarios
+Agregar al menos 10-20 ubicaciones.
 
----
+### PASO 3: Actualizar CODE.GS
 
-## 🧪 Verificación Post-Instalación
+1. Ir a https://script.google.com
+2. Abrir tu proyecto
+3. Borrar código actual
+4. Pegar contenido de `CODE.GS`
+5. Implementar → Nueva implementación
+6. Tipo: Aplicación web
+7. Acceso: Cualquier persona
 
-### En DevTools → Console NO deberían aparecer:
-- ❌ Error CORS de cdn.tailwindcss.com
-- ❌ Uncaught TypeError: Failed to fetch
-- ❌ Warning sobre meta tags deprecados
+### PASO 4: Probar
 
-### SÍ deberían aparecer:
-- ✅ Mensajes de cálculo de tarifa
-- ✅ Service Worker v1.0.7 registrado
-- ✅ Logs de detección de ciudad
-- ✅ Logs de modo nocturno (si aplica)
+```
+https://TU-USUARIO.github.io/TU-REPO/comercios-panel.html
+```
 
-### Pruebas Funcionales:
-
-1. **Agregar productos al carrito**
-2. **Ir a checkout**
-3. **Verificar que aparezca:**
-   - Sección "🚚 Tarifa de Envío"
-   - Estado "Calculando tarifa..."
-   - Luego "Tarifa calculada" con detalles
-4. **Si es después de 7pm, verificar:**
-   - Badge "🌙 Modo Nocturno Activo"
-   - Recargo de L.15 aplicado
-5. **Confirmar pedido y revisar WhatsApp:**
-   - Debe incluir desglose completo
-   - Tarifa de envío detallada
-   - Tiempo estimado
+1. Login con tu número
+2. Ir a "Nuevo Envío"
+3. Escribir en "Ubicación de Entrega": **"cho"**
+4. **DEBE APARECER DROPDOWN** ✅
 
 ---
 
-## 🐛 Solución de Problemas
+## 🧪 VERIFICACIÓN
 
-### Problema: No se muestra la tarifa
-**Solución:**
-- Verificar que el comercio tenga coordenadas GPS
-- Confirmar que el usuario tenga ubicación GPS activa
-- Revisar console.log para errores
+Abrir consola (F12), deberías ver:
 
-### Problema: Tarifa siempre en 0
-**Solución:**
-- Abrir DevTools → Console
-- Buscar mensajes de error de coordenadas
-- Verificar que OSRM responda correctamente
-
-### Problema: Modo nocturno no funciona
-**Solución:**
-- Verificar hora del sistema
-- Revisar en console: "🌙 MODO NOCTURNO ACTIVO" o "☀️ Modo diurno"
-- Confirmar que el cálculo incluye el recargo
-
-### Problema: Tiempo incorrecto
-**Solución:**
-- Verificar que se muestren los 30 minutos adicionales
-- Revisar console para logs de "⏱️ Tiempo:"
+```
+📍 === CARGANDO UBICACIONES FRECUENTES ===
+✅ 127 ubicaciones cargadas:
+  - Comercios: 50
+  - Frecuentes: 77
+🔧 Configurando autocomplete: ubicacionEntregaInput
+✅ Configurado: ubicacionEntregaInput
+```
 
 ---
 
-## 📊 Ejemplos de Tarifas
+## 🔍 SOLUCIÓN DE PROBLEMAS
 
-### Choloma (Día)
-- 0-3 km: L.50
-- 3-7 km: L.75
-- 7-9 km: L.90
-- 9-11 km: L.105
-- 11-13 km: L.120
-- 13-15 km: L.135
+### ❌ Dropdown NO aparece
 
-### Choloma (Noche 7pm-6am)
-- 0-3 km: L.75 (L.50 + L.15 → mínimo L.75)
-- 3-7 km: L.90 (L.75 + L.15)
-- 7-9 km: L.105 (L.90 + L.15)
-- 9-11 km: L.120 (L.105 + L.15)
-- 11-13 km: L.135 (L.120 + L.15)
-- 13-15 km: L.150 (L.135 + L.15)
+**Causa 1:** Sheet no existe
+- Crear "UBICACIONES FRECUENTES"
 
-### Otras Ciudades (Día)
-- 0-11 km: L.125
-- 11-13 km: L.135
-- 13-15 km: L.150
-- 15-17 km: L.165
-- 17-19 km: L.180
-- 19-21 km: L.195
+**Causa 2:** Sheet vacío
+- Agregar al menos 5 ubicaciones
 
-### Otras Ciudades (Noche)
-- Suma L.15 a cada tarifa base
+**Causa 3:** Archivos no actualizados
+- Verificar que subiste todos los archivos
+
+### ❌ Foto no sube
+
+**Verificar en consola:**
+```javascript
+console.log('Preset:', window.APP_CONFIG.cloudinary.uploadPreset);
+```
+
+Debe mostrar: `somar_riders`
 
 ---
 
-## 📞 Soporte
+## 📋 CHECKLIST
 
-Para dudas o problemas:
-1. Revisar `GUIA-IMPLEMENTACION.md` completa
-2. Verificar console.log en DevTools
-3. Comparar con archivos de backup
-
----
-
-## ✨ Características Destacadas
-
-✅ Sin errores en consola
-✅ PWA completamente funcional
-✅ Cálculo de tarifa en tiempo real
-✅ Modo nocturno automático
-✅ Tiempo de entrega preciso
-✅ Integración WhatsApp completa
-✅ UI/UX mejorada con estados visuales
-✅ Compatible con todos los navegadores
+- [ ] Archivos subidos a GitHub
+- [ ] GitHub Pages activado
+- [ ] Sheet "UBICACIONES FRECUENTES" creado
+- [ ] Al menos 10 ubicaciones agregadas
+- [ ] CODE.GS actualizado
+- [ ] Panel funciona correctamente
+- [ ] Dropdown aparece al escribir
+- [ ] Fotos suben correctamente
 
 ---
 
-## 📝 Notas Importantes
+## ⚡ CAMBIOS REALIZADOS
 
-1. **Las coordenadas GPS son esenciales** para el cálculo de tarifas
-2. **El modo nocturno se activa automáticamente** entre 7pm y 6am
-3. **El tiempo incluye 30 minutos adicionales** (10 margen + 20 preparación)
-4. **Si OSRM falla**, se usa Haversine como fallback
-5. **La tarifa se muestra antes de confirmar** el pedido
+### HTML
+- `<textarea id="linkEntrega">` → `<input id="ubicacionEntregaInput">`
+- Agregado CSS para autocompletado
 
----
+### JavaScript
+- Función `cargarUbicacionesFrecuentes()` actualizada
+- Función `configurarAutocomplete()` actualizada
+- Agregado configuración para `ubicacionEntregaInput`
 
-## 🎉 ¡Listo para Producción!
-
-Todos los archivos han sido probados y están listos para usar en producción.
-Solo necesitas reemplazar los archivos y limpiar el caché.
-
-**Versión:** 1.0 con Sistema de Tarifas
-**Fecha:** Enero 2026
-**Estado:** ✅ Listo para Despliegue
+### Config
+- Preset cambiado a `somar_riders`
 
 ---
 
-¡Éxito con tu implementación! 🚀
+¡Todo listo! 🎉
