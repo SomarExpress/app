@@ -189,6 +189,13 @@ function configurarAutocompletadosFormularioEntrega() {
   // 2. RECOGER PAQUETE
   configurarAutocomplete('ubicacionRecogidaPaquete', async (ubicacion) => {
     console.log('📦 Ubicación recogida seleccionada:', ubicacion.nombre);
+    // ✅ RELLENAR NOMBRE DEL CONTACTO AUTOMÁTICAMENTE
+  const nombreContactoInput = document.getElementById('nombreContacto');
+  if (nombreContactoInput) {
+    nombreContactoInput.value = ubicacion.nombre;
+    console.log('✅ Nombre de contacto rellenado:', ubicacion.nombre);
+  }
+  
     const destinoPaquete = document.querySelector('input[name="destinoPaquete"]:checked')?.value;
     let ubicacionEntrega = appData.comercio.ubicacionGPS;
     if (destinoPaquete === 'OTRA_DIRECCION') {
@@ -1134,18 +1141,18 @@ async function procesarSolicitudEntrega(e) {
     };
 
   } else if (tipoServicioEntrega === 'RECOGER_PAQUETE') {
-    const nombreContacto = document.getElementById('nombreContacto').value;
-    const telefonoContacto = document.getElementById('telefonoContacto').value;
-    const ubicacionRecogida = document.getElementById('ubicacionRecogidaPaquete').value;
-    const destinoPaquete = document.querySelector('input[name="destinoPaquete"]:checked').value;
-    const descripcion = document.getElementById('descripcionPaquete2').value;
-    const pagarAlRecoger = document.querySelector('input[name="pagarAlRecoger"]:checked').value;
-    const montoRecoger = pagarAlRecoger === 'SI' ? document.getElementById('montoRecoger').value : 0;
+  const nombreContacto = document.getElementById('nombreContacto').value;
+  const telefonoContacto = document.getElementById('telefonoContacto').value;
+  const ubicacionRecogida = document.getElementById('ubicacionRecogidaPaquete').value;
+  const destinoPaquete = document.querySelector('input[name="destinoPaquete"]:checked').value;
+  const descripcion = document.getElementById('descripcionPaquete2').value;
+  const pagarAlRecoger = document.querySelector('input[name="pagarAlRecoger"]:checked').value;
+  const montoRecoger = pagarAlRecoger === 'SI' ? document.getElementById('montoRecoger').value : 0;
 
-    if (!nombreContacto || !telefonoContacto || !ubicacionRecogida || !descripcion) {
-      alert('⚠️ Por favor completa todos los campos obligatorios');
-      return;
-    }
+  if (!nombreContacto || !ubicacionRecogida || !descripcion) {
+    alert('⚠️ Por favor completa todos los campos obligatorios');
+    return;
+  }
 
     let ubicacionEntrega = appData.comercio.ubicacionGPS;
     if (destinoPaquete === 'OTRA_DIRECCION') {
