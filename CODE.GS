@@ -4,7 +4,7 @@
 const SHEET_ID = '1Pu6yB-H6RuutRqqDjUPewDRP5mu-lZQAq-q2vCd2QAc';
 
 function doGet(e) {
-  // COMERCIOS: Verificar cÃ³digo
+  // COMERCIOS: Verificar código
   if (e.parameter.action === 'verificarCodigoComercio') {
     const result = verificarCodigoComercio(e.parameter.numero, e.parameter.codigo);
     return createCorsResponse(result);
@@ -22,7 +22,7 @@ function doGet(e) {
     return createCorsResponse(result);
   }
   
-  // COMERCIOS: Obtener envÃ­os/solicitudes
+  // COMERCIOS: Obtener envíos/solicitudes
   if (e.parameter.action === 'obtenerEnviosComercio') {
     const result = obtenerEnviosComercio(e.parameter.idComercio);
     return createCorsResponse(result);
@@ -34,7 +34,7 @@ function doGet(e) {
     return createCorsResponse(result);
   }
   
-  // CLIENTES: Verificar cÃ³digo
+  // CLIENTES: Verificar código
   if (e.parameter.action === 'verificarCodigo') {
     const result = verificarCodigo(e.parameter.numero, e.parameter.codigo);
     return createCorsResponse(result);
@@ -75,20 +75,20 @@ function doPost(e) {
     const params = JSON.parse(e.postData.contents);
     Logger.log('Action: ' + params.action);
     
-    // COMERCIOS: Enviar cÃ³digo
+    // COMERCIOS: Enviar código
     if (params.action === 'enviarCodigoVerificacionComercio') {
       const resultado = enviarCodigoVerificacion(params.numero, 'COMERCIO');
       return createCorsResponse(resultado);
     }
     
-    // COMERCIOS: Registrar envÃ­o
+    // COMERCIOS: Registrar envío
     if (params.action === 'registrarEnvioComercio') {
-      Logger.log('ðŸ“¦ Registrando envÃ­o/entrega...');
+      Logger.log('📦 Registrando envío/entrega...');
       const result = registrarEnvioComercio(params.datos);
       return createCorsResponse(result);
     }
     
-    // CLIENTES: Enviar cÃ³digo
+    // CLIENTES: Enviar código
     if (params.action === 'enviarCodigoVerificacion') {
       const resultado = enviarCodigoVerificacion(params.numero, 'CLIENTE');
       return createCorsResponse(resultado);
@@ -96,14 +96,14 @@ function doPost(e) {
     
     // CLIENTES: Registrar pedido
     if (params.action === 'registrarPedido') {
-      Logger.log('ðŸ›’ Registrando pedido...');
+      Logger.log('🛒 Registrando pedido...');
       const result = registrarPedido(params.datos);
       return createCorsResponse(result);
     }
     
     // WhatsApp
     if (params.action === 'enviarWhatsApp') {
-      Logger.log('ðŸ“± Enviando WhatsApp...');
+      Logger.log('📱 Enviando WhatsApp...');
       const resultado = enviarWhatsAppBuilderBot(
         params.numero,
         params.mensaje,
@@ -112,14 +112,14 @@ function doPost(e) {
       return createCorsResponse(resultado);
     }
     
-    Logger.log('âš ï¸ AcciÃ³n no vÃ¡lida: ' + params.action);
+    Logger.log('⚠️ Acción no válida: ' + params.action);
     return createCorsResponse({ 
       success: false, 
-      error: 'AcciÃ³n no vÃ¡lida: ' + params.action 
+      error: 'Acción no válida: ' + params.action 
     });
       
   } catch (error) {
-    Logger.log('âŒ Error en doPost: ' + error.toString());
+    Logger.log('❌ Error en doPost: ' + error.toString());
     return createCorsResponse({ 
       success: false, 
       error: error.toString()
@@ -128,7 +128,7 @@ function doPost(e) {
 }
 
 // ============================================
-// FUNCIÃ“N CORS - CRÃTICA
+// FUNCIÓN CORS - CRÍTICA
 // ============================================
 
 function createCorsResponse(data) {
@@ -139,12 +139,12 @@ function createCorsResponse(data) {
 }
 
 // ============================================
-// NUEVA FUNCIÃ“N: OBTENER UBICACIONES FRECUENTES
+// NUEVA FUNCIÓN: OBTENER UBICACIONES FRECUENTES
 // ============================================
 
 function obtenerUbicacionesFrecuentes() {
   try {
-    Logger.log('ðŸ“ === OBTENIENDO UBICACIONES FRECUENTES ===');
+    Logger.log('📍 === OBTENIENDO UBICACIONES FRECUENTES ===');
     
     const ss = SpreadsheetApp.openById(SHEET_ID);
     const ubicaciones = [];
@@ -161,7 +161,7 @@ function obtenerUbicacionesFrecuentes() {
         h === 'GPS COMERCIO' || h === 'GPS_COMERCIO' || h === 'GPS' || h === 'GPS COORDENADAS'
       );
       
-      Logger.log('Comercios - Ãndices: nombre=' + nombreIdx + ', direcciÃ³n=' + direccionIdx + ', gps=' + gpsIdx);
+      Logger.log('Comercios - Índices: nombre=' + nombreIdx + ', dirección=' + direccionIdx + ', gps=' + gpsIdx);
       
       for (let i = 1; i < comerciosData.length; i++) {
         const row = comerciosData[i];
@@ -179,7 +179,7 @@ function obtenerUbicacionesFrecuentes() {
         }
       }
       
-      Logger.log('âœ… Comercios encontrados: ' + (comerciosData.length - 1));
+      Logger.log('✅ Comercios encontrados: ' + (comerciosData.length - 1));
     }
     
     // 2. OBTENER UBICACIONES FRECUENTES
@@ -191,7 +191,7 @@ function obtenerUbicacionesFrecuentes() {
       const ubicacionIdx = ubicacionesHeaders.indexOf('UBICACION');
       const descripcionIdx = ubicacionesHeaders.indexOf('DESCRIPCION');
       
-      Logger.log('Ubicaciones - Ãndices: ubicacion=' + ubicacionIdx + ', descripcion=' + descripcionIdx);
+      Logger.log('Ubicaciones - Índices: ubicacion=' + ubicacionIdx + ', descripcion=' + descripcionIdx);
       
       for (let i = 1; i < ubicacionesData.length; i++) {
         const row = ubicacionesData[i];
@@ -201,17 +201,17 @@ function obtenerUbicacionesFrecuentes() {
         if (ubicacion && String(ubicacion).trim() !== '') {
           ubicaciones.push({
             tipo: 'FRECUENTE',
-            nombre: descripcion || 'UbicaciÃ³n #' + i,
+            nombre: descripcion || 'Ubicación #' + i,
             descripcion: descripcion || '',
             ubicacion: String(ubicacion).trim()
           });
         }
       }
       
-      Logger.log('âœ… Ubicaciones frecuentes: ' + (ubicacionesData.length - 1));
+      Logger.log('✅ Ubicaciones frecuentes: ' + (ubicacionesData.length - 1));
     }
     
-    Logger.log('âœ… Total ubicaciones: ' + ubicaciones.length);
+    Logger.log('✅ Total ubicaciones: ' + ubicaciones.length);
     
     return {
       success: true,
@@ -219,7 +219,7 @@ function obtenerUbicacionesFrecuentes() {
     };
     
   } catch (error) {
-    Logger.log('âŒ Error: ' + error.toString());
+    Logger.log('❌ Error: ' + error.toString());
     return {
       success: false,
       error: error.toString(),
@@ -229,14 +229,14 @@ function obtenerUbicacionesFrecuentes() {
 }
 
 // ============================================
-// AUTENTICACIÃ“N GENERAL
+// AUTENTICACIÓN GENERAL
 // ============================================
 
 function enviarCodigoVerificacion(numero, tipo) {
   try {
-    Logger.log('ðŸ“± === ENVIANDO CÃ“DIGO ===');
+    Logger.log('📱 === ENVIANDO CÓDIGO ===');
     Logger.log('Tipo: ' + tipo);
-    Logger.log('NÃºmero: ' + numero);
+    Logger.log('Número: ' + numero);
     
     let numeroLimpio = numero.toString().replace(/[^0-9]/g, '');
     if (!numeroLimpio.startsWith('504') && numeroLimpio.length === 8) {
@@ -244,7 +244,7 @@ function enviarCodigoVerificacion(numero, tipo) {
     }
     
     const codigo = Math.floor(100000 + Math.random() * 900000).toString();
-    Logger.log('ðŸ”¢ CÃ³digo: ' + codigo);
+    Logger.log('🔢 Código: ' + codigo);
     
     const ss = SpreadsheetApp.openById(SHEET_ID);
     let codigosSheet = ss.getSheetByName('CODIGOS_VERIFICACION');
@@ -261,29 +261,29 @@ function enviarCodigoVerificacion(numero, tipo) {
     codigosSheet.appendRow([numeroLimpio, codigo, new Date(), false, tipo]);
     
     const mensaje = 
-      `ðŸ” *CÃ“DIGO DE VERIFICACIÃ“N*\n\n` +
-      `Tu cÃ³digo para ${tipo === 'COMERCIO' ? 'Panel Comercios' : 'Somar Express'} es:\n\n` +
+      `🔐 *CÓDIGO DE VERIFICACIÓN*\n\n` +
+      `Tu código para ${tipo === 'COMERCIO' ? 'Panel Comercios' : 'Somar Express'} es:\n\n` +
       `*${codigo}*\n\n` +
-      `â±ï¸ VÃ¡lido por 10 minutos.\n\n` +
+      `⏱️ Válido por 10 minutos.\n\n` +
       `_Somar Express - Delivery_`;
     
     enviarWhatsAppBuilderBot(numeroLimpio, mensaje, null);
     
-    return { success: true, message: 'CÃ³digo enviado' };
+    return { success: true, message: 'Código enviado' };
     
   } catch (error) {
-    Logger.log('âŒ Error: ' + error.toString());
+    Logger.log('❌ Error: ' + error.toString());
     return { success: false, error: error.toString() };
   }
 }
 
 // ============================================
-// COMERCIOS - AUTENTICACIÃ“N
+// COMERCIOS - AUTENTICACIÓN
 // ============================================
 
 function verificarCodigoComercio(numero, codigoIngresado) {
   try {
-    Logger.log('ðŸ” === VERIFICANDO CÃ“DIGO COMERCIO ===');
+    Logger.log('🔍 === VERIFICANDO CÓDIGO COMERCIO ===');
     
     let numeroLimpio = numero.toString().replace(/[^0-9]/g, '');
     if (!numeroLimpio.startsWith('504') && numeroLimpio.length === 8) {
@@ -294,7 +294,7 @@ function verificarCodigoComercio(numero, codigoIngresado) {
     const codigosSheet = ss.getSheetByName('CODIGOS_VERIFICACION');
     
     if (!codigosSheet) {
-      return { success: false, error: 'No se encontraron cÃ³digos' };
+      return { success: false, error: 'No se encontraron códigos' };
     }
     
     const data = codigosSheet.getDataRange().getValues();
@@ -345,22 +345,22 @@ function verificarCodigoComercio(numero, codigoIngresado) {
             datosComercio: datosComercio
           };
         } else {
-          return { success: false, error: 'CÃ³digo expirado' };
+          return { success: false, error: 'Código expirado' };
         }
       }
     }
     
-    return { success: false, error: 'CÃ³digo incorrecto' };
+    return { success: false, error: 'Código incorrecto' };
     
   } catch (error) {
-    Logger.log('âŒ Error: ' + error.toString());
+    Logger.log('❌ Error: ' + error.toString());
     return { success: false, error: error.toString() };
   }
 }
 
 function completarRegistroComercio(datos) {
   try {
-    Logger.log('ðŸ“ === REGISTRANDO COMERCIO ===');
+    Logger.log('📝 === REGISTRANDO COMERCIO ===');
     
     let numeroLimpio = datos.celular.toString().replace(/[^0-9]/g, '');
     if (!numeroLimpio.startsWith('504') && numeroLimpio.length === 8) {
@@ -399,7 +399,7 @@ function completarRegistroComercio(datos) {
       new Date()
     ]);
     
-    Logger.log('âœ… Comercio registrado: ' + idComercio);
+    Logger.log('✅ Comercio registrado: ' + idComercio);
     
     return {
       success: true,
@@ -413,19 +413,19 @@ function completarRegistroComercio(datos) {
     };
     
   } catch (error) {
-    Logger.log('âŒ Error: ' + error.toString());
+    Logger.log('❌ Error: ' + error.toString());
     return { success: false, error: error.toString() };
   }
 }
 
 // ============================================
-// COMERCIOS - GESTIÃ“N DE ENVÃOS
-// â­ FUNCIONES CORREGIDAS CON ENVIOS_COMERCIOS
+// COMERCIOS - GESTIÓN DE ENVÍOS
+// ⭐ FUNCIONES CORREGIDAS CON ENVIOS_COMERCIOS
 // ============================================
 
 function registrarEnvioComercio(datos) {
   try {
-    Logger.log('ðŸ“ === REGISTRANDO ENVÃO ===');
+    Logger.log('📝 === REGISTRANDO ENVÍO ===');
     Logger.log('Datos recibidos: ' + JSON.stringify(datos));
     
     const ss = SpreadsheetApp.openById(SHEET_ID);
@@ -433,10 +433,10 @@ function registrarEnvioComercio(datos) {
     
     // Si no existe la hoja, crearla
     if (!sheet) {
-      Logger.log('âš ï¸ Creando hoja ENVIOS_COMERCIOS...');
+      Logger.log('⚠️ Creando hoja ENVIOS_COMERCIOS...');
       sheet = ss.insertSheet('ENVIOS_COMERCIOS');
       
-      // Headers segÃºn tu estructura
+      // Headers según tu estructura
       sheet.appendRow([
         'ID_ENVIO',
         'FECHA_HORA',
@@ -477,7 +477,7 @@ function registrarEnvioComercio(datos) {
     Logger.log('ID generado: ' + id);
     Logger.log('Es entrega: ' + (datos.esEntrega || false));
     
-    // Preparar datos segÃºn estructura
+    // Preparar datos según estructura
     const rowData = [
       id,                                           // A: ID_ENVIO
       new Date(),                                   // B: FECHA_HORA
@@ -507,7 +507,7 @@ function registrarEnvioComercio(datos) {
     
     sheet.appendRow(rowData);
     
-    Logger.log('âœ… EnvÃ­o registrado exitosamente');
+    Logger.log('✅ Envío registrado exitosamente');
     
     return { 
       success: true, 
@@ -516,7 +516,7 @@ function registrarEnvioComercio(datos) {
     };
     
   } catch (error) {
-    Logger.log('âŒ ERROR: ' + error.toString());
+    Logger.log('❌ ERROR: ' + error.toString());
     Logger.log('Stack: ' + error.stack);
     return { 
       success: false, 
@@ -527,35 +527,35 @@ function registrarEnvioComercio(datos) {
 
 function obtenerEnviosComercio(idComercio) {
   try {
-    Logger.log('ðŸ“¦ === OBTENIENDO ENVÃOS DEL COMERCIO ===');
+    Logger.log('📦 === OBTENIENDO ENVÍOS DEL COMERCIO ===');
     Logger.log('ID Comercio recibido: ' + idComercio);
     
     const ss = SpreadsheetApp.openById(SHEET_ID);
     
-    // CORRECCIÃ“N: El nombre correcto es ENVIOS_COMERCIOS (con S)
+    // CORRECCIÓN: El nombre correcto es ENVIOS_COMERCIOS (con S)
     const sheet = ss.getSheetByName('ENVIOS_COMERCIOS');
     
     if (!sheet) {
-      Logger.log('âš ï¸ La hoja ENVIOS_COMERCIOS no existe');
+      Logger.log('⚠️ La hoja ENVIOS_COMERCIOS no existe');
       Logger.log('Hojas disponibles: ' + ss.getSheets().map(s => s.getName()).join(', '));
       
       return { 
         success: true, 
         envios: [],
-        mensaje: 'No hay envÃ­os registrados aÃºn'
+        mensaje: 'No hay envíos registrados aún'
       };
     }
     
-    Logger.log('âœ… Hoja ENVIOS_COMERCIOS encontrada');
+    Logger.log('✅ Hoja ENVIOS_COMERCIOS encontrada');
     
     const data = sheet.getDataRange().getValues();
     
     if (data.length <= 1) {
-      Logger.log('â„¹ï¸ No hay envÃ­os (solo headers)');
+      Logger.log('ℹ️ No hay envíos (solo headers)');
       return { 
         success: true, 
         envios: [],
-        mensaje: 'No tienes envÃ­os registrados aÃºn'
+        mensaje: 'No tienes envíos registrados aún'
       };
     }
     
@@ -565,7 +565,7 @@ function obtenerEnviosComercio(idComercio) {
     Logger.log('Headers: ' + headers.join(', '));
     Logger.log('Total filas: ' + rows.length);
     
-    // Buscar la columna ID_COMERCIO (deberÃ­a ser columna C, Ã­ndice 2)
+    // Buscar la columna ID_COMERCIO (debería ser columna C, índice 2)
     const idComercioIdx = headers.findIndex(h => {
       const headerNorm = String(h).toUpperCase().replace(/\s+/g, '_');
       return headerNorm === 'ID_COMERCIO' || 
@@ -573,32 +573,32 @@ function obtenerEnviosComercio(idComercio) {
              (headerNorm.includes('COMERCIO') && headerNorm.includes('ID'));
     });
     
-    Logger.log('Ãndice columna ID_COMERCIO: ' + idComercioIdx);
+    Logger.log('Índice columna ID_COMERCIO: ' + idComercioIdx);
     
-    // Si no encontramos el header, usar Ã­ndice 2 (columna C) como fallback
+    // Si no encontramos el header, usar índice 2 (columna C) como fallback
     const indiceAUsar = idComercioIdx !== -1 ? idComercioIdx : 2;
     
-    Logger.log('Usando Ã­ndice: ' + indiceAUsar + ' para filtrar');
+    Logger.log('Usando índice: ' + indiceAUsar + ' para filtrar');
     
-    // Filtrar envÃ­os del comercio
+    // Filtrar envíos del comercio
     const enviosFiltrados = rows.filter(row => {
       const idEnFila = String(row[indiceAUsar]).trim();
       const idBuscado = String(idComercio).trim();
       const coincide = idEnFila === idBuscado;
       
       if (coincide) {
-        Logger.log('âœ… EnvÃ­o encontrado - ID en fila: ' + idEnFila + ' | Buscado: ' + idBuscado);
+        Logger.log('✅ Envío encontrado - ID en fila: ' + idEnFila + ' | Buscado: ' + idBuscado);
       }
       
       return coincide;
     });
     
-    Logger.log('Total envÃ­os encontrados: ' + enviosFiltrados.length);
+    Logger.log('Total envíos encontrados: ' + enviosFiltrados.length);
     
-    // Convertir a objetos (mapeo manual segÃºn Ã­ndices de columna)
+    // Convertir a objetos (mapeo manual según índices de columna)
     const envios = enviosFiltrados.map(row => {
       const envio = {
-        // Mapeo directo por Ã­ndice segÃºn estructura de tu imagen
+        // Mapeo directo por índice según estructura de tu imagen
         'ID_ENVIO': row[0],              // Columna A
         'FECHA_HORA': row[1],             // Columna B
         'ID_COMERCIO': row[2],            // Columna C
@@ -635,15 +635,15 @@ function obtenerEnviosComercio(idComercio) {
         'nombreDestinatario': row[13],
         'Nombre Destinatario': row[13],
         'descripcionPaquete': row[15],
-        'DescripciÃ³n Paquete': row[15],
+        'Descripción Paquete': row[15],
         'tipoRegistro': 'ENVIO_NORMAL',
         'Tipo Registro': 'ENVIO_NORMAL'
       };
       
       return envio;
-    }).reverse(); // MÃ¡s recientes primero
+    }).reverse(); // Más recientes primero
     
-    Logger.log('âœ… EnvÃ­os procesados correctamente');
+    Logger.log('✅ Envíos procesados correctamente');
     
     return { 
       success: true, 
@@ -651,7 +651,7 @@ function obtenerEnviosComercio(idComercio) {
     };
     
   } catch (error) {
-    Logger.log('âŒ ERROR: ' + error.toString());
+    Logger.log('❌ ERROR: ' + error.toString());
     Logger.log('Stack: ' + error.stack);
     
     return { 
@@ -677,7 +677,7 @@ function verificarCodigo(numero, codigoIngresado) {
     const codigosSheet = ss.getSheetByName('CODIGOS_VERIFICACION');
     
     if (!codigosSheet) {
-      return { success: false, error: 'No se encontraron cÃ³digos' };
+      return { success: false, error: 'No se encontraron códigos' };
     }
     
     const data = codigosSheet.getDataRange().getValues();
@@ -728,12 +728,12 @@ function verificarCodigo(numero, codigoIngresado) {
             datosUsuario: datosUsuario
           };
         } else {
-          return { success: false, error: 'CÃ³digo expirado' };
+          return { success: false, error: 'Código expirado' };
         }
       }
     }
     
-    return { success: false, error: 'CÃ³digo incorrecto' };
+    return { success: false, error: 'Código incorrecto' };
     
   } catch (error) {
     return { success: false, error: error.toString() };
@@ -839,7 +839,7 @@ function getData() {
     const ss = SpreadsheetApp.openById(SHEET_ID);
     
     const comerciosSheet = ss.getSheetByName('COMERCIOS');
-    if (!comerciosSheet) throw new Error('No se encontrÃ³ COMERCIOS');
+    if (!comerciosSheet) throw new Error('No se encontró COMERCIOS');
     const comerciosData = comerciosSheet.getDataRange().getValues();
     const comerciosHeaders = comerciosData[0];
     const comercios = comerciosData.slice(1).map(row => {
@@ -851,7 +851,7 @@ function getData() {
     });
     
     const categoriasSheet = ss.getSheetByName('CATEGORIAS');
-    if (!categoriasSheet) throw new Error('No se encontrÃ³ CATEGORIAS');
+    if (!categoriasSheet) throw new Error('No se encontró CATEGORIAS');
     const categoriasData = categoriasSheet.getDataRange().getValues();
     const categoriasHeaders = categoriasData[0];
     const categorias = categoriasData.slice(1)
@@ -871,7 +871,7 @@ function getData() {
       });
     
     const productosSheet = ss.getSheetByName('PRODUCTOS');
-    if (!productosSheet) throw new Error('No se encontrÃ³ PRODUCTOS');
+    if (!productosSheet) throw new Error('No se encontró PRODUCTOS');
     const productosData = productosSheet.getDataRange().getValues();
     const productosHeaders = productosData[0];
     const productos = productosData.slice(1).map(row => {
@@ -883,7 +883,7 @@ function getData() {
     }).filter(prod => prod.ESTATUS === 'ACTIVO' || prod.ESTATUS === true);
     
     const catxcomSheet = ss.getSheetByName('CATEGORIASxCOMERCIO');
-    if (!catxcomSheet) throw new Error('No se encontrÃ³ CATEGORIASxCOMERCIO');
+    if (!catxcomSheet) throw new Error('No se encontró CATEGORIASxCOMERCIO');
     const catxcomData = catxcomSheet.getDataRange().getValues();
     const catxcomHeaders = catxcomData[0];
     const categoriasxcomercio = catxcomData.slice(1).map(row => {

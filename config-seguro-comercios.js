@@ -1,28 +1,28 @@
 // ========================================
-// CONFIGURACIÃ“N SEGURA - COMERCIOS PANEL
+// CONFIGURACIÓN SEGURA - COMERCIOS PANEL
 // ========================================
 
-// Este archivo debe estar en un directorio separado y NO en el repositorio pÃºblico
+// Este archivo debe estar en un directorio separado y NO en el repositorio público
 
 // PASO 1: Ofuscar las URLs sensibles
 const CONFIG = {
-  // URL del backend ofuscada (usar Base64 como mÃ­nimo)
+  // URL del backend ofuscada (usar Base64 como mínimo)
   apiEndpoint: atob('aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4OU0wbE5jVzZxREE1WDBaa0NvZzVLYXpoblRDSkc0MmxscmlIdVcwSXQ1YTZRVzBpS3dXMzNlTjRqSjVkNGVaQkVkUS9leGVj'),
   
   // Cloudinary ofuscado
   cloudinary: {
     cloudName: atob('ZHJrYXhzeml1'),
-    uploadPreset: atob('c29tYXJfcmlkZXJz')
+    uploadPreset: atob('UEFRVUVURVNfQ09NRVJDSU9T')
   },
   
-  // Modo debug (cambiar a false en producciÃ³n)
+  // Modo debug (cambiar a false en producción)
   debug: true,
   
-  // Dominio permitido (validaciÃ³n bÃ¡sica)
+  // Dominio permitido (validación básica)
   allowedDomain: window.location.hostname
 };
 
-// PASO 2: FunciÃ³n para logs seguros
+// PASO 2: Función para logs seguros
 window.secureLog = function(...args) {
   if (CONFIG.debug) {
     console.log(...args);
@@ -62,7 +62,7 @@ const Security = {
     }
   },
   
-  // Guardar sesiÃ³n encriptada
+  // Guardar sesión encriptada
   saveSecureSession: function(key, data) {
     const encrypted = this.encryptData(data);
     if (encrypted) {
@@ -70,7 +70,7 @@ const Security = {
     }
   },
   
-  // Recuperar sesiÃ³n encriptada
+  // Recuperar sesión encriptada
   getSecureSession: function(key) {
     const encrypted = localStorage.getItem(key);
     if (!encrypted) return null;
@@ -78,11 +78,11 @@ const Security = {
   }
 };
 
-// Exportar configuraciÃ³n
+// Exportar configuración
 window.APP_CONFIG = CONFIG;
 window.APP_SECURITY = Security;
 
 // Confirmar carga exitosa
-console.log('âœ… ConfiguraciÃ³n de seguridad cargada correctamente');
-console.log('ðŸŒ Dominio actual:', window.location.hostname);
-console.log('ðŸ”’ Origen vÃ¡lido:', Security.validateOrigin());
+console.log('✅ Configuración de seguridad cargada correctamente');
+console.log('🌐 Dominio actual:', window.location.hostname);
+console.log('🔒 Origen válido:', Security.validateOrigin());
