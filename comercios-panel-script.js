@@ -31,19 +31,27 @@ let appData = {
 
 async function cargarUbicacionesFrecuentes() {
   try {
-    window.secureLog('ðŸ“ Cargando ubicaciones frecuentes...');
+    console.log('📍 === CARGANDO UBICACIONES FRECUENTES ===');
     
     const response = await fetch(`${SCRIPT_URL}?action=obtenerUbicacionesFrecuentes`);
     const result = await response.json();
     
     if (result.success) {
       appData.ubicacionesFrecuentes = result.ubicaciones;
-      window.secureLog(`âœ… ${result.ubicaciones.length} ubicaciones cargadas`);
+      window.ubicacionesFrecuentes = result.ubicaciones;
+      
+      console.log(`✅ ${result.ubicaciones.length} ubicaciones cargadas:`);
+      console.log('  - Comercios:', result.ubicaciones.filter(u => u.tipo === 'COMERCIO').length);
+      console.log('  - Frecuentes:', result.ubicaciones.filter(u => u.tipo === 'FRECUENTE').length);
+      
+      setTimeout(configurarTodosLosAutocompletados, 500);
     } else {
-      window.secureLog('âš ï¸ Error cargando ubicaciones:', result.error);
+      console.log('⚠️ Error:', result.error);
+      appData.ubicacionesFrecuentes = [];
     }
   } catch (error) {
-    console.error('Error cargando ubicaciones:', error);
+    console.error('❌ Error:', error);
+    appData.ubicacionesFrecuentes = [];
   }
 }
 
@@ -53,76 +61,99 @@ async function cargarUbicacionesFrecuentes() {
 
 function configurarAutocomplete(inputId, onSelect) {
   const input = document.getElementById(inputId);
-  if (!input) return;
+  
+  if (!input) {
+    console.warn(`⚠️ Input ${inputId} no encontrado`);
+    return;
+  }
+  
+  console.log(`🔧 Configurando autocomplete: ${inputId}`);
+  
+  if (!appData.ubicacionesFrecuentes || appData.ubicacionesFrecuentes.length === 0) {
+    console.warn('⚠️ No hay ubicaciones');
+    return;
+  }
   
   const container = document.createElement('div');
-  container.className = 'autocomplete-container hidden absolute z-50 w-full bg-white border-2 border-brand-orange rounded-xl shadow-lg max-h-60 overflow-y-auto';
-  container.style.top = (input.offsetTop + input.offsetHeight + 5) + 'px';
-  container.style.left = input.offsetLeft + 'px';
-  container.style.width = input.offsetWidth + 'px';
+  container.className = 'autocomplete-container hidden';
+  container.id = `autocomplete-${inputId}`;
   
-  input.parentElement.style.position = 'relative';
-  input.parentElement.appendChild(container);
+  const wrapper = input.parentElement;
+  if (!wrapper.classList.contains('input-autocomplete-wrapper')) {
+    const newWrapper = document.createElement('div');
+    newWrapper.className = 'input-autocomplete-wrapper';
+    input.parentNode.insertBefore(newWrapper, input);
+    newWrapper.appendChild(input);
+    newWrapper.appendChild(container);
+  } else {
+    wrapper.appendChild(container);
+  }
   
   input.addEventListener('input', (e) => {
     const valor = e.target.value.toLowerCase().trim();
     
     if (valor.length < 2) {
       container.classList.add('hidden');
-      container.innerHTML = '';
       return;
     }
     
-    const coincidencias = appData.ubicacionesFrecuentes.filter(ubicacion => 
-      ubicacion.nombre.toLowerCase().includes(valor) ||
-      ubicacion.descripcion.toLowerCase().includes(valor)
-    );
+    const coincidencias = appData.ubicacionesFrecuentes.filter(u => {
+      const nombre = (u.nombre || '').toLowerCase();
+      const desc = (u.descripcion || '').toLowerCase();
+      const ubi = (u.ubicacion || '').toLowerCase();
+      return nombre.includes(valor) || desc.includes(valor) || ubi.includes(valor);
+    });
+    
+    console.log(`🔍 "${valor}" → ${coincidencias.length} resultados`);
     
     if (coincidencias.length === 0) {
-      container.classList.add('hidden');
-      container.innerHTML = '';
+      container.innerHTML = '<div class="autocomplete-no-results">Sin resultados</div>';
+      container.classList.remove('hidden');
       return;
     }
     
-    container.innerHTML = coincidencias.slice(0, 8).map(ubicacion => `
-      <div class="autocomplete-item p-3 hover:bg-orange-50 cursor-pointer border-b last:border-b-0 transition" data-ubicacion='${JSON.stringify(ubicacion)}'>
-        <div class="flex items-start gap-2">
-          <span class="text-lg">${ubicacion.tipo === 'COMERCIO' ? 'ðŸª' : 'ðŸ“'}</span>
-          <div class="flex-1">
-            <p class="font-semibold text-sm text-gray-800">${ubicacion.nombre}</p>
-            ${ubicacion.descripcion ? `<p class="text-xs text-gray-500">${ubicacion.descripcion}</p>` : ''}
-            <p class="text-xs text-blue-600 mt-1">ðŸ“ ${ubicacion.ubicacion}</p>
+    container.innerHTML = coincidencias.slice(0, 8).map(u => {
+      const icon = u.tipo === 'COMERCIO' ? '🏪' : '📍';
+      const typeClass = `type-${u.tipo}`;
+      
+      return `
+        <div class="autocomplete-item" data-ubicacion='${JSON.stringify(u).replace(/'/g, "&#39;")}'>
+          <div class="autocomplete-item-title">
+            <span>${icon}</span>
+            <span>${u.nombre}</span>
+            <span class="autocomplete-item-type ${typeClass}">${u.tipo}</span>
           </div>
-          <span class="text-xs px-2 py-1 rounded ${ubicacion.tipo === 'COMERCIO' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">${ubicacion.tipo}</span>
+          ${u.descripcion ? `<div class="autocomplete-item-description">${u.descripcion}</div>` : ''}
+          <div class="autocomplete-item-coords">📍 ${u.ubicacion}</div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
     
     container.classList.remove('hidden');
     
-    // Event listeners para cada item
     container.querySelectorAll('.autocomplete-item').forEach(item => {
       item.addEventListener('click', () => {
-        const ubicacion = JSON.parse(item.dataset.ubicacion);
-        input.value = ubicacion.ubicacion;
-        container.classList.add('hidden');
-        container.innerHTML = '';
+        const ubi = JSON.parse(item.dataset.ubicacion.replace(/&#39;/g, "'"));
         
-        if (onSelect) {
-          onSelect(ubicacion);
-        }
+        console.log('✅ Seleccionado:', ubi.nombre);
+        
+        input.value = ubi.ubicacion;
+        container.classList.add('hidden');
+        
+        if (onSelect) onSelect(ubi);
       });
     });
   });
   
-  // Cerrar al hacer click fuera
   document.addEventListener('click', (e) => {
     if (!input.contains(e.target) && !container.contains(e.target)) {
       container.classList.add('hidden');
-      container.innerHTML = '';
     }
   });
+  
+  console.log(`✅ Configurado: ${inputId}`);
 }
+
 
 // ============================================
 // AUTENTICACIÃ“N
@@ -1568,6 +1599,24 @@ async function cargarUbicacionesFrecuentesCorregida() {
 function configurarTodosLosAutocompletados() {
   if (!appData.ubicacionesFrecuentes || appData.ubicacionesFrecuentes.length === 0) {
     console.log('âš ï¸ No hay ubicaciones para configurar autocompletado');
+    // NUEVO ENVÍO - Ubicación Entrega
+  configurarAutocomplete('ubicacionEntregaInput', async (ubi) => {
+    appData.ubicacionEntrega = ubi.ubicacion;
+    
+    document.getElementById('ubicacionDetectada').classList.remove('hidden');
+    document.getElementById('ubicacionError').classList.add('hidden');
+    document.getElementById('coordenadasDetectadas').textContent = 
+      `${ubi.nombre} - ${ubi.ubicacion}`;
+    
+    const [lat, lon] = ubi.ubicacion.split(',').map(Number);
+    if (!isNaN(lat) && !isNaN(lon)) {
+      mostrarMapaPreview(lat, lon, 'mapPreviewEntrega');
+      
+      if (appData.ubicacionRecogida) {
+        await calcularTarifa(appData.ubicacionRecogida, appData.ubicacionEntrega);
+      }
+    }
+  });
     return;
   }
   
@@ -1756,6 +1805,24 @@ async function cargarUbicacionesFrecuentesCorregida() {
 function configurarTodosLosAutocompletados() {
   if (!appData.ubicacionesFrecuentes || appData.ubicacionesFrecuentes.length === 0) {
     console.log('âš ï¸ No hay ubicaciones para configurar autocompletado');
+    // NUEVO ENVÍO - Ubicación Entrega
+  configurarAutocomplete('ubicacionEntregaInput', async (ubi) => {
+    appData.ubicacionEntrega = ubi.ubicacion;
+    
+    document.getElementById('ubicacionDetectada').classList.remove('hidden');
+    document.getElementById('ubicacionError').classList.add('hidden');
+    document.getElementById('coordenadasDetectadas').textContent = 
+      `${ubi.nombre} - ${ubi.ubicacion}`;
+    
+    const [lat, lon] = ubi.ubicacion.split(',').map(Number);
+    if (!isNaN(lat) && !isNaN(lon)) {
+      mostrarMapaPreview(lat, lon, 'mapPreviewEntrega');
+      
+      if (appData.ubicacionRecogida) {
+        await calcularTarifa(appData.ubicacionRecogida, appData.ubicacionEntrega);
+      }
+    }
+  });
     return;
   }
   
