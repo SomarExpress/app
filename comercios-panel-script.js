@@ -171,20 +171,36 @@ function configurarAutocompletadosFormularioEntrega() {
   
   // 1. TRASLADO ENTRE TIENDAS
   configurarAutocomplete('ubicacionOrigenTraslado', async (ubicacion) => {
-    console.log('🏪 Origen traslado seleccionado:', ubicacion.nombre);
-    const destino = document.getElementById('ubicacionDestinoTraslado').value.trim();
-    if (destino && destino.includes(',')) {
-      await calcularTarifaEntrega(ubicacion.ubicacion, destino);
-    }
-  });
+  console.log('🏪 Origen traslado seleccionado:', ubicacion.nombre);
+  
+  // ✅ RELLENAR NOMBRE DE TIENDA ORIGEN
+  const tiendaOrigenInput = document.getElementById('tiendaOrigen');
+  if (tiendaOrigenInput) {
+    tiendaOrigenInput.value = ubicacion.nombre;
+    console.log('✅ Tienda origen rellenada:', ubicacion.nombre);
+  }
+  
+  const destino = document.getElementById('ubicacionDestinoTraslado').value.trim();
+  if (destino && destino.includes(',')) {
+    await calcularTarifaEntrega(ubicacion.ubicacion, destino);
+  }
+});
   
   configurarAutocomplete('ubicacionDestinoTraslado', async (ubicacion) => {
-    console.log('🏪 Destino traslado seleccionado:', ubicacion.nombre);
-    const origen = document.getElementById('ubicacionOrigenTraslado').value.trim();
-    if (origen && origen.includes(',')) {
-      await calcularTarifaEntrega(origen, ubicacion.ubicacion);
-    }
-  });
+  console.log('🏪 Destino traslado seleccionado:', ubicacion.nombre);
+  
+  // ✅ RELLENAR NOMBRE DE TIENDA DESTINO
+  const tiendaDestinoInput = document.getElementById('tiendaDestino');
+  if (tiendaDestinoInput) {
+    tiendaDestinoInput.value = ubicacion.nombre;
+    console.log('✅ Tienda destino rellenada:', ubicacion.nombre);
+  }
+  
+  const origen = document.getElementById('ubicacionOrigenTraslado').value.trim();
+  if (origen && origen.includes(',')) {
+    await calcularTarifaEntrega(origen, ubicacion.ubicacion);
+  }
+});
   
 // 2. RECOGER PAQUETE
 configurarAutocomplete('ubicacionRecogidaPaquete', async (ubicacion) => {
@@ -221,16 +237,24 @@ configurarAutocomplete('ubicacionRecogidaPaquete', async (ubicacion) => {
   
   // 3. REALIZAR COMPRA
   configurarAutocomplete('ubicacionComercioCompra', async (ubicacion) => {
-    console.log('🛒 Comercio compra seleccionado:', ubicacion.nombre);
-    const destinoCompra = document.querySelector('input[name="destinoCompra"]:checked')?.value;
-    let ubicacionEntrega = appData.comercio.ubicacionGPS;
-    if (destinoCompra === 'OTRA_DIRECCION') {
-      ubicacionEntrega = document.getElementById('ubicacionEntregaCompra').value.trim();
-    }
-    if (ubicacionEntrega && ubicacionEntrega.includes(',')) {
-      await calcularTarifaEntrega(ubicacion.ubicacion, ubicacionEntrega);
-    }
-  });
+  console.log('🛒 Comercio compra seleccionado:', ubicacion.nombre);
+  
+  // ✅ RELLENAR NOMBRE DEL COMERCIO
+  const nombreComercioCompraInput = document.getElementById('nombreComercioCompra');
+  if (nombreComercioCompraInput) {
+    nombreComercioCompraInput.value = ubicacion.nombre;
+    console.log('✅ Nombre comercio compra rellenado:', ubicacion.nombre);
+  }
+  
+  const destinoCompra = document.querySelector('input[name="destinoCompra"]:checked')?.value;
+  let ubicacionEntrega = appData.comercio.ubicacionGPS;
+  if (destinoCompra === 'OTRA_DIRECCION') {
+    ubicacionEntrega = document.getElementById('ubicacionEntregaCompra').value.trim();
+  }
+  if (ubicacionEntrega && ubicacionEntrega.includes(',')) {
+    await calcularTarifaEntrega(ubicacion.ubicacion, ubicacionEntrega);
+  }
+});
   
   configurarAutocomplete('ubicacionEntregaCompra', async (ubicacion) => {
     console.log('🛒 Ubicación entrega compra seleccionada:', ubicacion.nombre);
