@@ -164,52 +164,49 @@
 </head>
 <body class="bg-gray-50">
   
- <!-- Header -->
-<header class="bg-gradient-to-r from-orange-500 to-orange-600 sticky top-0 z-50 shadow-lg">
-  <div class="max-w-7xl mx-auto px-4 py-4">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <div class="w-16 h-16 bg-white rounded-full p-2 ring-4 ring-white/30 shadow-lg">
-          <img src="https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png" alt="Somar Express" class="w-full h-full object-contain">
+  <!-- Header -->
+  <header class="bg-white sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img src="https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png" alt="Somar Express" class="w-12 h-12 object-contain">
+          <div>
+            <h1 class="font-bold text-lg">Panel Comercios</h1>
+            <p class="text-xs text-gray-500" id="comercioName">Cargando...</p>
+          </div>
         </div>
-        <div>
-          <h1 class="font-bold text-xl text-white leading-tight">Panel Comercios</h1>
-          <p class="text-sm text-white/90 font-semibold leading-tight" id="comercioName">Cargando...</p>
-          <p class="text-xs text-white/70" id="comercioTelefono"></p>
-        </div>
+        
+        <button id="logoutBtn" class="p-2 hover:bg-gray-100 rounded-full transition" title="Cerrar SesiÃ³n">
+          <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+        </button>
       </div>
-      
-      <button id="menuBtn" class="p-3 hover:bg-white/20 rounded-xl transition text-white">
-        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
-      </button>
     </div>
-  </div>
-</header>
+  </header>
 
-  <!-- Modal de Autenticación -->
+  <!-- Modal de AutenticaciÃ³n -->
   <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full scale-in">
       <div class="p-6">
-        <!-- Paso 1: Ingresar Teléfono -->
+        <!-- Paso 1: Ingresar TelÃ©fono -->
         <div id="authStep1">
           <div class="text-center mb-6">
             <img src="https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png" alt="Somar Express" class="w-24 h-24 mx-auto mb-4">
             <h2 class="text-2xl font-bold mb-2">Panel de Comercios</h2>
-            <p class="text-gray-600">Ingresa tu número para gestionar tus envíos</p>
+            <p class="text-gray-600">Ingresa tu nÃºmero para gestionar tus envÃ­os</p>
           </div>
           <form id="authPhoneForm">
             <div class="mb-4">
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Número de Celular</label>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">NÃºmero de Celular</label>
               <input type="tel" id="authPhone" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="+504 9999-9999">
-              <p class="text-xs text-gray-500 mt-1">Recibirás un código por WhatsApp</p>
+              <p class="text-xs text-gray-500 mt-1">RecibirÃ¡s un cÃ³digo por WhatsApp</p>
             </div>
             <button type="submit" class="w-full bg-brand-orange text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg">Continuar</button>
           </form>
         </div>
 
-        <!-- Paso 2: Verificar Código -->
+        <!-- Paso 2: Verificar CÃ³digo -->
         <div id="authStep2" class="hidden">
           <div class="text-center mb-6">
             <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -217,8 +214,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </div>
-            <h2 class="text-2xl font-bold mb-2">Código Enviado</h2>
-            <p class="text-gray-600">Revisa tu WhatsApp e ingresa el código</p>
+            <h2 class="text-2xl font-bold mb-2">CÃ³digo Enviado</h2>
+            <p class="text-gray-600">Revisa tu WhatsApp e ingresa el cÃ³digo</p>
             <p class="text-sm text-gray-500 mt-2">Enviado a <span id="phoneDisplay" class="font-semibold"></span></p>
           </div>
           <form id="authCodeForm">
@@ -226,7 +223,7 @@
               <input type="text" id="authCode" required maxlength="6" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-center text-2xl font-bold tracking-widest focus:border-brand-orange focus:outline-none transition" placeholder="000000">
             </div>
             <button type="submit" class="w-full bg-brand-orange text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg mb-3">Verificar</button>
-            <button type="button" id="resendCodeBtn" class="w-full text-brand-orange font-semibold hover:underline">Reenviar código</button>
+            <button type="button" id="resendCodeBtn" class="w-full text-brand-orange font-semibold hover:underline">Reenviar cÃ³digo</button>
           </form>
         </div>
 
@@ -242,15 +239,15 @@
               <input type="text" id="authNombreComercio" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="Ej: Restaurante El Buen Sabor">
             </div>
             <div class="mb-4">
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Dirección del Comercio *</label>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">DirecciÃ³n del Comercio *</label>
               <textarea id="authDireccionComercio" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="2" placeholder="Colonia, calle, referencias..."></textarea>
             </div>
             <div class="mb-4">
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Ubicación GPS del Comercio</label>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">UbicaciÃ³n GPS del Comercio</label>
               <div class="flex gap-2">
                 <input type="text" id="authUbicacionGPS" class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="Lat, Lon" readonly>
                 <button type="button" id="getLocationBtn" class="bg-blue-500 text-white px-4 rounded-xl font-semibold hover:bg-blue-600 transition">
-                  📍 Obtener
+                  ðŸ“ Obtener
                 </button>
               </div>
             </div>
@@ -262,30 +259,45 @@
   </div>
 
   <!-- Vista Principal -->
-  <div id="mainContent" class="hidden pb-24">
-  
+  <div id="mainContent" class="hidden">
+    <!-- Tabs -->
+    <div class="bg-white border-b sticky top-16 z-40">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="flex gap-4 overflow-x-auto">
+          <button id="tabNuevoEnvio" class="tab-btn py-4 px-6 font-semibold border-b-2 border-brand-orange brand-orange whitespace-nowrap">
+            Nuevo EnvÃ­o
+          </button>
+          <button id="tabSolicitarEntrega" class="tab-btn py-4 px-6 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-800 whitespace-nowrap">
+            Solicitar Entrega
+          </button>
+          <button id="tabMisEnvios" class="tab-btn py-4 px-6 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-800 whitespace-nowrap">
+            Mis EnvÃ­os
+          </button>
+        </div>
+      </div>
+    </div>
 
-    <!-- Contenido Tab: Nuevo Envío (EXISTENTE - SIN CAMBIOS) -->
+    <!-- Contenido Tab: Nuevo EnvÃ­o (EXISTENTE - SIN CAMBIOS) -->
     <div id="contentNuevoEnvio" class="max-w-3xl mx-auto p-4">
       <form id="nuevoEnvioForm" class="bg-white rounded-2xl shadow-sm p-6 space-y-6">
-        <h2 class="text-2xl font-bold mb-4">Crear Nuevo Envío</h2>
+        <h2 class="text-2xl font-bold mb-4">Crear Nuevo EnvÃ­o</h2>
 
         <!-- Tipo de Servicio -->
         <div>
-          <label class="block font-semibold mb-3 text-gray-700">📦 Tipo de Servicio *</label>
+          <label class="block font-semibold mb-3 text-gray-700">ðŸ“¦ Tipo de Servicio *</label>
           <div class="grid grid-cols-2 gap-3">
             <label class="relative cursor-pointer">
               <input type="radio" name="tipoServicio" value="SOLO_ENTREGA" class="peer sr-only" checked>
               <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                <div class="text-3xl mb-2">📦</div>
+                <div class="text-3xl mb-2">ðŸ“¦</div>
                 <div class="font-semibold">Solo Entrega</div>
-                <div class="text-xs text-gray-500 mt-1">Envío simple</div>
+                <div class="text-xs text-gray-500 mt-1">EnvÃ­o simple</div>
               </div>
             </label>
             <label class="relative cursor-pointer">
               <input type="radio" name="tipoServicio" value="PAGO_CONTRA_ENTREGA" class="peer sr-only">
               <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                <div class="text-3xl mb-2">💰</div>
+                <div class="text-3xl mb-2">ðŸ’°</div>
                 <div class="font-semibold">Contra Entrega</div>
                 <div class="text-xs text-gray-500 mt-1">Cobrar al entregar</div>
               </div>
@@ -295,34 +307,34 @@
 
         <!-- Quien Paga -->
         <div>
-          <label class="block font-semibold mb-3 text-gray-700">💳 ¿Quién paga el envío? *</label>
+          <label class="block font-semibold mb-3 text-gray-700">ðŸ’³ Â¿QuiÃ©n paga el envÃ­o? *</label>
           <div class="grid grid-cols-2 gap-3">
             <label class="relative cursor-pointer">
               <input type="radio" name="quienPaga" value="DESTINATARIO" class="peer sr-only" checked>
               <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                <div class="text-2xl mb-1">👤</div>
+                <div class="text-2xl mb-1">ðŸ‘¤</div>
                 <div class="font-semibold">Destinatario</div>
               </div>
             </label>
             <label class="relative cursor-pointer">
               <input type="radio" name="quienPaga" value="COMERCIO" class="peer sr-only">
               <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                <div class="text-2xl mb-1">🏪</div>
+                <div class="text-2xl mb-1">ðŸª</div>
                 <div class="font-semibold">Yo (Comercio)</div>
               </div>
             </label>
           </div>
         </div>
 
-        <!-- Ubicación de Recogida -->
+        <!-- UbicaciÃ³n de Recogida -->
         <div>
-          <label class="block font-semibold mb-3 text-gray-700">📍 Ubicación de Recogida *</label>
+          <label class="block font-semibold mb-3 text-gray-700">ðŸ“ UbicaciÃ³n de Recogida *</label>
           <div class="flex gap-2 mb-2">
             <button type="button" id="usarUbicacionGuardada" class="flex-1 bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600 transition">
-              ✓ Usar mi ubicación guardada
+              âœ“ Usar mi ubicaciÃ³n guardada
             </button>
             <button type="button" id="cambiarRecogida" class="flex-1 border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 transition">
-              🔄 Cambiar
+              ðŸ”„ Cambiar
             </button>
           </div>
           <div id="recogidaCustom" class="hidden">
@@ -330,26 +342,26 @@
             <div id="mapPreviewRecogida" class="hidden mb-2"></div>
           </div>
           <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-xl">
-            <span class="font-semibold">📌 Actual:</span> <span id="direccionRecogidaDisplay">Cargando...</span>
+            <span class="font-semibold">ðŸ“Œ Actual:</span> <span id="direccionRecogidaDisplay">Cargando...</span>
           </div>
         </div>
 
-        <!-- Ubicación de Entrega -->
+        <!-- UbicaciÃ³n de Entrega -->
         <div>
           <label class="block font-semibold mb-3 text-gray-700 flex items-center justify-between">
-            <span>📍 Ubicación de Entrega *</span>
+            <span>ðŸ“ UbicaciÃ³n de Entrega *</span>
             <button type="button" id="abrirAyudaWhatsapp" class="text-xs text-blue-600 hover:text-blue-800 font-normal">
-              ¿Cómo obtenerla? 💡
+              Â¿CÃ³mo obtenerla? ðŸ’¡
             </button>
           </label>
           
           <div class="bg-blue-50 border-l-4 border-blue-400 p-3 mb-3 text-sm">
-            <p class="font-semibold text-blue-800 mb-1">📱 ¿Tu cliente te mandó la ubicación por WhatsApp?</p>
+            <p class="font-semibold text-blue-800 mb-1">ðŸ“± Â¿Tu cliente te mandÃ³ la ubicaciÃ³n por WhatsApp?</p>
             <p class="text-blue-700">Reenviala al Whatsapp +504 8912-5089 para que te genere las coordenadas facilmente.</p>
           </div>
           
           <div class="relative">
-            <textarea id="linkEntrega" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pr-10 focus:border-brand-orange focus:outline-none transition resize-none" placeholder="Pega aquí: Las coordenadas (14.0818, -87.2068)
+            <textarea id="linkEntrega" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pr-10 focus:border-brand-orange focus:outline-none transition resize-none" placeholder="Pega aquÃ­: Las coordenadas (14.0818, -87.2068)
 "></textarea>
             <div id="linkEntregaStatus" class="hidden absolute right-3 top-3">
               <div class="loading-small"></div>
@@ -358,9 +370,9 @@
           
           <div id="ubicacionDetectada" class="hidden bg-green-50 border-2 border-green-300 rounded-xl p-3 mt-2 mb-2">
             <div class="flex items-start gap-2">
-              <span class="text-xl">✅</span>
+              <span class="text-xl">âœ…</span>
               <div class="flex-1">
-                <p class="font-semibold text-green-800 text-sm">Ubicación detectada correctamente</p>
+                <p class="font-semibold text-green-800 text-sm">UbicaciÃ³n detectada correctamente</p>
                 <p class="text-xs text-green-700 mt-1" id="coordenadasDetectadas"></p>
               </div>
             </div>
@@ -368,9 +380,9 @@
           
           <div id="ubicacionError" class="hidden bg-red-50 border-2 border-red-300 rounded-xl p-3 mt-2 mb-2">
             <div class="flex items-start gap-2">
-              <span class="text-xl">⚠️</span>
+              <span class="text-xl">âš ï¸</span>
               <div class="flex-1">
-                <p class="font-semibold text-red-800 text-sm">No se detectó ubicación</p>
+                <p class="font-semibold text-red-800 text-sm">No se detectÃ³ ubicaciÃ³n</p>
                 <p class="text-xs text-red-700 mt-1">Verifica que hayas pegado el link completo o usa el mapa interactivo</p>
               </div>
             </div>
@@ -383,44 +395,44 @@
           </div>
           
           <button type="button" id="usarMapaInteractivo" class="w-full border-2 border-dashed border-gray-300 text-gray-600 py-3 rounded-xl font-semibold hover:border-brand-orange hover:text-brand-orange transition">
-            🗺️ Usar mapa interactivo
+            ðŸ—ºï¸ Usar mapa interactivo
           </button>
         </div>
 
         <!-- Datos del Destinatario -->
         <div class="border-t pt-6">
-          <h3 class="font-bold text-lg mb-4">👤 Datos del Destinatario</h3>
+          <h3 class="font-bold text-lg mb-4">ðŸ‘¤ Datos del Destinatario</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block font-semibold mb-2 text-sm text-gray-700">Nombre *</label>
               <input type="text" id="nombreDestinatario" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="Nombre completo">
             </div>
             <div>
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Teléfono *</label>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">TelÃ©fono *</label>
               <input type="tel" id="telefonoDestinatario" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="+504 9999-9999">
             </div>
           </div>
         </div>
 
-        <!-- Descripción del Paquete -->
+        <!-- DescripciÃ³n del Paquete -->
         <div>
-          <label class="block font-semibold mb-2 text-sm text-gray-700">📦 Descripción del Paquete *</label>
+          <label class="block font-semibold mb-2 text-sm text-gray-700">ðŸ“¦ DescripciÃ³n del Paquete *</label>
           <textarea id="descripcionPaquete" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="3" placeholder="Ej: 2 cajas de pizza, 1 refresco de 2 litros"></textarea>
         </div>
 
         <!-- Foto del Paquete -->
         <div>
-          <label class="block font-semibold mb-2 text-sm text-gray-700">📸 Foto del Paquete (Opcional)</label>
+          <label class="block font-semibold mb-2 text-sm text-gray-700">ðŸ“¸ Foto del Paquete (Opcional)</label>
           <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-brand-orange transition cursor-pointer" id="uploadArea">
             <input type="file" id="fotoPaquete" accept="image/*" class="hidden">
             <div id="uploadPlaceholder">
-              <div class="text-5xl mb-2">📸</div>
+              <div class="text-5xl mb-2">ðŸ“¸</div>
               <p class="text-sm text-gray-600 font-semibold">Click para subir foto</p>
-              <p class="text-xs text-gray-500 mt-1">JPG, PNG (máx. 5MB)</p>
+              <p class="text-xs text-gray-500 mt-1">JPG, PNG (mÃ¡x. 5MB)</p>
             </div>
             <div id="uploadPreview" class="hidden">
               <img id="previewImg" class="mx-auto max-h-40 rounded-lg mb-2">
-              <p class="text-sm text-green-600 font-semibold">✓ Foto cargada</p>
+              <p class="text-sm text-green-600 font-semibold">âœ“ Foto cargada</p>
               <button type="button" id="removeFoto" class="text-xs text-red-500 hover:text-red-700 mt-2">Cambiar imagen</button>
             </div>
           </div>
@@ -428,28 +440,28 @@
 
         <!-- Monto a Cobrar -->
         <div id="montoSection" class="hidden">
-          <label class="block font-semibold mb-2 text-sm text-gray-700">💵 Monto a Cobrar (Contra Entrega) *</label>
+          <label class="block font-semibold mb-2 text-sm text-gray-700">ðŸ’µ Monto a Cobrar (Contra Entrega) *</label>
           <div class="relative">
             <span class="absolute left-4 top-1/2 transform -translate-y-1/2 font-bold text-gray-500">L.</span>
             <input type="number" id="montoCobrar" class="w-full border-2 border-gray-200 rounded-xl pl-10 pr-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="0.00" step="0.01" min="0">
           </div>
         </div>
 
-        <!-- Tipo de Pago del Envío -->
+        <!-- Tipo de Pago del EnvÃ­o -->
         <div>
-          <label class="block font-semibold mb-3 text-gray-700">💳 Método de Pago del Envío *</label>
+          <label class="block font-semibold mb-3 text-gray-700">ðŸ’³ MÃ©todo de Pago del EnvÃ­o *</label>
           <div class="grid grid-cols-2 gap-3">
             <label class="relative cursor-pointer">
               <input type="radio" name="tipoPagoEnvio" value="EFECTIVO" class="peer sr-only" checked>
               <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                <div class="text-2xl mb-1">💵</div>
+                <div class="text-2xl mb-1">ðŸ’µ</div>
                 <div class="font-semibold">Efectivo</div>
               </div>
             </label>
             <label class="relative cursor-pointer">
               <input type="radio" name="tipoPagoEnvio" value="TRANSFERENCIA" class="peer sr-only">
               <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                <div class="text-2xl mb-1">🏦</div>
+                <div class="text-2xl mb-1">ðŸ¦</div>
                 <div class="font-semibold">Transferencia</div>
               </div>
             </label>
@@ -458,13 +470,13 @@
 
         <!-- Notas Adicionales -->
         <div>
-          <label class="block font-semibold mb-2 text-sm text-gray-700">📝 Notas Adicionales (Opcional)</label>
-          <textarea id="notasAdicionales" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="2" placeholder="Ej: Tocar el timbre, dejar en portería, etc."></textarea>
+          <label class="block font-semibold mb-2 text-sm text-gray-700">ðŸ“ Notas Adicionales (Opcional)</label>
+          <textarea id="notasAdicionales" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="2" placeholder="Ej: Tocar el timbre, dejar en porterÃ­a, etc."></textarea>
         </div>
 
         <!-- Resumen de Tarifa -->
         <div id="tarifaResumen" class="hidden bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-          <h3 class="font-bold mb-3">💰 Estimado de Tarifa</h3>
+          <h3 class="font-bold mb-3">ðŸ’° Estimado de Tarifa</h3>
           <div class="space-y-2 text-sm">
             <div class="flex justify-between">
               <span class="text-gray-700">Origen:</span>
@@ -486,7 +498,7 @@
         </div>
 
         <button type="submit" class="w-full bg-brand-orange text-white py-4 rounded-xl font-bold text-lg hover:bg-orange-600 transition shadow-lg">
-          🚀 Crear Envío
+          ðŸš€ Crear EnvÃ­o
         </button>
       </form>
     </div>
@@ -498,12 +510,12 @@
 
         <!-- Selector de Tipo de Servicio -->
         <div>
-          <label class="block font-semibold mb-3 text-gray-700">🎯 Tipo de Servicio *</label>
+          <label class="block font-semibold mb-3 text-gray-700">ðŸŽ¯ Tipo de Servicio *</label>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <label class="relative cursor-pointer">
               <input type="radio" name="tipoServicioEntrega" value="TRASLADO_TIENDAS" class="peer sr-only" checked>
               <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                <div class="text-3xl mb-2">🏪</div>
+                <div class="text-3xl mb-2">ðŸª</div>
                 <div class="font-semibold text-sm">Traslado entre Tiendas</div>
                 <div class="text-xs text-gray-500 mt-1">Mover productos propios</div>
               </div>
@@ -511,7 +523,7 @@
             <label class="relative cursor-pointer">
               <input type="radio" name="tipoServicioEntrega" value="RECOGER_PAQUETE" class="peer sr-only">
               <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                <div class="text-3xl mb-2">📦</div>
+                <div class="text-3xl mb-2">ðŸ“¦</div>
                 <div class="font-semibold text-sm">Recoger Paquete</div>
                 <div class="text-xs text-gray-500 mt-1">Recoger de tercero</div>
               </div>
@@ -519,7 +531,7 @@
             <label class="relative cursor-pointer">
               <input type="radio" name="tipoServicioEntrega" value="REALIZAR_COMPRA" class="peer sr-only">
               <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                <div class="text-3xl mb-2">🛒</div>
+                <div class="text-3xl mb-2">ðŸ›’</div>
                 <div class="font-semibold text-sm">Realizar Compra</div>
                 <div class="text-xs text-gray-500 mt-1">Comprar y entregar</div>
               </div>
@@ -527,10 +539,10 @@
           </div>
         </div>
 
-        <!-- SECCIÓN 1: TRASLADO ENTRE TIENDAS -->
+        <!-- SECCIÃ“N 1: TRASLADO ENTRE TIENDAS -->
         <div id="seccionTrasladoTiendas">
           <div class="border-t pt-6">
-            <h3 class="font-bold text-lg mb-4">🏪 Detalles del Traslado</h3>
+            <h3 class="font-bold text-lg mb-4">ðŸª Detalles del Traslado</h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
@@ -544,26 +556,26 @@
             </div>
 
             <div class="mb-4">
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Ubicación GPS Tienda Origen *</label>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">UbicaciÃ³n GPS Tienda Origen *</label>
               <input type="text" id="ubicacionOrigenTraslado" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="14.0818, -87.2068">
             </div>
 
             <div class="mb-4">
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Ubicación GPS Tienda Destino *</label>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">UbicaciÃ³n GPS Tienda Destino *</label>
               <input type="text" id="ubicacionDestinoTraslado" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="14.0818, -87.2068">
             </div>
 
             <div>
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Descripción de los Productos *</label>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">DescripciÃ³n de los Productos *</label>
               <textarea id="descripcionTraslado" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="Ej: 10 cajas de producto X, 5 unidades de Y"></textarea>
             </div>
           </div>
         </div>
 
-        <!-- SECCIÓN 2: RECOGER PAQUETE -->
+        <!-- SECCIÃ“N 2: RECOGER PAQUETE -->
         <div id="seccionRecogerPaquete" class="hidden">
           <div class="border-t pt-6">
-            <h3 class="font-bold text-lg mb-4">📦 Detalles del Paquete a Recoger</h3>
+            <h3 class="font-bold text-lg mb-4">ðŸ“¦ Detalles del Paquete a Recoger</h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
@@ -571,31 +583,31 @@
                 <input type="text" id="nombreContacto" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="Persona que entrega el paquete">
               </div>
               <div>
-                <label class="block font-semibold mb-2 text-sm text-gray-700">Teléfono del Contacto</label>
+                <label class="block font-semibold mb-2 text-sm text-gray-700">TelÃ©fono del Contacto</label>
                 <input type="tel" id="telefonoContacto" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="+504 9999-9999">
               </div>
             </div>
 
             <div class="mb-4">
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Ubicación GPS donde Recoger *</label>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">UbicaciÃ³n GPS donde Recoger *</label>
               <input type="text" id="ubicacionRecogidaPaquete" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="14.0818, -87.2068">
             </div>
 
             <div class="mb-4">
-              <label class="block font-semibold mb-2 text-sm text-gray-700">¿Dónde Entregar el Paquete? *</label>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">Â¿DÃ³nde Entregar el Paquete? *</label>
               <div class="grid grid-cols-2 gap-3 mb-2">
                 <label class="relative cursor-pointer">
                   <input type="radio" name="destinoPaquete" value="MI_COMERCIO" class="peer sr-only" checked>
                   <div class="border-2 border-gray-200 rounded-xl p-3 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                    <div class="text-xl mb-1">🏪</div>
+                    <div class="text-xl mb-1">ðŸª</div>
                     <div class="font-semibold text-sm">Mi Comercio</div>
                   </div>
                 </label>
                 <label class="relative cursor-pointer">
                   <input type="radio" name="destinoPaquete" value="OTRA_DIRECCION" class="peer sr-only">
                   <div class="border-2 border-gray-200 rounded-xl p-3 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                    <div class="text-xl mb-1">📍</div>
-                    <div class="font-semibold text-sm">Otra Dirección</div>
+                    <div class="text-xl mb-1">ðŸ“</div>
+                    <div class="font-semibold text-sm">Otra DirecciÃ³n</div>
                   </div>
                 </label>
               </div>
@@ -605,12 +617,12 @@
             </div>
 
             <div class="mb-4">
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Descripción del Paquete *</label>
-              <textarea id="descripcionPaquete2" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="Describe qué es lo que se va a recoger"></textarea>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">DescripciÃ³n del Paquete *</label>
+              <textarea id="descripcionPaquete2" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="Describe quÃ© es lo que se va a recoger"></textarea>
             </div>
 
             <div>
-              <label class="block font-semibold mb-3 text-gray-700">💵 ¿Hay que Pagar al Recoger? *</label>
+              <label class="block font-semibold mb-3 text-gray-700">ðŸ’µ Â¿Hay que Pagar al Recoger? *</label>
               <div class="grid grid-cols-2 gap-3">
                 <label class="relative cursor-pointer">
                   <input type="radio" name="pagarAlRecoger" value="NO" class="peer sr-only" checked>
@@ -621,7 +633,7 @@
                 <label class="relative cursor-pointer">
                   <input type="radio" name="pagarAlRecoger" value="SI" class="peer sr-only">
                   <div class="border-2 border-gray-200 rounded-xl p-3 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                    <div class="font-semibold">Sí</div>
+                    <div class="font-semibold">SÃ­</div>
                   </div>
                 </label>
               </div>
@@ -637,10 +649,10 @@
           </div>
         </div>
 
-        <!-- SECCIÓN 3: REALIZAR COMPRA -->
+        <!-- SECCIÃ“N 3: REALIZAR COMPRA -->
         <div id="seccionRealizarCompra" class="hidden">
           <div class="border-t pt-6">
-            <h3 class="font-bold text-lg mb-4">🛒 Detalles de la Compra</h3>
+            <h3 class="font-bold text-lg mb-4">ðŸ›’ Detalles de la Compra</h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
@@ -648,7 +660,7 @@
                 <input type="text" id="nombreComercioCompra" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="Ej: Supermercado La Colonia">
               </div>
               <div>
-                <label class="block font-semibold mb-2 text-sm text-gray-700">Ubicación GPS del Comercio *</label>
+                <label class="block font-semibold mb-2 text-sm text-gray-700">UbicaciÃ³n GPS del Comercio *</label>
                 <input type="text" id="ubicacionComercioCompra" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="14.0818, -87.2068">
               </div>
             </div>
@@ -667,7 +679,7 @@
                 </div>
               </div>
               <div>
-                <label class="block font-semibold mb-2 text-sm text-gray-700">Comisión para el Delivery *</label>
+                <label class="block font-semibold mb-2 text-sm text-gray-700">ComisiÃ³n para el Delivery *</label>
                 <div class="relative">
                   <span class="absolute left-4 top-1/2 transform -translate-y-1/2 font-bold text-gray-500">L.</span>
                   <input type="number" id="comision" class="w-full border-2 border-gray-200 rounded-xl pl-10 pr-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="0.00" step="0.01" min="0">
@@ -676,20 +688,20 @@
             </div>
 
             <div>
-              <label class="block font-semibold mb-2 text-sm text-gray-700">¿Dónde Entregar la Compra? *</label>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">Â¿DÃ³nde Entregar la Compra? *</label>
               <div class="grid grid-cols-2 gap-3 mb-2">
                 <label class="relative cursor-pointer">
                   <input type="radio" name="destinoCompra" value="MI_COMERCIO" class="peer sr-only" checked>
                   <div class="border-2 border-gray-200 rounded-xl p-3 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                    <div class="text-xl mb-1">🏪</div>
+                    <div class="text-xl mb-1">ðŸª</div>
                     <div class="font-semibold text-sm">Mi Comercio</div>
                   </div>
                 </label>
                 <label class="relative cursor-pointer">
                   <input type="radio" name="destinoCompra" value="OTRA_DIRECCION" class="peer sr-only">
                   <div class="border-2 border-gray-200 rounded-xl p-3 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                    <div class="text-xl mb-1">📍</div>
-                    <div class="font-semibold text-sm">Otra Dirección</div>
+                    <div class="text-xl mb-1">ðŸ“</div>
+                    <div class="font-semibold text-sm">Otra DirecciÃ³n</div>
                   </div>
                 </label>
               </div>
@@ -702,22 +714,22 @@
 
         <!-- SECCIONES COMUNES -->
         <div class="border-t pt-6">
-          <h3 class="font-bold text-lg mb-4">💳 Información de Pago</h3>
+          <h3 class="font-bold text-lg mb-4">ðŸ’³ InformaciÃ³n de Pago</h3>
           
           <div class="mb-4">
-            <label class="block font-semibold mb-3 text-gray-700">Método de Pago del Envío *</label>
+            <label class="block font-semibold mb-3 text-gray-700">MÃ©todo de Pago del EnvÃ­o *</label>
             <div class="grid grid-cols-2 gap-3">
               <label class="relative cursor-pointer">
                 <input type="radio" name="metodoPago" value="EFECTIVO" class="peer sr-only" checked>
                 <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                  <div class="text-2xl mb-1">💵</div>
+                  <div class="text-2xl mb-1">ðŸ’µ</div>
                   <div class="font-semibold">Efectivo</div>
                 </div>
               </label>
               <label class="relative cursor-pointer">
                 <input type="radio" name="metodoPago" value="TRANSFERENCIA" class="peer sr-only">
                 <div class="border-2 border-gray-200 rounded-xl p-4 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition">
-                  <div class="text-2xl mb-1">🏦</div>
+                  <div class="text-2xl mb-1">ðŸ¦</div>
                   <div class="font-semibold">Transferencia</div>
                 </div>
               </label>
@@ -725,14 +737,14 @@
           </div>
 
           <div>
-            <label class="block font-semibold mb-2 text-sm text-gray-700">📝 Notas Adicionales (Opcional)</label>
-            <textarea id="notasAdicionalesEntrega" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="2" placeholder="Cualquier instrucción especial..."></textarea>
+            <label class="block font-semibold mb-2 text-sm text-gray-700">ðŸ“ Notas Adicionales (Opcional)</label>
+            <textarea id="notasAdicionalesEntrega" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="2" placeholder="Cualquier instrucciÃ³n especial..."></textarea>
           </div>
         </div>
 
         <!-- Resumen de Tarifa (si aplica) -->
         <div id="tarifaResumenEntrega" class="hidden bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-          <h3 class="font-bold mb-3">💰 Estimado de Tarifa</h3>
+          <h3 class="font-bold mb-3">ðŸ’° Estimado de Tarifa</h3>
           <div class="space-y-2 text-sm">
             <div class="flex justify-between">
               <span class="text-gray-700">Distancia:</span>
@@ -746,17 +758,17 @@
         </div>
 
         <button type="submit" class="w-full bg-brand-orange text-white py-4 rounded-xl font-bold text-lg hover:bg-orange-600 transition shadow-lg">
-          🚀 Solicitar Servicio
+          ðŸš€ Solicitar Servicio
         </button>
       </form>
     </div>
 
-    <!-- Contenido Tab: Mis Envíos -->
+    <!-- Contenido Tab: Mis EnvÃ­os -->
     <div id="contentMisEnvios" class="hidden max-w-5xl mx-auto p-4">
       <div class="mb-4 flex gap-2">
         <select id="filtroEstado" class="border-2 border-gray-200 rounded-xl px-4 py-2 focus:border-brand-orange focus:outline-none transition">
           <option value="">Todos los estados</option>
-          <option value="PENDIENTE_ASIGNACION">Pendiente Asignación</option>
+          <option value="PENDIENTE_ASIGNACION">Pendiente AsignaciÃ³n</option>
           <option value="PENDIENTE">Pendiente</option>
           <option value="ACEPTADO">Aceptado</option>
           <option value="EN_ESTABLECIMIENTO">En Establecimiento</option>
@@ -766,12 +778,12 @@
           <option value="CANCELADO">Cancelado</option>
         </select>
         <button id="refrescarEnvios" class="bg-blue-500 text-white px-4 py-2 rounded-xl font-semibold hover:bg-blue-600 transition">
-          🔄 Refrescar
+          ðŸ”„ Refrescar
         </button>
       </div>
       <div id="listaEnvios" class="space-y-4">
         <div class="text-center py-12 text-gray-500">
-          <p class="text-lg font-semibold">Cargando envíos...</p>
+          <p class="text-lg font-semibold">Cargando envÃ­os...</p>
         </div>
       </div>
     </div>
@@ -782,7 +794,7 @@
     <div class="bg-white rounded-2xl max-w-2xl w-full scale-in">
       <div class="p-6">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold">Selecciona Ubicación en el Mapa</h2>
+          <h2 class="text-xl font-bold">Selecciona UbicaciÃ³n en el Mapa</h2>
           <button id="closeMapModal" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -792,7 +804,7 @@
         <div id="mapInteractive"></div>
         <p class="text-sm text-gray-600 mt-3 mb-4">Haz clic en el mapa o arrastra el marcador</p>
         <button id="confirmarUbicacion" class="w-full bg-brand-orange text-white py-3 rounded-xl font-bold hover:bg-orange-600 transition">
-          Confirmar Ubicación
+          Confirmar UbicaciÃ³n
         </button>
       </div>
     </div>
@@ -803,22 +815,22 @@
     <div class="bg-white rounded-2xl max-w-md w-full scale-in">
       <div class="p-6">
         <div class="text-center mb-4">
-          <span class="text-5xl">📱</span>
-          <h2 class="text-xl font-bold mt-2">¿Cómo obtener la ubicación de WhatsApp?</h2>
+          <span class="text-5xl">ðŸ“±</span>
+          <h2 class="text-xl font-bold mt-2">Â¿CÃ³mo obtener la ubicaciÃ³n de WhatsApp?</h2>
         </div>
         
         <div class="space-y-4 text-sm">
           <div class="bg-green-50 p-3 rounded-lg">
-            <p class="font-semibold text-green-800 mb-2">Si te mandaron el PIN de ubicación:</p>
+            <p class="font-semibold text-green-800 mb-2">Si te mandaron el PIN de ubicaciÃ³n:</p>
             <ol class="list-decimal list-inside text-green-700 space-y-1">
-              <li>Toca el mensaje de ubicación</li>
-              <li>Se abrirá Google Maps</li>
-              <li>Toca y mantén sobre el pin rojo</li>
-              <li>Aparecerán las coordenadas abajo</li>
+              <li>Toca el mensaje de ubicaciÃ³n</li>
+              <li>Se abrirÃ¡ Google Maps</li>
+              <li>Toca y mantÃ©n sobre el pin rojo</li>
+              <li>AparecerÃ¡n las coordenadas abajo</li>
               <li>Ej: 15.611781, -87.956879</li>
-              <li>Tócalas para copiarlas</li>
-              <li>Pégalas en el formulario</li>
-              <li>O manda la ubicación al Whatsapp para que te genere las coordenadas</li>
+              <li>TÃ³calas para copiarlas</li>
+              <li>PÃ©galas en el formulario</li>
+              <li>O manda la ubicaciÃ³n al Whatsapp para que te genere las coordenadas</li>
             </ol>
           </div>
         </div>
@@ -829,203 +841,6 @@
       </div>
     </div>
   </div>
-
-
-  <!-- Navbar Flotante Inferior -->
-<nav id="bottomNav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-2xl z-50 safe-bottom">
-  <div class="max-w-7xl mx-auto">
-    <div class="grid grid-cols-4 gap-1">
-      <!-- Nuevo Envío -->
-      <button id="navNuevoEnvio" class="nav-item flex flex-col items-center justify-center py-3 px-2 hover:bg-orange-50 transition rounded-lg active">
-        <div class="relative">
-          <svg class="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-        </div>
-        <span class="text-xs font-semibold">Nuevo</span>
-      </button>
-      
-      <!-- Solicitar Entrega -->
-      <button id="navSolicitarEntrega" class="nav-item flex flex-col items-center justify-center py-3 px-2 hover:bg-orange-50 transition rounded-lg">
-        <div class="relative">
-          <svg class="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-          </svg>
-        </div>
-        <span class="text-xs font-semibold">Solicitar</span>
-      </button>
-      
-      <!-- Mis Envíos -->
-      <button id="navMisEnvios" class="nav-item flex flex-col items-center justify-center py-3 px-2 hover:bg-orange-50 transition rounded-lg">
-        <div class="relative">
-          <svg class="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-          </svg>
-          <span id="navEnviosCount" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">0</span>
-        </div>
-        <span class="text-xs font-semibold">Envíos</span>
-      </button>
-      
-      <!-- Menú -->
-      <button id="navMenu" class="nav-item flex flex-col items-center justify-center py-3 px-2 hover:bg-orange-50 transition rounded-lg">
-        <svg class="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
-        <span class="text-xs font-semibold">Menú</span>
-      </button>
-    </div>
-  </div>
-</nav>
-
-<!-- Menu Lateral (Drawer) -->
-<div id="sideMenu" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60]">
-  <div id="sideMenuDrawer" class="absolute right-0 top-0 bottom-0 w-80 bg-white shadow-2xl transform translate-x-full transition-transform duration-300">
-    <div class="h-full flex flex-col">
-      <!-- Header del Menú -->
-      <div class="bg-gradient-to-r from-orange-500 to-orange-600 p-6">
-        <div class="flex justify-between items-start mb-4">
-          <h2 class="text-xl font-bold text-white">Menú</h2>
-          <button id="closeSideMenu" class="text-white hover:bg-white/20 p-2 rounded-full transition">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-        
-        <!-- Perfil -->
-        <div class="flex items-center gap-3 bg-white/10 rounded-xl p-3 backdrop-blur-sm">
-          <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center font-bold text-orange-600 text-xl">
-            <span id="menuComercioInitial">C</span>
-          </div>
-          <div class="flex-1">
-            <p class="font-bold text-white text-sm" id="menuComercioNombre">Cargando...</p>
-            <p class="text-xs text-white/80" id="menuComercioTelefono">+504 ----</p>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Opciones del Menú -->
-      <div class="flex-1 overflow-y-auto">
-        <div class="p-4 space-y-2">
-          <!-- Dashboard -->
-          <button class="menu-option w-full flex items-center gap-3 p-4 hover:bg-gray-50 rounded-xl transition text-left">
-            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-              </svg>
-            </div>
-            <div class="flex-1">
-              <p class="font-semibold text-gray-800">Dashboard</p>
-              <p class="text-xs text-gray-500">Resumen general</p>
-            </div>
-          </button>
-          
-          <!-- Mi Perfil -->
-          <button class="menu-option w-full flex items-center gap-3 p-4 hover:bg-gray-50 rounded-xl transition text-left">
-            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-              </svg>
-            </div>
-            <div class="flex-1">
-              <p class="font-semibold text-gray-800">Mi Perfil</p>
-              <p class="text-xs text-gray-500">Información del comercio</p>
-            </div>
-          </button>
-          
-          <!-- Mis Productos -->
-          <button class="menu-option w-full flex items-center gap-3 p-4 hover:bg-gray-50 rounded-xl transition text-left">
-            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-              </svg>
-            </div>
-            <div class="flex-1">
-              <p class="font-semibold text-gray-800">Mis Productos</p>
-              <p class="text-xs text-gray-500">Catálogo de productos</p>
-            </div>
-            <span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-bold">Próximamente</span>
-          </button>
-          
-          <!-- Mis Clientes -->
-          <button class="menu-option w-full flex items-center gap-3 p-4 hover:bg-gray-50 rounded-xl transition text-left">
-            <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
-              <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-              </svg>
-            </div>
-            <div class="flex-1">
-              <p class="font-semibold text-gray-800">Mis Clientes</p>
-              <p class="text-xs text-gray-500">Base de clientes</p>
-            </div>
-            <span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-bold">Próximamente</span>
-          </button>
-          
-          <!-- Estadísticas -->
-          <button class="menu-option w-full flex items-center gap-3 p-4 hover:bg-gray-50 rounded-xl transition text-left">
-            <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
-              </svg>
-            </div>
-            <div class="flex-1">
-              <p class="font-semibold text-gray-800">Estadísticas</p>
-              <p class="text-xs text-gray-500">Reportes y análisis</p>
-            </div>
-            <span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-bold">Próximamente</span>
-          </button>
-          
-          <!-- Configuración -->
-          <button class="menu-option w-full flex items-center gap-3 p-4 hover:bg-gray-50 rounded-xl transition text-left">
-            <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-              <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              </svg>
-            </div>
-            <div class="flex-1">
-              <p class="font-semibold text-gray-800">Configuración</p>
-              <p class="text-xs text-gray-500">Ajustes generales</p>
-            </div>
-          </button>
-        </div>
-      </div>
-      
-      <!-- Footer del Menú -->
-      <div class="border-t p-4">
-        <button id="menuLogoutBtn" class="w-full flex items-center justify-center gap-2 bg-red-500 text-white py-3 rounded-xl font-bold hover:bg-red-600 transition">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-          </svg>
-          Cerrar Sesión
-        </button>
-        <p class="text-center text-xs text-gray-500 mt-3">Somar Express v1.0</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Estilos para Navbar -->
-<style>
-  .nav-item.active {
-    color: #FF8C00;
-  }
-  
-  .nav-item.active svg {
-    stroke: #FF8C00;
-  }
-  
-  body.menu-open {
-    overflow: hidden;
-  }
-  
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-</style>
-
-
 
   <script src="./comercios-panel-script.js"></script>
 </body>
