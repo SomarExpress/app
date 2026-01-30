@@ -279,6 +279,13 @@ function verificarSesion() {
       document.getElementById('authModal').classList.add('hidden');
       document.getElementById('mainContent').classList.remove('hidden');
       document.getElementById('comercioName').textContent = appData.comercio.nombre;
+
+      // Actualizar info del menú lateral
+document.getElementById('menuComercioNombre').textContent = appData.comercio.nombre;
+document.getElementById('menuComercioTelefono').textContent = appData.comercio.celular || '';
+const inicial = appData.comercio.nombre ? appData.comercio.nombre.charAt(0).toUpperCase() : 'C';
+document.getElementById('menuComercioInitial').textContent = inicial;
+
       document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
       appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
       
@@ -1329,7 +1336,54 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  document.getElementById('logoutBtn').addEventListener('click', cerrarSesion);
+  // Menú Lateral - Abrir
+document.getElementById('menuBtn').addEventListener('click', () => {
+  const menu = document.getElementById('sideMenu');
+  const drawer = document.getElementById('sideMenuDrawer');
+  
+  menu.classList.remove('hidden');
+  document.body.classList.add('menu-open');
+  
+  setTimeout(() => {
+    drawer.style.transform = 'translateX(0)';
+  }, 10);
+});
+
+// Menú Lateral - Cerrar
+document.getElementById('closeSideMenu').addEventListener('click', () => {
+  const drawer = document.getElementById('sideMenuDrawer');
+  drawer.style.transform = 'translateX(-100%)';
+  
+  setTimeout(() => {
+    document.getElementById('sideMenu').classList.add('hidden');
+    document.body.classList.remove('menu-open');
+  }, 300);
+});
+
+// Menú Lateral - Cerrar al hacer click fuera
+document.getElementById('sideMenu').addEventListener('click', (e) => {
+  if (e.target.id === 'sideMenu') {
+    const drawer = document.getElementById('sideMenuDrawer');
+    drawer.style.transform = 'translateX(-100%)';
+    
+    setTimeout(() => {
+      document.getElementById('sideMenu').classList.add('hidden');
+      document.body.classList.remove('menu-open');
+    }, 300);
+  }
+});
+
+// Menú Lateral - Cerrar Sesión
+document.getElementById('menuLogoutBtn').addEventListener('click', () => {
+  const drawer = document.getElementById('sideMenuDrawer');
+  drawer.style.transform = 'translateX(-100%)';
+  
+  setTimeout(() => {
+    document.getElementById('sideMenu').classList.add('hidden');
+    document.body.classList.remove('menu-open');
+    cerrarSesion();
+  }, 300);
+});
 
   document.getElementById('tabNuevoEnvio').addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(btn => {
