@@ -287,6 +287,9 @@ const inicial = appData.comercio.nombre ? appData.comercio.nombre.charAt(0).toUp
 document.getElementById('menuComercioInitial').textContent = inicial;
       document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
       appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
+      // Inicializar navbar y configurar event listeners
+inicializarNavbar();
+configurarEventListenersNavbar();
       
       // NUEVO: Cargar ubicaciones frecuentes
       cargarUbicacionesFrecuentes();
@@ -347,6 +350,9 @@ async function verificarCodigoIngresado(codigo) {
         document.getElementById('comercioName').textContent = appData.comercio.nombre;
         document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
         appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
+        // Inicializar navbar y configurar event listeners
+inicializarNavbar();
+configurarEventListenersNavbar();
         
         // NUEVO: Cargar ubicaciones
         await cargarUbicacionesFrecuentesCorregida();
@@ -392,6 +398,9 @@ async function completarRegistroComercio(nombre, direccion, ubicacionGPS) {
       document.getElementById('comercioName').textContent = appData.comercio.nombre;
       document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
       appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
+      // Inicializar navbar y configurar event listeners
+inicializarNavbar();
+configurarEventListenersNavbar();
       
       await cargarUbicacionesFrecuentes();
       
@@ -2094,12 +2103,17 @@ console.log('   - configurarTodosLosAutocompletados()');
 // Función para cambiar de tab
 function cambiarTab(tabId, navId) {
   // Ocultar todos los contenidos
-  document.getElementById('contentNuevoEnvio').classList.add('hidden');
-  document.getElementById('contentSolicitarEntrega').classList.add('hidden');
-  document.getElementById('contentMisEnvios').classList.add('hidden');
+  const contenidos = ['contentNuevoEnvio', 'contentSolicitarEntrega', 'contentMisEnvios'];
+  contenidos.forEach(id => {
+    const elemento = document.getElementById(id);
+    if (elemento) elemento.classList.add('hidden');
+  });
   
   // Mostrar el contenido seleccionado
-  document.getElementById(tabId).classList.remove('hidden');
+  const contenidoSeleccionado = document.getElementById(tabId);
+  if (contenidoSeleccionado) {
+    contenidoSeleccionado.classList.remove('hidden');
+  }
   
   // Actualizar navbar
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
@@ -2111,58 +2125,40 @@ function cambiarTab(tabId, navId) {
 
 // Mostrar navbar y actualizar info cuando hay sesión
 function inicializarNavbar() {
-  if (appData.comercio) {
-    // Mostrar navbar
-    const navbar = document.getElementById('bottomNav');
-    if (navbar) {
-      navbar.classList.remove('hidden');
-    }
-    
-    // Actualizar info del header
-    const telElement = document.getElementById('comercioTelefono');
-    if (telElement) {
-      telElement.textContent = appData.comercio.celular || '';
-    }
-    
-    // Actualizar info del menú lateral
-    const menuNombre = document.getElementById('menuComercioNombre');
-    const menuTel = document.getElementById('menuComercioTelefono');
-    const menuInitial = document.getElementById('menuComercioInitial');
-    
-    if (menuNombre) menuNombre.textContent = appData.comercio.nombre;
-    if (menuTel) menuTel.textContent = appData.comercio.celular || '';
-    if (menuInitial) {
-      const inicial = appData.comercio.nombre ? appData.comercio.nombre.charAt(0).toUpperCase() : 'C';
-      menuInitial.textContent = inicial;
-    }
+  if (!appData.comercio) return;
+  
+  // Mostrar navbar
+  const navbar = document.getElementById('bottomNav');
+  if (navbar) {
+    navbar.classList.remove('hidden');
+  }
+  
+  // Actualizar info del header
+  const telElement = document.getElementById('comercioTelefono');
+  if (telElement && appData.comercio.celular) {
+    telElement.textContent = appData.comercio.celular;
+  }
+  
+  // Actualizar info del menú lateral
+  const menuNombre = document.getElementById('menuComercioNombre');
+  const menuTel = document.getElementById('menuComercioTelefono');
+  const menuInitial = document.getElementById('menuComercioInitial');
+  
+  if (menuNombre && appData.comercio.nombre) {
+    menuNombre.textContent = appData.comercio.nombre;
+  }
+  
+  if (menuTel && appData.comercio.celular) {
+    menuTel.textContent = appData.comercio.celular;
+  }
+  
+  if (menuInitial && appData.comercio.nombre) {
+    const inicial = appData.comercio.nombre.charAt(0).toUpperCase();
+    menuInitial.textContent = inicial;
   }
 }
 
-// Event Listeners para Navbar
-const navNuevo = document.getElementById('navNuevoEnvio');
-if (navNuevo) {
-  navNuevo.addEventListener('click', () => {
-    cambiarTab('contentNuevoEnvio', 'navNuevoEnvio');
-  });
-}
-
-const navSolicitar = document.getElementById('navSolicitarEntrega');
-if (navSolicitar) {
-  navSolicitar.addEventListener('click', () => {
-    cambiarTab('contentSolicitarEntrega', 'navSolicitarEntrega');
-    configurarAutocompletadosFormularioEntrega();
-  });
-}
-
-const navMisEnvios = document.getElementById('navMisEnvios');
-if (navMisEnvios) {
-  navMisEnvios.addEventListener('click', () => {
-    cambiarTab('contentMisEnvios', 'navMisEnvios');
-    cargarMisEnviosCorregida();
-  });
-}
-
-// Event Listeners para Menú Lateral
+// Funciones para menú lateral
 function abrirMenu() {
   const menu = document.getElementById('sideMenu');
   const drawer = document.getElementById('sideMenuDrawer');
@@ -2189,50 +2185,95 @@ function cerrarMenu() {
   }
 }
 
-const menuBtn = document.getElementById('menuBtn');
-if (menuBtn) {
-  menuBtn.addEventListener('click', abrirMenu);
-}
-
-const navMenu = document.getElementById('navMenu');
-if (navMenu) {
-  navMenu.addEventListener('click', abrirMenu);
-}
-
-const closeMenu = document.getElementById('closeSideMenu');
-if (closeMenu) {
-  closeMenu.addEventListener('click', cerrarMenu);
-}
-
-const sideMenu = document.getElementById('sideMenu');
-if (sideMenu) {
-  sideMenu.addEventListener('click', (e) => {
-    if (e.target.id === 'sideMenu') {
-      cerrarMenu();
-    }
-  });
-}
-
-const menuLogout = document.getElementById('menuLogoutBtn');
-if (menuLogout) {
-  menuLogout.addEventListener('click', () => {
-    cerrarMenu();
-    setTimeout(() => {
-      cerrarSesion();
-    }, 300);
-  });
-}
-
-// Inicializar navbar cuando se verifica sesión
-const verificarSesionOriginal = verificarSesion;
-verificarSesion = function() {
-  const result = verificarSesionOriginal();
-  if (result) {
-    inicializarNavbar();
+// Configurar event listeners SOLO si los elementos existen
+function configurarEventListenersNavbar() {
+  console.log('🔧 Configurando event listeners de navbar...');
+  
+  // Navbar - Nuevo Envío
+  const navNuevo = document.getElementById('navNuevoEnvio');
+  if (navNuevo) {
+    navNuevo.addEventListener('click', () => {
+      console.log('Click en Nuevo Envío');
+      cambiarTab('contentNuevoEnvio', 'navNuevoEnvio');
+    });
   }
-  return result;
-};
-
+  
+  // Navbar - Solicitar Entrega
+  const navSolicitar = document.getElementById('navSolicitarEntrega');
+  if (navSolicitar) {
+    navSolicitar.addEventListener('click', () => {
+      console.log('Click en Solicitar Entrega');
+      cambiarTab('contentSolicitarEntrega', 'navSolicitarEntrega');
+      if (typeof configurarAutocompletadosFormularioEntrega === 'function') {
+        configurarAutocompletadosFormularioEntrega();
+      }
+    });
+  }
+  
+  // Navbar - Mis Envíos
+  const navMisEnvios = document.getElementById('navMisEnvios');
+  if (navMisEnvios) {
+    navMisEnvios.addEventListener('click', () => {
+      console.log('Click en Mis Envíos');
+      cambiarTab('contentMisEnvios', 'navMisEnvios');
+      if (typeof cargarMisEnviosCorregida === 'function') {
+        cargarMisEnviosCorregida();
+      }
+    });
+  }
+  
+  // Navbar - Menú
+  const navMenu = document.getElementById('navMenu');
+  if (navMenu) {
+    navMenu.addEventListener('click', () => {
+      console.log('Click en Menú desde navbar');
+      abrirMenu();
+    });
+  }
+  
+  // Header - Botón Menú
+  const menuBtn = document.getElementById('menuBtn');
+  if (menuBtn) {
+    menuBtn.addEventListener('click', () => {
+      console.log('Click en Menú desde header');
+      abrirMenu();
+    });
+  }
+  
+  // Menú Lateral - Cerrar
+  const closeMenu = document.getElementById('closeSideMenu');
+  if (closeMenu) {
+    closeMenu.addEventListener('click', () => {
+      console.log('Cerrando menú');
+      cerrarMenu();
+    });
+  }
+  
+  // Menú Lateral - Click fuera
+  const sideMenu = document.getElementById('sideMenu');
+  if (sideMenu) {
+    sideMenu.addEventListener('click', (e) => {
+      if (e.target.id === 'sideMenu') {
+        console.log('Click fuera del menú');
+        cerrarMenu();
+      }
+    });
+  }
+  
+  // Menú Lateral - Logout
+  const menuLogout = document.getElementById('menuLogoutBtn');
+  if (menuLogout) {
+    menuLogout.addEventListener('click', () => {
+      console.log('Logout desde menú');
+      cerrarMenu();
+      setTimeout(() => {
+        cerrarSesion();
+      }, 300);
+    });
+  }
+  
+  console.log('✅ Event listeners configurados');
+}
 
   });
 }
