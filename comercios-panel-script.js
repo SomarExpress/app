@@ -1,6 +1,6 @@
 // ========================================
-// COMERCIOS-PANEL.JS - VERSIÃ“N COMPLETA
-// Con Autocompletado y CÃ¡lculo de Tarifas
+// COMERCIOS-PANEL.JS - VERSIÓN COMPLETA
+// Con Autocompletado y Cálculo de Tarifas
 // ========================================
 
 const SCRIPT_URL = window.APP_CONFIG.apiEndpoint;
@@ -31,7 +31,7 @@ let appData = {
 
 async function cargarUbicacionesFrecuentes() {
   try {
-    console.log('ðŸ“ === CARGANDO UBICACIONES FRECUENTES ===');
+    console.log('📍 === CARGANDO UBICACIONES FRECUENTES ===');
     
     const response = await fetch(`${SCRIPT_URL}?action=obtenerUbicacionesFrecuentes`);
     const result = await response.json();
@@ -40,7 +40,7 @@ async function cargarUbicacionesFrecuentes() {
     
     if (result.success) {
       appData.ubicacionesFrecuentes = result.ubicaciones;
-      console.log(`âœ… ${result.ubicaciones.length} ubicaciones cargadas`);
+      console.log(`✅ ${result.ubicaciones.length} ubicaciones cargadas`);
       console.log('Ubicaciones:', result.ubicaciones);
       
       // Configurar autocompletados si estamos en el tab de entrega
@@ -48,10 +48,10 @@ async function cargarUbicacionesFrecuentes() {
         configurarAutocompletadosFormularioEntrega();
       }
     } else {
-      console.error('âš ï¸ Error cargando ubicaciones:', result.error);
+      console.error('⚠️ Error cargando ubicaciones:', result.error);
     }
   } catch (error) {
-    console.error('âŒ Error cargando ubicaciones:', error);
+    console.error('❌ Error cargando ubicaciones:', error);
   }
 }
 
@@ -62,11 +62,11 @@ async function cargarUbicacionesFrecuentes() {
 function configurarAutocomplete(inputId, onSelect) {
   const input = document.getElementById(inputId);
   if (!input) {
-    console.log(`âš ï¸ Input no encontrado: ${inputId}`);
+    console.log(`⚠️ Input no encontrado: ${inputId}`);
     return;
   }
   
-  console.log(`ðŸ”§ Configurando autocomplete para: ${inputId}`);
+  console.log(`🔧 Configurando autocomplete para: ${inputId}`);
   
   // Crear contenedor si no existe
   let container = input.parentElement.querySelector('.autocomplete-container');
@@ -96,7 +96,7 @@ function configurarAutocomplete(inputId, onSelect) {
     
     // Verificar que tengamos ubicaciones cargadas
     if (!appData.ubicacionesFrecuentes || appData.ubicacionesFrecuentes.length === 0) {
-      console.log('âš ï¸ No hay ubicaciones frecuentes cargadas');
+      console.log('⚠️ No hay ubicaciones frecuentes cargadas');
       return;
     }
     
@@ -117,11 +117,11 @@ function configurarAutocomplete(inputId, onSelect) {
     container.innerHTML = coincidencias.slice(0, 10).map(ubicacion => `
       <div class="autocomplete-item" data-ubicacion='${JSON.stringify(ubicacion).replace(/'/g, "&apos;")}'>
         <div class="flex items-start gap-2">
-          <span class="text-xl">${ubicacion.tipo === 'COMERCIO' ? 'ðŸª' : 'ðŸ“'}</span>
+          <span class="text-xl">${ubicacion.tipo === 'COMERCIO' ? '🏪' : '📍'}</span>
           <div class="flex-1">
             <p class="autocomplete-item-title">${ubicacion.nombre}</p>
             ${ubicacion.descripcion ? `<p class="autocomplete-item-description">${ubicacion.descripcion}</p>` : ''}
-            <p class="autocomplete-item-coords">ðŸ“ ${ubicacion.ubicacion}</p>
+            <p class="autocomplete-item-coords">📍 ${ubicacion.ubicacion}</p>
           </div>
           <span class="text-xs px-2 py-1 rounded ${ubicacion.tipo === 'COMERCIO' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">${ubicacion.tipo}</span>
         </div>
@@ -138,7 +138,7 @@ function configurarAutocomplete(inputId, onSelect) {
         container.classList.add('hidden');
         container.innerHTML = '';
         
-        console.log('âœ… UbicaciÃ³n seleccionada:', ubicacion.nombre, ubicacion.ubicacion);
+        console.log('✅ Ubicación seleccionada:', ubicacion.nombre, ubicacion.ubicacion);
         
         if (onSelect) {
           onSelect(ubicacion);
@@ -155,29 +155,29 @@ function configurarAutocomplete(inputId, onSelect) {
     }
   });
   
-  console.log(`âœ… Autocomplete configurado para: ${inputId}`);
+  console.log(`✅ Autocomplete configurado para: ${inputId}`);
 }
 
 function configurarAutocompletadosFormularioEntrega() {
-  console.log('ðŸ”§ === CONFIGURANDO AUTOCOMPLETADOS FORMULARIO ENTREGA ===');
+  console.log('🔧 === CONFIGURANDO AUTOCOMPLETADOS FORMULARIO ENTREGA ===');
   
   if (!appData.ubicacionesFrecuentes || appData.ubicacionesFrecuentes.length === 0) {
-    console.log('âš ï¸ No hay ubicaciones frecuentes disponibles');
+    console.log('⚠️ No hay ubicaciones frecuentes disponibles');
     setTimeout(configurarAutocompletadosFormularioEntrega, 2000); // Reintentar en 2 segundos
     return;
   }
   
-  console.log(`ðŸ“ ${appData.ubicacionesFrecuentes.length} ubicaciones disponibles`);
+  console.log(`📍 ${appData.ubicacionesFrecuentes.length} ubicaciones disponibles`);
   
   // 1. TRASLADO ENTRE TIENDAS
   configurarAutocomplete('ubicacionOrigenTraslado', async (ubicacion) => {
-  console.log('ðŸª Origen traslado seleccionado:', ubicacion.nombre);
+  console.log('🏪 Origen traslado seleccionado:', ubicacion.nombre);
   
-  // âœ… RELLENAR NOMBRE DE TIENDA ORIGEN
+  // ✅ RELLENAR NOMBRE DE TIENDA ORIGEN
   const tiendaOrigenInput = document.getElementById('tiendaOrigen');
   if (tiendaOrigenInput) {
     tiendaOrigenInput.value = ubicacion.nombre;
-    console.log('âœ… Tienda origen rellenada:', ubicacion.nombre);
+    console.log('✅ Tienda origen rellenada:', ubicacion.nombre);
   }
   
   const destino = document.getElementById('ubicacionDestinoTraslado').value.trim();
@@ -187,13 +187,13 @@ function configurarAutocompletadosFormularioEntrega() {
 });
   
   configurarAutocomplete('ubicacionDestinoTraslado', async (ubicacion) => {
-  console.log('ðŸª Destino traslado seleccionado:', ubicacion.nombre);
+  console.log('🏪 Destino traslado seleccionado:', ubicacion.nombre);
   
-  // âœ… RELLENAR NOMBRE DE TIENDA DESTINO
+  // ✅ RELLENAR NOMBRE DE TIENDA DESTINO
   const tiendaDestinoInput = document.getElementById('tiendaDestino');
   if (tiendaDestinoInput) {
     tiendaDestinoInput.value = ubicacion.nombre;
-    console.log('âœ… Tienda destino rellenada:', ubicacion.nombre);
+    console.log('✅ Tienda destino rellenada:', ubicacion.nombre);
   }
   
   const origen = document.getElementById('ubicacionOrigenTraslado').value.trim();
@@ -204,16 +204,16 @@ function configurarAutocompletadosFormularioEntrega() {
   
 // 2. RECOGER PAQUETE
 configurarAutocomplete('ubicacionRecogidaPaquete', async (ubicacion) => {
-  console.log('ðŸ“¦ UbicaciÃ³n recogida seleccionada:', ubicacion.nombre);
+  console.log('📦 Ubicación recogida seleccionada:', ubicacion.nombre);
   
-  // âœ… RELLENAR NOMBRE DEL CONTACTO (CON RETRY SI ES NECESARIO)
+  // ✅ RELLENAR NOMBRE DEL CONTACTO (CON RETRY SI ES NECESARIO)
   setTimeout(() => {
     const nombreContactoInput = document.getElementById('nombreContacto');
     if (nombreContactoInput) {
       nombreContactoInput.value = ubicacion.nombre;
-      console.log('âœ… Nombre de contacto rellenado:', ubicacion.nombre);
+      console.log('✅ Nombre de contacto rellenado:', ubicacion.nombre);
     } else {
-      console.warn('âš ï¸ Input nombreContacto no encontrado aÃºn');
+      console.warn('⚠️ Input nombreContacto no encontrado aún');
     }
   }, 100);
   
@@ -228,7 +228,7 @@ configurarAutocomplete('ubicacionRecogidaPaquete', async (ubicacion) => {
 });
   
   configurarAutocomplete('ubicacionEntregaPaquete', async (ubicacion) => {
-    console.log('ðŸ“¦ UbicaciÃ³n entrega paquete seleccionada:', ubicacion.nombre);
+    console.log('📦 Ubicación entrega paquete seleccionada:', ubicacion.nombre);
     const origen = document.getElementById('ubicacionRecogidaPaquete').value.trim();
     if (origen && origen.includes(',')) {
       await calcularTarifaEntrega(origen, ubicacion.ubicacion);
@@ -237,13 +237,13 @@ configurarAutocomplete('ubicacionRecogidaPaquete', async (ubicacion) => {
   
   // 3. REALIZAR COMPRA
   configurarAutocomplete('ubicacionComercioCompra', async (ubicacion) => {
-  console.log('ðŸ›’ Comercio compra seleccionado:', ubicacion.nombre);
+  console.log('🛒 Comercio compra seleccionado:', ubicacion.nombre);
   
-  // âœ… RELLENAR NOMBRE DEL COMERCIO
+  // ✅ RELLENAR NOMBRE DEL COMERCIO
   const nombreComercioCompraInput = document.getElementById('nombreComercioCompra');
   if (nombreComercioCompraInput) {
     nombreComercioCompraInput.value = ubicacion.nombre;
-    console.log('âœ… Nombre comercio compra rellenado:', ubicacion.nombre);
+    console.log('✅ Nombre comercio compra rellenado:', ubicacion.nombre);
   }
   
   const destinoCompra = document.querySelector('input[name="destinoCompra"]:checked')?.value;
@@ -257,18 +257,18 @@ configurarAutocomplete('ubicacionRecogidaPaquete', async (ubicacion) => {
 });
   
   configurarAutocomplete('ubicacionEntregaCompra', async (ubicacion) => {
-    console.log('ðŸ›’ UbicaciÃ³n entrega compra seleccionada:', ubicacion.nombre);
+    console.log('🛒 Ubicación entrega compra seleccionada:', ubicacion.nombre);
     const origen = document.getElementById('ubicacionComercioCompra').value.trim();
     if (origen && origen.includes(',')) {
       await calcularTarifaEntrega(origen, ubicacion.ubicacion);
     }
   });
   
-  console.log('âœ… Todos los autocompletados configurados');
+  console.log('✅ Todos los autocompletados configurados');
 }
 
 // ============================================
-// AUTENTICACIÃ“N
+// AUTENTICACIÓN
 // ============================================
 
 function verificarSesion() {
@@ -315,10 +315,10 @@ async function enviarCodigoVerificacion(numero) {
     document.getElementById('authStep2').classList.remove('hidden');
     submitBtn.textContent = 'Continuar';
     submitBtn.disabled = false;
-    alert('âœ… CÃ³digo enviado por WhatsApp');
+    alert('✅ Código enviado por WhatsApp');
   } catch (error) {
     console.error('Error:', error);
-    alert('âš ï¸ Error al enviar cÃ³digo');
+    alert('⚠️ Error al enviar código');
   }
 }
 
@@ -345,19 +345,19 @@ async function verificarCodigoIngresado(codigo) {
         // NUEVO: Cargar ubicaciones
         await cargarUbicacionesFrecuentesCorregida();
         
-        alert(`Â¡Bienvenido ${result.datosComercio.nombre}!`);
+        alert(`¡Bienvenido ${result.datosComercio.nombre}!`);
       } else {
         document.getElementById('authStep2').classList.add('hidden');
         document.getElementById('authStep3').classList.remove('hidden');
       }
     } else {
-      alert(result.error || 'CÃ³digo incorrecto');
+      alert(result.error || 'Código incorrecto');
       submitBtn.textContent = 'Verificar';
       submitBtn.disabled = false;
     }
   } catch (error) {
     console.error('Error:', error);
-    alert('âš ï¸ Error al verificar cÃ³digo');
+    alert('⚠️ Error al verificar código');
   }
 }
 
@@ -389,7 +389,7 @@ async function completarRegistroComercio(nombre, direccion, ubicacionGPS) {
       
       await cargarUbicacionesFrecuentes();
       
-      alert('Â¡Comercio registrado exitosamente!');
+      alert('¡Comercio registrado exitosamente!');
     } else {
       alert(result.error || 'Error al registrar');
       submitBtn.textContent = 'Registrar Comercio';
@@ -397,25 +397,25 @@ async function completarRegistroComercio(nombre, direccion, ubicacionGPS) {
     }
   } catch (error) {
     console.error('Error:', error);
-    alert('âš ï¸ Error al registrar');
+    alert('⚠️ Error al registrar');
   }
 }
 
 function cerrarSesion() {
-  if (confirm('Â¿Cerrar sesiÃ³n?')) {
+  if (confirm('¿Cerrar sesión?')) {
     localStorage.removeItem('somarComercioUser');
     location.reload();
   }
 }
 
 // ============================================
-// EXTRACCIÃ“N DE COORDENADAS
+// EXTRACCIÓN DE COORDENADAS
 // ============================================
 
 async function extraerCoordenadasDeLink(input) {
   try {
     input = input.trim();
-    window.secureLog('ðŸ” Procesando entrada:', input);
+    window.secureLog('🔍 Procesando entrada:', input);
 
     const soloCoordMatch = input.match(/^\s*([0-9]{1,2}\.[0-9]+)\s*,\s*(-?[0-9]{1,3}\.[0-9]+)\s*$/);
     if (soloCoordMatch) {
@@ -423,24 +423,24 @@ async function extraerCoordenadasDeLink(input) {
       const lon = parseFloat(soloCoordMatch[2]);
       
       if (lat >= 13 && lat <= 16 && lon >= -90 && lon <= -83) {
-        window.secureLog('âœ… Coordenadas directas detectadas');
+        window.secureLog('✅ Coordenadas directas detectadas');
         return { lat, lon, exito: true };
       }
     }
 
     if (input.includes('goo.gl') || input.includes('maps.app.goo.gl')) {
-      window.secureLog('âš ï¸ Link acortado detectado');
+      window.secureLog('⚠️ Link acortado detectado');
       return { 
         exito: false, 
         error: 'LINK_ACORTADO',
-        mensaje: 'Link acortado detectado.\n\nPor favor:\n1. Abre el link en Google Maps\n2. Espera que cargue\n3. Toca y mantÃ©n sobre la ubicaciÃ³n\n4. AparecerÃ¡n las coordenadas abajo\n5. CÃ³pialas y pÃ©galas aquÃ­\n\nO usa el mapa interactivo ðŸ—ºï¸'
+        mensaje: 'Link acortado detectado.\n\nPor favor:\n1. Abre el link en Google Maps\n2. Espera que cargue\n3. Toca y mantén sobre la ubicación\n4. Aparecerán las coordenadas abajo\n5. Cópialas y pégalas aquí\n\nO usa el mapa interactivo 🗺️'
       };
     }
 
     return await extraerCoordenadasDeURL(input);
 
   } catch (error) {
-    console.error('âŒ Error:', error);
+    console.error('❌ Error:', error);
     return { exito: false, error: error.toString() };
   }
 }
@@ -448,19 +448,19 @@ async function extraerCoordenadasDeLink(input) {
 async function extraerCoordenadasDeURL(url) {
   const qMatch = url.match(/[?&]q=([0-9.-]+),([0-9.-]+)/);
   if (qMatch) {
-    window.secureLog('âœ… Coordenadas encontradas (q)');
+    window.secureLog('✅ Coordenadas encontradas (q)');
     return { lat: parseFloat(qMatch[1]), lon: parseFloat(qMatch[2]), exito: true };
   }
 
   const atMatch = url.match(/@([0-9.-]+),([0-9.-]+)/);
   if (atMatch) {
-    window.secureLog('âœ… Coordenadas encontradas (@)');
+    window.secureLog('✅ Coordenadas encontradas (@)');
     return { lat: parseFloat(atMatch[1]), lon: parseFloat(atMatch[2]), exito: true };
   }
 
   const placeMatch = url.match(/\/place\/.*?@([0-9.-]+),([0-9.-]+)/);
   if (placeMatch) {
-    window.secureLog('âœ… Coordenadas encontradas (place)');
+    window.secureLog('✅ Coordenadas encontradas (place)');
     return { lat: parseFloat(placeMatch[1]), lon: parseFloat(placeMatch[2]), exito: true };
   }
 
@@ -470,17 +470,17 @@ async function extraerCoordenadasDeURL(url) {
     const lon = parseFloat(coordMatch[2]);
     
     if (lat >= 13 && lat <= 16 && lon >= -90 && lon <= -83) {
-      window.secureLog('âœ… Coordenadas encontradas (patrÃ³n general)');
+      window.secureLog('✅ Coordenadas encontradas (patrón general)');
       return { lat, lon, exito: true };
     }
   }
 
-  window.secureLog('âŒ No se encontraron coordenadas en la URL');
-  return { exito: false, error: 'No se detectaron coordenadas vÃ¡lidas' };
+  window.secureLog('❌ No se encontraron coordenadas en la URL');
+  return { exito: false, error: 'No se detectaron coordenadas válidas' };
 }
 
 // ============================================
-// CÃLCULO DE TARIFAS
+// CÁLCULO DE TARIFAS
 // ============================================
 
 function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
@@ -502,13 +502,13 @@ function obtenerCiudad(lat, lon) {
     { nombre: 'La Ceiba', lat: 15.78, lon: -86.80, radio: 0.10 },
     { nombre: 'El Progreso', lat: 15.40, lon: -87.80, radio: 0.08 },
     { nombre: 'Comayagua', lat: 14.45, lon: -87.64, radio: 0.10 },
-    { nombre: 'Puerto CortÃ©s', lat: 15.85, lon: -87.94, radio: 0.08 },
+    { nombre: 'Puerto Cortés', lat: 15.85, lon: -87.94, radio: 0.08 },
     { nombre: 'Villanueva', lat: 15.32, lon: -88.00, radio: 0.08 },
     { nombre: 'La Lima', lat: 15.43, lon: -87.91, radio: 0.06 },
     { nombre: 'Choluteca', lat: 13.30, lon: -87.19, radio: 0.10 },
-    { nombre: 'DanlÃ­', lat: 14.03, lon: -86.58, radio: 0.08 },
+    { nombre: 'Danlí', lat: 14.03, lon: -86.58, radio: 0.08 },
     { nombre: 'Juticalpa', lat: 14.66, lon: -86.22, radio: 0.08 },
-    { nombre: 'Santa Rosa de CopÃ¡n', lat: 14.77, lon: -88.78, radio: 0.08 },
+    { nombre: 'Santa Rosa de Copán', lat: 14.77, lon: -88.78, radio: 0.08 },
     { nombre: 'Siguatepeque', lat: 14.60, lon: -87.84, radio: 0.08 },
     { nombre: 'Tocoa', lat: 15.66, lon: -86.00, radio: 0.08 },
     { nombre: 'Tela', lat: 15.78, lon: -87.46, radio: 0.08 }
@@ -517,34 +517,34 @@ function obtenerCiudad(lat, lon) {
   for (const ciudad of ciudades) {
     const distancia = Math.sqrt(Math.pow(lat - ciudad.lat, 2) + Math.pow(lon - ciudad.lon, 2));
     if (distancia < ciudad.radio) {
-      window.secureLog(`âœ… Ciudad detectada: ${ciudad.nombre}`);
+      window.secureLog(`✅ Ciudad detectada: ${ciudad.nombre}`);
       return ciudad.nombre;
     }
   }
 
-  if (lat >= 15.3 && lat <= 16.0 && lon >= -88.5 && lon <= -87.3) return 'CortÃ©s';
-  else if (lat >= 13.8 && lat <= 14.4 && lon >= -87.5 && lon <= -86.8) return 'Francisco MorazÃ¡n';
-  else if (lat >= 15.5 && lat <= 16.0 && lon >= -87.0 && lon <= -86.0) return 'AtlÃ¡ntida';
+  if (lat >= 15.3 && lat <= 16.0 && lon >= -88.5 && lon <= -87.3) return 'Cortés';
+  else if (lat >= 13.8 && lat <= 14.4 && lon >= -87.5 && lon <= -86.8) return 'Francisco Morazán';
+  else if (lat >= 15.5 && lat <= 16.0 && lon >= -87.0 && lon <= -86.0) return 'Atlántida';
   else if (lat >= 14.4 && lat <= 15.0 && lon >= -86.8 && lon <= -86.0) return 'Olancho';
   else if (lat >= 13.0 && lat <= 13.8 && lon >= -87.5 && lon <= -86.8) return 'Choluteca';
 
-  window.secureLog('âš ï¸ Ciudad no detectada, usando genÃ©rico');
+  window.secureLog('⚠️ Ciudad no detectada, usando genérico');
   return 'Honduras';
 }
 
 async function calcularDistanciaOSRM(lat1, lon1, lat2, lon2) {
   try {
     const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`;
-    window.secureLog('ðŸŒ Consultando OSRM...');
+    window.secureLog('🌐 Consultando OSRM...');
     const response = await fetch(url);
     if (!response.ok) throw new Error('OSRM failed');
     const data = await response.json();
     if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) throw new Error('No route');
     const distanciaKm = data.routes[0].distance / 1000;
-    window.secureLog(`âœ… OSRM: ${distanciaKm.toFixed(2)} km por carretera`);
+    window.secureLog(`✅ OSRM: ${distanciaKm.toFixed(2)} km por carretera`);
     return distanciaKm;
   } catch (error) {
-    console.error('âŒ OSRM error:', error);
+    console.error('❌ OSRM error:', error);
     throw error;
   }
 }
@@ -560,13 +560,13 @@ function calcularTarifaCholoma(km) {
   ];
   for (const r of tabla) {
     if (km >= r.min && km < r.max) {
-      window.secureLog(`âœ… Choloma ${r.min}-${r.max}km: L.${r.tarifa}`);
+      window.secureLog(`✅ Choloma ${r.min}-${r.max}km: L.${r.tarifa}`);
       return r.tarifa;
     }
   }
   const calc = 30 + (km * 6.8);
   const redondeado = Math.round(calc / 5) * 5;
-  window.secureLog(`ðŸ“Š Choloma fuera de tabla: ${calc.toFixed(2)} â†’ L.${redondeado}`);
+  window.secureLog(`📊 Choloma fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
   return redondeado;
 }
 
@@ -581,19 +581,19 @@ function calcularTarifaOtrasCiudades(km) {
   ];
   for (const r of tabla) {
     if (km >= r.min && km < r.max) {
-      window.secureLog(`âœ… Otras ${r.min}-${r.max}km: L.${r.tarifa}`);
+      window.secureLog(`✅ Otras ${r.min}-${r.max}km: L.${r.tarifa}`);
       return r.tarifa;
     }
   }
   const calc = 40 + (km * 7.5);
   const redondeado = Math.round(calc / 5) * 5;
-  window.secureLog(`ðŸ“Š Otras fuera de tabla: ${calc.toFixed(2)} â†’ L.${redondeado}`);
+  window.secureLog(`📊 Otras fuera de tabla: ${calc.toFixed(2)} → L.${redondeado}`);
   return redondeado;
 }
 
 async function calcularTarifa(ubicacionRecogida, ubicacionEntrega) {
   if (!ubicacionRecogida || !ubicacionEntrega) {
-    window.secureLog('âš ï¸ Faltan ubicaciones');
+    window.secureLog('⚠️ Faltan ubicaciones');
     return;
   }
 
@@ -602,20 +602,20 @@ async function calcularTarifa(ubicacionRecogida, ubicacionEntrega) {
     const [lat2, lon2] = ubicacionEntrega.split(',').map(Number);
 
     if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) {
-      console.error('âŒ Coordenadas invÃ¡lidas');
+      console.error('❌ Coordenadas inválidas');
       return;
     }
 
     const ciudadOrigen = obtenerCiudad(lat1, lon1);
     const ciudadDestino = obtenerCiudad(lat2, lon2);
 
-    window.secureLog(`ðŸ“ Origen: ${ciudadOrigen}, Destino: ${ciudadDestino}`);
+    window.secureLog(`📍 Origen: ${ciudadOrigen}, Destino: ${ciudadDestino}`);
 
     let distanciaKm;
     try {
       distanciaKm = await calcularDistanciaOSRM(lat1, lon1, lat2, lon2);
     } catch (error) {
-      console.warn('âš ï¸ OSRM fallback a Haversine');
+      console.warn('⚠️ OSRM fallback a Haversine');
       distanciaKm = calcularDistanciaHaversine(lat1, lon1, lat2, lon2);
     }
 
@@ -632,7 +632,7 @@ async function calcularTarifa(ubicacionRecogida, ubicacionEntrega) {
     document.getElementById('tarifaTotal').textContent = tarifaTotal.toFixed(2);
     document.getElementById('tarifaResumen').classList.remove('hidden');
 
-    window.secureLog(`âœ… Tarifa: L.${tarifaTotal.toFixed(2)}`);
+    window.secureLog(`✅ Tarifa: L.${tarifaTotal.toFixed(2)}`);
     
     return {
       ciudadOrigen,
@@ -641,7 +641,7 @@ async function calcularTarifa(ubicacionRecogida, ubicacionEntrega) {
       tarifaTotal: tarifaTotal.toFixed(2)
     };
   } catch (error) {
-    console.error('âŒ Error:', error);
+    console.error('❌ Error:', error);
     return null;
   }
 }
@@ -649,7 +649,7 @@ async function calcularTarifa(ubicacionRecogida, ubicacionEntrega) {
 // NUEVO: Calcular tarifa para formulario de Solicitar Entrega
 async function calcularTarifaEntrega(ubicacionOrigen, ubicacionDestino) {
   if (!ubicacionOrigen || !ubicacionDestino) {
-    window.secureLog('âš ï¸ Faltan ubicaciones');
+    window.secureLog('⚠️ Faltan ubicaciones');
     return;
   }
 
@@ -658,7 +658,7 @@ async function calcularTarifaEntrega(ubicacionOrigen, ubicacionDestino) {
     const [lat2, lon2] = ubicacionDestino.split(',').map(Number);
 
     if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) {
-      console.error('âŒ Coordenadas invÃ¡lidas');
+      console.error('❌ Coordenadas inválidas');
       return;
     }
 
@@ -666,7 +666,7 @@ async function calcularTarifaEntrega(ubicacionOrigen, ubicacionDestino) {
     try {
       distanciaKm = await calcularDistanciaOSRM(lat1, lon1, lat2, lon2);
     } catch (error) {
-      console.warn('âš ï¸ OSRM fallback a Haversine');
+      console.warn('⚠️ OSRM fallback a Haversine');
       distanciaKm = calcularDistanciaHaversine(lat1, lon1, lat2, lon2);
     }
 
@@ -683,7 +683,7 @@ async function calcularTarifaEntrega(ubicacionOrigen, ubicacionDestino) {
     document.getElementById('tarifaTotalEntrega').textContent = tarifaTotal.toFixed(2);
     document.getElementById('tarifaResumenEntrega').classList.remove('hidden');
 
-    window.secureLog(`âœ… Tarifa Entrega: L.${tarifaTotal.toFixed(2)}`);
+    window.secureLog(`✅ Tarifa Entrega: L.${tarifaTotal.toFixed(2)}`);
     
     return {
       ciudadOrigen,
@@ -692,23 +692,23 @@ async function calcularTarifaEntrega(ubicacionOrigen, ubicacionDestino) {
       tarifaTotal: tarifaTotal.toFixed(2)
     };
   } catch (error) {
-    console.error('âŒ Error:', error);
+    console.error('❌ Error:', error);
     return null;
   }
 }
 
-// (ContinÃºa en siguiente mensaje por lÃ­mite de caracteres...)
+// (Continúa en siguiente mensaje por límite de caracteres...)
 
 // ============================================
 // MAPAS
 // ============================================
 
 function mostrarMapaPreview(lat, lon, containerId) {
-  window.secureLog(`ðŸ—ºï¸ Mostrando mapa preview en ${containerId}:`, lat, lon);
+  window.secureLog(`🗺️ Mostrando mapa preview en ${containerId}:`, lat, lon);
   
   const container = document.getElementById(containerId);
   if (!container) {
-    console.error('âŒ Contenedor no encontrado:', containerId);
+    console.error('❌ Contenedor no encontrado:', containerId);
     return;
   }
 
@@ -717,7 +717,7 @@ function mostrarMapaPreview(lat, lon, containerId) {
       appData.mapRecogida.off();
       appData.mapRecogida.remove();
     } catch (error) {
-      window.secureLog('âš ï¸ Error limpiando mapa recogida:', error);
+      window.secureLog('⚠️ Error limpiando mapa recogida:', error);
     }
     appData.mapRecogida = null;
   }
@@ -727,7 +727,7 @@ function mostrarMapaPreview(lat, lon, containerId) {
       appData.mapEntrega.off();
       appData.mapEntrega.remove();
     } catch (error) {
-      window.secureLog('âš ï¸ Error limpiando mapa entrega:', error);
+      window.secureLog('⚠️ Error limpiando mapa entrega:', error);
     }
     appData.mapEntrega = null;
   }
@@ -756,7 +756,7 @@ function mostrarMapaPreview(lat, lon, containerId) {
       });
       
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: 'Â© OpenStreetMap',
+        attribution: '© OpenStreetMap',
         maxZoom: 18
       }).addTo(map);
       
@@ -769,16 +769,16 @@ function mostrarMapaPreview(lat, lon, containerId) {
       }
       
       setTimeout(() => map.invalidateSize(), 150);
-      window.secureLog(`âœ… Mapa ${containerId} creado`);
+      window.secureLog(`✅ Mapa ${containerId} creado`);
       
     } catch (error) {
-      console.error(`âŒ Error creando mapa ${containerId}:`, error);
+      console.error(`❌ Error creando mapa ${containerId}:`, error);
     }
   }, 250);
 }
 
 function inicializarMapaInteractivo() {
-  window.secureLog('ðŸ—ºï¸ Inicializando mapa interactivo...');
+  window.secureLog('🗺️ Inicializando mapa interactivo...');
   
   const modal = document.getElementById('mapModal');
   const container = document.getElementById('mapInteractive');
@@ -788,7 +788,7 @@ function inicializarMapaInteractivo() {
       appData.mapInteractive.off();
       appData.mapInteractive.remove();
     } catch (error) {
-      window.secureLog('âš ï¸ Error limpiando mapa:', error);
+      window.secureLog('⚠️ Error limpiando mapa:', error);
     }
     appData.mapInteractive = null;
     appData.markerInteractive = null;
@@ -827,7 +827,7 @@ function inicializarMapaInteractivo() {
       });
       
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: 'Â© OpenStreetMap',
+        attribution: '© OpenStreetMap',
         maxZoom: 18
       }).addTo(appData.mapInteractive);
 
@@ -840,16 +840,16 @@ function inicializarMapaInteractivo() {
       });
       
       setTimeout(() => appData.mapInteractive.invalidateSize(), 200);
-      window.secureLog('âœ… Mapa interactivo creado');
+      window.secureLog('✅ Mapa interactivo creado');
     } catch (error) {
-      console.error('âŒ Error:', error);
+      console.error('❌ Error:', error);
       alert('Error al cargar el mapa. Intenta de nuevo.');
     }
   }, 250);
 }
 
 // ============================================
-// GESTIÃ“N DE ENVÃOS
+// GESTIÓN DE ENVÍOS
 // ============================================
 
 async function cargarMisEnvios() {
@@ -877,7 +877,7 @@ function renderizarEnvios() {
   }
 
   if (enviosFiltrados.length === 0) {
-    container.innerHTML = '<div class="text-center py-12 text-gray-500"><p>No hay envÃ­os para mostrar</p></div>';
+    container.innerHTML = '<div class="text-center py-12 text-gray-500"><p>No hay envíos para mostrar</p></div>';
     return;
   }
 
@@ -888,11 +888,11 @@ function renderizarEnvios() {
     const tipoRegistro = envio.tipoRegistro || envio['Tipo Registro'] || 'ENVIO_NORMAL';
     const tipoServicio = envio.tipoServicio || envio['Tipo Servicio'] || 'SOLO_ENTREGA';
     const nombreDestinatario = envio.nombreDestinatario || envio['Nombre Destinatario'] || '-';
-    const descripcion = envio.descripcionPaquete || envio['DescripciÃ³n Paquete'] || '-';
+    const descripcion = envio.descripcionPaquete || envio['Descripción Paquete'] || '-';
     
     const esEntrega = tipoRegistro === 'SOLICITUD_ENTREGA';
-    const icono = esEntrega ? 'ðŸ””' : 'ðŸ“¦';
-    const tipoLabel = esEntrega ? 'SOLICITUD DE ENTREGA' : 'ENVÃO';
+    const icono = esEntrega ? '🔔' : '📦';
+    const tipoLabel = esEntrega ? 'SOLICITUD DE ENTREGA' : 'ENVÍO';
     
     return `
       <div class="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition">
@@ -922,20 +922,20 @@ function renderizarEnvios() {
 }
 
 // ============================================
-// FUNCIÃ“N CORREGIDA PARA SUBIR FOTO A CLOUDINARY
-// Reemplaza la secciÃ³n de subida en procesarEnvio()
+// FUNCIÓN CORREGIDA PARA SUBIR FOTO A CLOUDINARY
+// Reemplaza la sección de subida en procesarEnvio()
 // ============================================
 
 async function subirFotoCloudinary(file) {
   try {
-    console.log('ðŸ“¸ === SUBIENDO FOTO A CLOUDINARY ===');
+    console.log('📸 === SUBIENDO FOTO A CLOUDINARY ===');
     console.log('Cloud Name:', CLOUDINARY_CLOUD_NAME);
     console.log('Upload Preset:', CLOUDINARY_UPLOAD_PRESET);
-    console.log('TamaÃ±o archivo:', (file.size / 1024 / 1024).toFixed(2) + ' MB');
+    console.log('Tamaño archivo:', (file.size / 1024 / 1024).toFixed(2) + ' MB');
     
-    // Validar tamaÃ±o (mÃ¡ximo 10MB)
+    // Validar tamaño (máximo 10MB)
     if (file.size > 10 * 1024 * 1024) {
-      throw new Error('La imagen es muy grande. MÃ¡ximo 10MB');
+      throw new Error('La imagen es muy grande. Máximo 10MB');
     }
     
     // Validar tipo de archivo
@@ -949,7 +949,7 @@ async function subirFotoCloudinary(file) {
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
     formData.append('folder', 'PAQUETES_COMERCIOS'); // Organizar en carpeta
     
-    console.log('ðŸ“¤ Enviando a Cloudinary...');
+    console.log('📤 Enviando a Cloudinary...');
     
     const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
     
@@ -965,17 +965,17 @@ async function subirFotoCloudinary(file) {
     console.log('Response text:', responseText);
     
     if (!response.ok) {
-      console.error('âŒ Error de Cloudinary:', responseText);
+      console.error('❌ Error de Cloudinary:', responseText);
       throw new Error(`Cloudinary error ${response.status}: ${responseText}`);
     }
     
     const data = JSON.parse(responseText);
     
     if (!data.secure_url) {
-      throw new Error('No se recibiÃ³ URL de la imagen');
+      throw new Error('No se recibió URL de la imagen');
     }
     
-    console.log('âœ… Foto subida exitosamente');
+    console.log('✅ Foto subida exitosamente');
     console.log('URL:', data.secure_url);
     
     return {
@@ -985,7 +985,7 @@ async function subirFotoCloudinary(file) {
     };
     
   } catch (error) {
-    console.error('âŒ ERROR subiendo foto:', error);
+    console.error('❌ ERROR subiendo foto:', error);
     return {
       success: false,
       error: error.message || error.toString()
@@ -994,20 +994,20 @@ async function subirFotoCloudinary(file) {
 }
 
 // ============================================
-// FUNCIÃ“N procesarEnvio() CORREGIDA
-// Reemplaza toda la funciÃ³n procesarEnvio en comercios-panel-script.js
+// FUNCIÓN procesarEnvio() CORREGIDA
+// Reemplaza toda la función procesarEnvio en comercios-panel-script.js
 // ============================================
 
 async function procesarEnvio(e) {
   e.preventDefault();
 
   if (!appData.ubicacionRecogida) {
-    alert('âš ï¸ Debes configurar la ubicaciÃ³n de recogida');
+    alert('⚠️ Debes configurar la ubicación de recogida');
     return;
   }
 
   if (!appData.ubicacionEntrega) {
-    alert('âš ï¸ Debes pegar la ubicaciÃ³n de entrega que te mandÃ³ tu cliente por WhatsApp');
+    alert('⚠️ Debes pegar la ubicación de entrega que te mandó tu cliente por WhatsApp');
     document.getElementById('linkEntrega').focus();
     return;
   }
@@ -1031,22 +1031,22 @@ async function procesarEnvio(e) {
 
   // Subir foto a Cloudinary si existe
   if (fotoFile) {
-    console.log('ðŸ“¸ Detectada foto, iniciando subida...');
+    console.log('📸 Detectada foto, iniciando subida...');
     submitBtn.textContent = 'Subiendo foto...';
     
     const resultadoSubida = await subirFotoCloudinary(fotoFile);
     
     if (resultadoSubida.success) {
       fotoUrl = resultadoSubida.url;
-      console.log('âœ… Foto subida correctamente:', fotoUrl);
+      console.log('✅ Foto subida correctamente:', fotoUrl);
     } else {
-      console.error('âŒ Error subiendo foto:', resultadoSubida.error);
+      console.error('❌ Error subiendo foto:', resultadoSubida.error);
       
       // Preguntar al usuario si quiere continuar sin foto
       const continuar = confirm(
-        'âš ï¸ No se pudo subir la foto:\n' + 
+        '⚠️ No se pudo subir la foto:\n' + 
         resultadoSubida.error + 
-        '\n\nÂ¿Deseas continuar sin foto?'
+        '\n\n¿Deseas continuar sin foto?'
       );
       
       if (!continuar) {
@@ -1057,7 +1057,7 @@ async function procesarEnvio(e) {
     }
   }
 
-  submitBtn.textContent = 'Registrando envÃ­o...';
+  submitBtn.textContent = 'Registrando envío...';
 
   const datos = {
     esEntrega: false,
@@ -1082,7 +1082,7 @@ async function procesarEnvio(e) {
   };
 
   try {
-    console.log('ðŸ“ Enviando datos al backend...');
+    console.log('📝 Enviando datos al backend...');
     console.log('Datos:', datos);
     
     await fetch(SCRIPT_URL, {
@@ -1095,9 +1095,9 @@ async function procesarEnvio(e) {
       })
     });
 
-    console.log('âœ… EnvÃ­o registrado en backend');
+    console.log('✅ Envío registrado en backend');
     
-    alert('âœ… EnvÃ­o registrado exitosamente' + (fotoUrl ? ' con foto' : ''));
+    alert('✅ Envío registrado exitosamente' + (fotoUrl ? ' con foto' : ''));
     
     // Limpiar formulario
     document.getElementById('nuevoEnvioForm').reset();
@@ -1110,12 +1110,12 @@ async function procesarEnvio(e) {
     submitBtn.disabled = false;
     appData.ubicacionEntrega = null;
 
-    // Ir a "Mis EnvÃ­os"
+    // Ir a "Mis Envíos"
     document.getElementById('tabMisEnvios').click();
     
   } catch (error) {
-    console.error('âŒ Error al registrar envÃ­o:', error);
-    alert('âš ï¸ Error al registrar envÃ­o: ' + error.message);
+    console.error('❌ Error al registrar envío:', error);
+    alert('⚠️ Error al registrar envío: ' + error.message);
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
   }
@@ -1151,7 +1151,7 @@ async function procesarSolicitudEntrega(e) {
     const descripcion = document.getElementById('descripcionTraslado').value;
 
     if (!tiendaOrigen || !tiendaDestino || !ubicacionOrigen || !ubicacionDestino || !descripcion) {
-      alert('âš ï¸ Por favor completa todos los campos obligatorios');
+      alert('⚠️ Por favor completa todos los campos obligatorios');
       return;
     }
 
@@ -1179,7 +1179,7 @@ async function procesarSolicitudEntrega(e) {
   const montoRecoger = pagarAlRecoger === 'SI' ? document.getElementById('montoRecoger').value : 0;
 
   if (!nombreContacto || !ubicacionRecogida || !descripcion) {
-    alert('âš ï¸ Por favor completa todos los campos obligatorios');
+    alert('⚠️ Por favor completa todos los campos obligatorios');
     return;
   }
 
@@ -1187,7 +1187,7 @@ async function procesarSolicitudEntrega(e) {
     if (destinoPaquete === 'OTRA_DIRECCION') {
       ubicacionEntrega = document.getElementById('ubicacionEntregaPaquete').value;
       if (!ubicacionEntrega) {
-        alert('âš ï¸ Debes especificar la ubicaciÃ³n de entrega');
+        alert('⚠️ Debes especificar la ubicación de entrega');
         return;
       }
     }
@@ -1218,7 +1218,7 @@ async function procesarSolicitudEntrega(e) {
     const destinoCompra = document.querySelector('input[name="destinoCompra"]:checked').value;
 
     if (!nombreComercioCompra || !ubicacionComercio || !listaProductos || !presupuesto || !comision) {
-      alert('âš ï¸ Por favor completa todos los campos obligatorios');
+      alert('⚠️ Por favor completa todos los campos obligatorios');
       return;
     }
 
@@ -1226,7 +1226,7 @@ async function procesarSolicitudEntrega(e) {
     if (destinoCompra === 'OTRA_DIRECCION') {
       ubicacionEntrega = document.getElementById('ubicacionEntregaCompra').value;
       if (!ubicacionEntrega) {
-        alert('âš ï¸ Debes especificar la ubicaciÃ³n de entrega');
+        alert('⚠️ Debes especificar la ubicación de entrega');
         return;
       }
     }
@@ -1264,9 +1264,9 @@ async function procesarSolicitudEntrega(e) {
       })
     });
 
-    alert('âœ… Solicitud de entrega registrada exitosamente.\n\nUn delivery serÃ¡ asignado pronto.');
+    alert('✅ Solicitud de entrega registrada exitosamente.\n\nUn delivery será asignado pronto.');
     document.getElementById('solicitarEntregaForm').reset();
-    submitBtn.textContent = 'ðŸš€ Solicitar Servicio';
+    submitBtn.textContent = '🚀 Solicitar Servicio';
     submitBtn.disabled = false;
 
     document.getElementById('seccionTrasladoTiendas').classList.remove('hidden');
@@ -1277,8 +1277,8 @@ async function procesarSolicitudEntrega(e) {
     document.getElementById('tabMisEnvios').click();
   } catch (error) {
     console.error('Error:', error);
-    alert('âš ï¸ Error al registrar solicitud');
-    submitBtn.textContent = 'ðŸš€ Solicitar Servicio';
+    alert('⚠️ Error al registrar solicitud');
+    submitBtn.textContent = '🚀 Solicitar Servicio';
     submitBtn.disabled = false;
   }
 }
@@ -1324,7 +1324,7 @@ window.addEventListener('DOMContentLoaded', () => {
           const gps = `${position.coords.latitude},${position.coords.longitude}`;
           document.getElementById('authUbicacionGPS').value = gps;
         },
-        () => alert('No se pudo obtener ubicaciÃ³n')
+        () => alert('No se pudo obtener ubicación')
       );
     }
   });
@@ -1409,12 +1409,12 @@ window.addEventListener('DOMContentLoaded', () => {
       statusIndicator.classList.remove('hidden');
       
       linkEntregaTimeout = setTimeout(async () => {
-        window.secureLog('ðŸ” Procesando entrada:', input);
+        window.secureLog('🔍 Procesando entrada:', input);
         const resultado = await extraerCoordenadasDeLink(input);
         statusIndicator.classList.add('hidden');
         
         if (resultado.exito) {
-          window.secureLog('âœ… Coordenadas extraÃ­das:', resultado.lat, resultado.lon);
+          window.secureLog('✅ Coordenadas extraídas:', resultado.lat, resultado.lon);
           appData.ubicacionEntrega = `${resultado.lat},${resultado.lon}`;
           
           document.getElementById('ubicacionDetectada').classList.remove('hidden');
@@ -1427,7 +1427,7 @@ window.addEventListener('DOMContentLoaded', () => {
           e.target.classList.add('border-green-500');
           
         } else {
-          window.secureLog('âŒ No se encontraron coordenadas');
+          window.secureLog('❌ No se encontraron coordenadas');
           e.target.classList.remove('border-green-500');
           e.target.classList.add('border-red-500');
           
@@ -1470,7 +1470,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('confirmarUbicacion').addEventListener('click', () => {
     if (!appData.markerInteractive) {
-      alert('âš ï¸ Error: No se ha seleccionado ubicaciÃ³n');
+      alert('⚠️ Error: No se ha seleccionado ubicación');
       return;
     }
 
@@ -1521,7 +1521,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('âš ï¸ Imagen muy grande. MÃ¡ximo 5MB');
+        alert('⚠️ Imagen muy grande. Máximo 5MB');
         e.target.value = '';
         return;
       }
@@ -1563,7 +1563,7 @@ window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     if (appData.ubicacionesFrecuentes.length > 0) {
       configurarAutocomplete('ubicacionOrigenTraslado', async (ubicacion) => {
-        window.secureLog('âœ… Origen traslado seleccionado:', ubicacion.nombre);
+        window.secureLog('✅ Origen traslado seleccionado:', ubicacion.nombre);
         const destino = document.getElementById('ubicacionDestinoTraslado').value.trim();
         if (destino) {
           await calcularTarifaEntrega(ubicacion.ubicacion, destino);
@@ -1571,7 +1571,7 @@ window.addEventListener('DOMContentLoaded', () => {
       });
       
       configurarAutocomplete('ubicacionDestinoTraslado', async (ubicacion) => {
-        window.secureLog('âœ… Destino traslado seleccionado:', ubicacion.nombre);
+        window.secureLog('✅ Destino traslado seleccionado:', ubicacion.nombre);
         const origen = document.getElementById('ubicacionOrigenTraslado').value.trim();
         if (origen) {
           await calcularTarifaEntrega(origen, ubicacion.ubicacion);
@@ -1579,7 +1579,7 @@ window.addEventListener('DOMContentLoaded', () => {
       });
       
       configurarAutocomplete('ubicacionRecogidaPaquete', async (ubicacion) => {
-        window.secureLog('âœ… UbicaciÃ³n recogida seleccionada:', ubicacion.nombre);
+        window.secureLog('✅ Ubicación recogida seleccionada:', ubicacion.nombre);
         const destinoPaquete = document.querySelector('input[name="destinoPaquete"]:checked').value;
         let ubicacionEntrega = appData.comercio.ubicacionGPS;
         if (destinoPaquete === 'OTRA_DIRECCION') {
@@ -1591,7 +1591,7 @@ window.addEventListener('DOMContentLoaded', () => {
       });
       
       configurarAutocomplete('ubicacionEntregaPaquete', async (ubicacion) => {
-        window.secureLog('âœ… UbicaciÃ³n entrega paquete seleccionada:', ubicacion.nombre);
+        window.secureLog('✅ Ubicación entrega paquete seleccionada:', ubicacion.nombre);
         const origen = document.getElementById('ubicacionRecogidaPaquete').value.trim();
         if (origen) {
           await calcularTarifaEntrega(origen, ubicacion.ubicacion);
@@ -1599,7 +1599,7 @@ window.addEventListener('DOMContentLoaded', () => {
       });
       
       configurarAutocomplete('ubicacionComercioCompra', async (ubicacion) => {
-        window.secureLog('âœ… Comercio compra seleccionado:', ubicacion.nombre);
+        window.secureLog('✅ Comercio compra seleccionado:', ubicacion.nombre);
         const destinoCompra = document.querySelector('input[name="destinoCompra"]:checked').value;
         let ubicacionEntrega = appData.comercio.ubicacionGPS;
         if (destinoCompra === 'OTRA_DIRECCION') {
@@ -1611,7 +1611,7 @@ window.addEventListener('DOMContentLoaded', () => {
       });
       
       configurarAutocomplete('ubicacionEntregaCompra', async (ubicacion) => {
-        window.secureLog('âœ… UbicaciÃ³n entrega compra seleccionada:', ubicacion.nombre);
+        window.secureLog('✅ Ubicación entrega compra seleccionada:', ubicacion.nombre);
         const origen = document.getElementById('ubicacionComercioCompra').value.trim();
         if (origen) {
           await calcularTarifaEntrega(origen, ubicacion.ubicacion);
@@ -1686,37 +1686,37 @@ window.addEventListener('DOMContentLoaded', () => {
 // ANTES del cierre de DOMContentLoaded
 // =============================================
 
-// CORRECCIÃ“N 1: Reemplazar la funciÃ³n cargarUbicacionesFrecuentes
+// CORRECCIÓN 1: Reemplazar la función cargarUbicacionesFrecuentes
 async function cargarUbicacionesFrecuentesCorregida() {
   try {
-    console.log('ðŸ“ Cargando ubicaciones frecuentes...');
+    console.log('📍 Cargando ubicaciones frecuentes...');
     
     const response = await fetch(`${SCRIPT_URL}?action=obtenerUbicacionesFrecuentes`);
     const result = await response.json();
     
     if (result.success) {
       appData.ubicacionesFrecuentes = result.ubicaciones;
-      window.ubicacionesFrecuentes = result.ubicaciones; // Exponer globalmente para depuraciÃ³n
-      console.log(`âœ… ${result.ubicaciones.length} ubicaciones cargadas`);
+      window.ubicacionesFrecuentes = result.ubicaciones; // Exponer globalmente para depuración
+      console.log(`✅ ${result.ubicaciones.length} ubicaciones cargadas`);
       
       // Configurar autocompletado inmediatamente
       configurarTodosLosAutocompletados();
     } else {
-      console.log('âš ï¸ Error cargando ubicaciones:', result.error);
+      console.log('⚠️ Error cargando ubicaciones:', result.error);
     }
   } catch (error) {
-    console.error('âŒ Error cargando ubicaciones:', error);
+    console.error('❌ Error cargando ubicaciones:', error);
   }
 }
 
-// CORRECCIÃ“N 2: Nueva funciÃ³n para configurar todos los autocompletados
+// CORRECCIÓN 2: Nueva función para configurar todos los autocompletados
 function configurarTodosLosAutocompletados() {
   if (!appData.ubicacionesFrecuentes || appData.ubicacionesFrecuentes.length === 0) {
-    console.log('âš ï¸ No hay ubicaciones para configurar autocompletado');
+    console.log('⚠️ No hay ubicaciones para configurar autocompletado');
     return;
   }
   
-  console.log('ðŸ”§ Configurando autocompletados con', appData.ubicacionesFrecuentes.length, 'ubicaciones...');
+  console.log('🔧 Configurando autocompletados con', appData.ubicacionesFrecuentes.length, 'ubicaciones...');
   
   // Verificar que los inputs existan antes de configurar
   const inputsConfig = [
@@ -1789,19 +1789,19 @@ function configurarTodosLosAutocompletados() {
       
       configurarAutocomplete(config.id, callback);
       configurados++;
-      console.log(`âœ… Autocompletado configurado para: ${config.id}`);
+      console.log(`✅ Autocompletado configurado para: ${config.id}`);
     } else {
-      console.log(`âš ï¸ Input no encontrado: ${config.id}`);
+      console.log(`⚠️ Input no encontrado: ${config.id}`);
     }
   });
   
-  console.log(`âœ… Total autocompletados configurados: ${configurados}/${inputsConfig.length}`);
+  console.log(`✅ Total autocompletados configurados: ${configurados}/${inputsConfig.length}`);
 }
 
-// CORRECCIÃ“N 3: Reemplazar cargarMisEnvios para agregar logs de depuraciÃ³n
+// CORRECCIÓN 3: Reemplazar cargarMisEnvios para agregar logs de depuración
 async function cargarMisEnviosCorregida() {
   try {
-    console.log('ðŸ“¦ === CARGANDO MIS ENVÃOS ===');
+    console.log('📦 === CARGANDO MIS ENVÍOS ===');
     console.log('Comercio ID:', appData.comercio?.id);
     console.log('URL:', `${SCRIPT_URL}?action=obtenerEnviosComercio&idComercio=${appData.comercio.id}`);
     
@@ -1814,14 +1814,14 @@ async function cargarMisEnviosCorregida() {
 
     if (result.success) {
       appData.envios = result.envios || [];
-      console.log(`âœ… ${appData.envios.length} envÃ­os cargados`);
+      console.log(`✅ ${appData.envios.length} envíos cargados`);
       renderizarEnvios();
     } else {
-      console.error('âŒ Error del servidor:', result.error);
+      console.error('❌ Error del servidor:', result.error);
       const container = document.getElementById('listaEnvios');
       container.innerHTML = `
         <div class="text-center py-12">
-          <div class="text-red-500 font-bold mb-2">Error al cargar envÃ­os</div>
+          <div class="text-red-500 font-bold mb-2">Error al cargar envíos</div>
           <div class="text-sm text-gray-600">${result.error || 'Error desconocido'}</div>
           <button onclick="cargarMisEnviosCorregida()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
             Reintentar
@@ -1830,11 +1830,11 @@ async function cargarMisEnviosCorregida() {
       `;
     }
   } catch (error) {
-    console.error('âŒ Error cargando envÃ­os:', error);
+    console.error('❌ Error cargando envíos:', error);
     const container = document.getElementById('listaEnvios');
     container.innerHTML = `
       <div class="text-center py-12">
-        <div class="text-red-500 font-bold mb-2">Error de conexiÃ³n</div>
+        <div class="text-red-500 font-bold mb-2">Error de conexión</div>
         <div class="text-sm text-gray-600">${error.message}</div>
         <button onclick="cargarMisEnviosCorregida()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
           Reintentar
@@ -1844,13 +1844,13 @@ async function cargarMisEnviosCorregida() {
   }
 }
 
-// CORRECCIÃ“N 4: Exponer funciones corregidas globalmente
+// CORRECCIÓN 4: Exponer funciones corregidas globalmente
 window.cargarMisEnviosCorregida = cargarMisEnviosCorregida;
 window.cargarUbicacionesFrecuentesCorregida = cargarUbicacionesFrecuentesCorregida;
 window.configurarTodosLosAutocompletados = configurarTodosLosAutocompletados;
 
-console.log('âœ… Parche de correcciones cargado');
-console.log('ðŸ“ Para usar las funciones corregidas:');
+console.log('✅ Parche de correcciones cargado');
+console.log('📝 Para usar las funciones corregidas:');
 console.log('   - cargarUbicacionesFrecuentesCorregida()');
 console.log('   - cargarMisEnviosCorregida()');
 console.log('   - configurarTodosLosAutocompletados()');
@@ -1861,11 +1861,11 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./service-worker.js')
       .then((registration) => {
-        window.secureLog('âœ… Service Worker registrado');
+        window.secureLog('✅ Service Worker registrado');
         setInterval(() => registration.update(), 5 * 60 * 1000);
       })
       .catch((error) => {
-        window.secureLog('âŒ Error al registrar Service Worker:', error);
+        window.secureLog('❌ Error al registrar Service Worker:', error);
       });
 
 
@@ -1875,36 +1875,36 @@ if ('serviceWorker' in navigator) {
 
 window.debugAutocompletado = {
   ubicaciones: () => {
-    console.log('ðŸ“ Ubicaciones cargadas:', appData.ubicacionesFrecuentes?.length || 0);
+    console.log('📍 Ubicaciones cargadas:', appData.ubicacionesFrecuentes?.length || 0);
     console.table(appData.ubicacionesFrecuentes);
     return appData.ubicacionesFrecuentes;
   },
   recargar: () => {
-    console.log('ðŸ”„ Recargando ubicaciones...');
+    console.log('🔄 Recargando ubicaciones...');
     cargarUbicacionesFrecuentes();
   },
   configurar: () => {
-    console.log('ðŸ”§ Reconfigurando autocompletados...');
+    console.log('🔧 Reconfigurando autocompletados...');
     configurarAutocompletadosFormularioEntrega();
   },
   test: (inputId) => {
     const input = document.getElementById(inputId);
     if (input) {
-      console.log('âœ… Input encontrado:', inputId);
+      console.log('✅ Input encontrado:', inputId);
       console.log('Parent:', input.parentElement);
       console.log('Autocomplete container:', input.parentElement.querySelector('.autocomplete-container'));
     } else {
-      console.log('âŒ Input NO encontrado:', inputId);
+      console.log('❌ Input NO encontrado:', inputId);
     }
   }
 };
 
-console.log('âœ… CorrecciÃ³n de autocompletado cargada');
-console.log('ðŸ” Para debug, usa: window.debugAutocompletado');
-console.log('   - window.debugAutocompletado.ubicaciones() â†’ Ver ubicaciones cargadas');
-console.log('   - window.debugAutocompletado.recargar() â†’ Recargar ubicaciones');
-console.log('   - window.debugAutocompletado.configurar() â†’ Reconfigurar autocompletados');
-console.log('   - window.debugAutocompletado.test("inputId") â†’ Verificar un input');
+console.log('✅ Corrección de autocompletado cargada');
+console.log('🔍 Para debug, usa: window.debugAutocompletado');
+console.log('   - window.debugAutocompletado.ubicaciones() → Ver ubicaciones cargadas');
+console.log('   - window.debugAutocompletado.recargar() → Recargar ubicaciones');
+console.log('   - window.debugAutocompletado.configurar() → Reconfigurar autocompletados');
+console.log('   - window.debugAutocompletado.test("inputId") → Verificar un input');
 
 // =============================================
 // PARCHE PARA CORREGIR PROBLEMAS
@@ -1912,37 +1912,37 @@ console.log('   - window.debugAutocompletado.test("inputId") â†’ Verificar 
 // ANTES del cierre de DOMContentLoaded
 // =============================================
 
-// CORRECCIÃ“N 1: Reemplazar la funciÃ³n cargarUbicacionesFrecuentes
+// CORRECCIÓN 1: Reemplazar la función cargarUbicacionesFrecuentes
 async function cargarUbicacionesFrecuentesCorregida() {
   try {
-    console.log('ðŸ“ Cargando ubicaciones frecuentes...');
+    console.log('📍 Cargando ubicaciones frecuentes...');
     
     const response = await fetch(`${SCRIPT_URL}?action=obtenerUbicacionesFrecuentes`);
     const result = await response.json();
     
     if (result.success) {
       appData.ubicacionesFrecuentes = result.ubicaciones;
-      window.ubicacionesFrecuentes = result.ubicaciones; // Exponer globalmente para depuraciÃ³n
-      console.log(`âœ… ${result.ubicaciones.length} ubicaciones cargadas`);
+      window.ubicacionesFrecuentes = result.ubicaciones; // Exponer globalmente para depuración
+      console.log(`✅ ${result.ubicaciones.length} ubicaciones cargadas`);
       
       // Configurar autocompletado inmediatamente
       configurarTodosLosAutocompletados();
     } else {
-      console.log('âš ï¸ Error cargando ubicaciones:', result.error);
+      console.log('⚠️ Error cargando ubicaciones:', result.error);
     }
   } catch (error) {
-    console.error('âŒ Error cargando ubicaciones:', error);
+    console.error('❌ Error cargando ubicaciones:', error);
   }
 }
 
-// CORRECCIÃ“N 2: Nueva funciÃ³n para configurar todos los autocompletados
+// CORRECCIÓN 2: Nueva función para configurar todos los autocompletados
 function configurarTodosLosAutocompletados() {
   if (!appData.ubicacionesFrecuentes || appData.ubicacionesFrecuentes.length === 0) {
-    console.log('âš ï¸ No hay ubicaciones para configurar autocompletado');
+    console.log('⚠️ No hay ubicaciones para configurar autocompletado');
     return;
   }
   
-  console.log('ðŸ”§ Configurando autocompletados con', appData.ubicacionesFrecuentes.length, 'ubicaciones...');
+  console.log('🔧 Configurando autocompletados con', appData.ubicacionesFrecuentes.length, 'ubicaciones...');
   
   // Verificar que los inputs existan antes de configurar
   const inputsConfig = [
@@ -2015,19 +2015,19 @@ function configurarTodosLosAutocompletados() {
       
       configurarAutocomplete(config.id, callback);
       configurados++;
-      console.log(`âœ… Autocompletado configurado para: ${config.id}`);
+      console.log(`✅ Autocompletado configurado para: ${config.id}`);
     } else {
-      console.log(`âš ï¸ Input no encontrado: ${config.id}`);
+      console.log(`⚠️ Input no encontrado: ${config.id}`);
     }
   });
   
-  console.log(`âœ… Total autocompletados configurados: ${configurados}/${inputsConfig.length}`);
+  console.log(`✅ Total autocompletados configurados: ${configurados}/${inputsConfig.length}`);
 }
 
-// CORRECCIÃ“N 3: Reemplazar cargarMisEnvios para agregar logs de depuraciÃ³n
+// CORRECCIÓN 3: Reemplazar cargarMisEnvios para agregar logs de depuración
 async function cargarMisEnviosCorregida() {
   try {
-    console.log('ðŸ“¦ === CARGANDO MIS ENVÃOS ===');
+    console.log('📦 === CARGANDO MIS ENVÍOS ===');
     console.log('Comercio ID:', appData.comercio?.id);
     console.log('URL:', `${SCRIPT_URL}?action=obtenerEnviosComercio&idComercio=${appData.comercio.id}`);
     
@@ -2040,14 +2040,14 @@ async function cargarMisEnviosCorregida() {
 
     if (result.success) {
       appData.envios = result.envios || [];
-      console.log(`âœ… ${appData.envios.length} envÃ­os cargados`);
+      console.log(`✅ ${appData.envios.length} envíos cargados`);
       renderizarEnvios();
     } else {
-      console.error('âŒ Error del servidor:', result.error);
+      console.error('❌ Error del servidor:', result.error);
       const container = document.getElementById('listaEnvios');
       container.innerHTML = `
         <div class="text-center py-12">
-          <div class="text-red-500 font-bold mb-2">Error al cargar envÃ­os</div>
+          <div class="text-red-500 font-bold mb-2">Error al cargar envíos</div>
           <div class="text-sm text-gray-600">${result.error || 'Error desconocido'}</div>
           <button onclick="cargarMisEnviosCorregida()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
             Reintentar
@@ -2056,11 +2056,11 @@ async function cargarMisEnviosCorregida() {
       `;
     }
   } catch (error) {
-    console.error('âŒ Error cargando envÃ­os:', error);
+    console.error('❌ Error cargando envíos:', error);
     const container = document.getElementById('listaEnvios');
     container.innerHTML = `
       <div class="text-center py-12">
-        <div class="text-red-500 font-bold mb-2">Error de conexiÃ³n</div>
+        <div class="text-red-500 font-bold mb-2">Error de conexión</div>
         <div class="text-sm text-gray-600">${error.message}</div>
         <button onclick="cargarMisEnviosCorregida()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
           Reintentar
@@ -2070,13 +2070,13 @@ async function cargarMisEnviosCorregida() {
   }
 }
 
-// CORRECCIÃ“N 4: Exponer funciones corregidas globalmente
+// CORRECCIÓN 4: Exponer funciones corregidas globalmente
 window.cargarMisEnviosCorregida = cargarMisEnviosCorregida;
 window.cargarUbicacionesFrecuentesCorregida = cargarUbicacionesFrecuentesCorregida;
 window.configurarTodosLosAutocompletados = configurarTodosLosAutocompletados;
 
-console.log('âœ… Parche de correcciones cargado');
-console.log('ðŸ“ Para usar las funciones corregidas:');
+console.log('✅ Parche de correcciones cargado');
+console.log('📝 Para usar las funciones corregidas:');
 console.log('   - cargarUbicacionesFrecuentesCorregida()');
 console.log('   - cargarMisEnviosCorregida()');
 console.log('   - configurarTodosLosAutocompletados()');
