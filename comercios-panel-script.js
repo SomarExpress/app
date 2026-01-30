@@ -1685,74 +1685,6 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('filtroEstado').addEventListener('change', renderizarEnvios);
   document.getElementById('refrescarEnvios').addEventListener('click', cargarMisEnvios);
 
-
-
-  // === NAVBAR FLOTANTE ===
-  document.getElementById('navNuevoEnvio')?.addEventListener('click', () => {
-    document.getElementById('tabNuevoEnvio')?.click();
-    
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.getElementById('navNuevoEnvio').classList.add('active');
-  });
-  
-  document.getElementById('navSolicitarEntrega')?.addEventListener('click', () => {
-    document.getElementById('tabSolicitarEntrega')?.click();
-    
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.getElementById('navSolicitarEntrega').classList.add('active');
-  });
-  
-  document.getElementById('navMisEnvios')?.addEventListener('click', () => {
-    document.getElementById('tabMisEnvios')?.click();
-    
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.getElementById('navMisEnvios').classList.add('active');
-  });
-  
-  // === MENÚ LATERAL ===
-  document.getElementById('menuBtn')?.addEventListener('click', () => {
-    const menu = document.getElementById('sideMenu');
-    const drawer = document.getElementById('sideMenuDrawer');
-    menu.classList.remove('hidden');
-    document.body.classList.add('menu-open');
-    setTimeout(() => {
-      drawer.style.transform = 'translateX(0)';
-    }, 10);
-  });
-  
-  document.getElementById('navMenu')?.addEventListener('click', () => {
-    const menu = document.getElementById('sideMenu');
-    const drawer = document.getElementById('sideMenuDrawer');
-    menu.classList.remove('hidden');
-    document.body.classList.add('menu-open');
-    setTimeout(() => {
-      drawer.style.transform = 'translateX(0)';
-    }, 10);
-  });
-  
-  document.getElementById('closeSideMenu')?.addEventListener('click', () => {
-    const drawer = document.getElementById('sideMenuDrawer');
-    drawer.style.transform = 'translateX(100%)';
-    setTimeout(() => {
-      document.getElementById('sideMenu').classList.add('hidden');
-      document.body.classList.remove('menu-open');
-    }, 300);
-  });
-  
-  document.getElementById('sideMenu')?.addEventListener('click', (e) => {
-    if (e.target.id === 'sideMenu') {
-      const drawer = document.getElementById('sideMenuDrawer');
-      drawer.style.transform = 'translateX(100%)';
-      setTimeout(() => {
-        document.getElementById('sideMenu').classList.add('hidden');
-        document.body.classList.remove('menu-open');
-      }, 300);
-    }
-  });
-  
-  document.getElementById('menuLogoutBtn')?.addEventListener('click', () => {
-    cerrarSesion();
-  });
   // =============================================
 // PARCHE PARA CORREGIR PROBLEMAS
 // Agregar al FINAL del comercios-panel-script.js
@@ -2154,6 +2086,152 @@ console.log('   - cargarUbicacionesFrecuentesCorregida()');
 console.log('   - cargarMisEnviosCorregida()');
 console.log('   - configurarTodosLosAutocompletados()');
 
+
+// ========================================
+// NAVBAR FLOTANTE Y MENÚ LATERAL
+// ========================================
+
+// Función para cambiar de tab
+function cambiarTab(tabId, navId) {
+  // Ocultar todos los contenidos
+  document.getElementById('contentNuevoEnvio').classList.add('hidden');
+  document.getElementById('contentSolicitarEntrega').classList.add('hidden');
+  document.getElementById('contentMisEnvios').classList.add('hidden');
+  
+  // Mostrar el contenido seleccionado
+  document.getElementById(tabId).classList.remove('hidden');
+  
+  // Actualizar navbar
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  const navItem = document.getElementById(navId);
+  if (navItem) {
+    navItem.classList.add('active');
+  }
+}
+
+// Mostrar navbar y actualizar info cuando hay sesión
+function inicializarNavbar() {
+  if (appData.comercio) {
+    // Mostrar navbar
+    const navbar = document.getElementById('bottomNav');
+    if (navbar) {
+      navbar.classList.remove('hidden');
+    }
+    
+    // Actualizar info del header
+    const telElement = document.getElementById('comercioTelefono');
+    if (telElement) {
+      telElement.textContent = appData.comercio.celular || '';
+    }
+    
+    // Actualizar info del menú lateral
+    const menuNombre = document.getElementById('menuComercioNombre');
+    const menuTel = document.getElementById('menuComercioTelefono');
+    const menuInitial = document.getElementById('menuComercioInitial');
+    
+    if (menuNombre) menuNombre.textContent = appData.comercio.nombre;
+    if (menuTel) menuTel.textContent = appData.comercio.celular || '';
+    if (menuInitial) {
+      const inicial = appData.comercio.nombre ? appData.comercio.nombre.charAt(0).toUpperCase() : 'C';
+      menuInitial.textContent = inicial;
+    }
+  }
+}
+
+// Event Listeners para Navbar
+const navNuevo = document.getElementById('navNuevoEnvio');
+if (navNuevo) {
+  navNuevo.addEventListener('click', () => {
+    cambiarTab('contentNuevoEnvio', 'navNuevoEnvio');
+  });
+}
+
+const navSolicitar = document.getElementById('navSolicitarEntrega');
+if (navSolicitar) {
+  navSolicitar.addEventListener('click', () => {
+    cambiarTab('contentSolicitarEntrega', 'navSolicitarEntrega');
+    configurarAutocompletadosFormularioEntrega();
+  });
+}
+
+const navMisEnvios = document.getElementById('navMisEnvios');
+if (navMisEnvios) {
+  navMisEnvios.addEventListener('click', () => {
+    cambiarTab('contentMisEnvios', 'navMisEnvios');
+    cargarMisEnviosCorregida();
+  });
+}
+
+// Event Listeners para Menú Lateral
+function abrirMenu() {
+  const menu = document.getElementById('sideMenu');
+  const drawer = document.getElementById('sideMenuDrawer');
+  if (menu && drawer) {
+    menu.classList.remove('hidden');
+    document.body.classList.add('menu-open');
+    setTimeout(() => {
+      drawer.style.transform = 'translateX(0)';
+    }, 10);
+  }
+}
+
+function cerrarMenu() {
+  const drawer = document.getElementById('sideMenuDrawer');
+  if (drawer) {
+    drawer.style.transform = 'translateX(-100%)';
+    setTimeout(() => {
+      const menu = document.getElementById('sideMenu');
+      if (menu) {
+        menu.classList.add('hidden');
+      }
+      document.body.classList.remove('menu-open');
+    }, 300);
+  }
+}
+
+const menuBtn = document.getElementById('menuBtn');
+if (menuBtn) {
+  menuBtn.addEventListener('click', abrirMenu);
+}
+
+const navMenu = document.getElementById('navMenu');
+if (navMenu) {
+  navMenu.addEventListener('click', abrirMenu);
+}
+
+const closeMenu = document.getElementById('closeSideMenu');
+if (closeMenu) {
+  closeMenu.addEventListener('click', cerrarMenu);
+}
+
+const sideMenu = document.getElementById('sideMenu');
+if (sideMenu) {
+  sideMenu.addEventListener('click', (e) => {
+    if (e.target.id === 'sideMenu') {
+      cerrarMenu();
+    }
+  });
+}
+
+const menuLogout = document.getElementById('menuLogoutBtn');
+if (menuLogout) {
+  menuLogout.addEventListener('click', () => {
+    cerrarMenu();
+    setTimeout(() => {
+      cerrarSesion();
+    }, 300);
+  });
+}
+
+// Inicializar navbar cuando se verifica sesión
+const verificarSesionOriginal = verificarSesion;
+verificarSesion = function() {
+  const result = verificarSesionOriginal();
+  if (result) {
+    inicializarNavbar();
+  }
+  return result;
+};
 
 
   });
