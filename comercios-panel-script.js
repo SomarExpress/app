@@ -279,6 +279,12 @@ function verificarSesion() {
       document.getElementById('authModal').classList.add('hidden');
       document.getElementById('mainContent').classList.remove('hidden');
       document.getElementById('comercioName').textContent = appData.comercio.nombre;
+      document.getElementById('comercioTelefono').textContent = appData.comercio.celular || '';
+      document.getElementById('bottomNav').classList.remove('hidden');
+      document.getElementById('menuComercioNombre').textContent = appData.comercio.nombre;
+document.getElementById('menuComercioTelefono').textContent = appData.comercio.celular || '';
+const inicial = appData.comercio.nombre ? appData.comercio.nombre.charAt(0).toUpperCase() : 'C';
+document.getElementById('menuComercioInitial').textContent = inicial;
       document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
       appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
       
@@ -1680,6 +1686,73 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('refrescarEnvios').addEventListener('click', cargarMisEnvios);
 
 
+
+  // === NAVBAR FLOTANTE ===
+  document.getElementById('navNuevoEnvio')?.addEventListener('click', () => {
+    document.getElementById('tabNuevoEnvio')?.click();
+    
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.getElementById('navNuevoEnvio').classList.add('active');
+  });
+  
+  document.getElementById('navSolicitarEntrega')?.addEventListener('click', () => {
+    document.getElementById('tabSolicitarEntrega')?.click();
+    
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.getElementById('navSolicitarEntrega').classList.add('active');
+  });
+  
+  document.getElementById('navMisEnvios')?.addEventListener('click', () => {
+    document.getElementById('tabMisEnvios')?.click();
+    
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.getElementById('navMisEnvios').classList.add('active');
+  });
+  
+  // === MENÚ LATERAL ===
+  document.getElementById('menuBtn')?.addEventListener('click', () => {
+    const menu = document.getElementById('sideMenu');
+    const drawer = document.getElementById('sideMenuDrawer');
+    menu.classList.remove('hidden');
+    document.body.classList.add('menu-open');
+    setTimeout(() => {
+      drawer.style.transform = 'translateX(0)';
+    }, 10);
+  });
+  
+  document.getElementById('navMenu')?.addEventListener('click', () => {
+    const menu = document.getElementById('sideMenu');
+    const drawer = document.getElementById('sideMenuDrawer');
+    menu.classList.remove('hidden');
+    document.body.classList.add('menu-open');
+    setTimeout(() => {
+      drawer.style.transform = 'translateX(0)';
+    }, 10);
+  });
+  
+  document.getElementById('closeSideMenu')?.addEventListener('click', () => {
+    const drawer = document.getElementById('sideMenuDrawer');
+    drawer.style.transform = 'translateX(100%)';
+    setTimeout(() => {
+      document.getElementById('sideMenu').classList.add('hidden');
+      document.body.classList.remove('menu-open');
+    }, 300);
+  });
+  
+  document.getElementById('sideMenu')?.addEventListener('click', (e) => {
+    if (e.target.id === 'sideMenu') {
+      const drawer = document.getElementById('sideMenuDrawer');
+      drawer.style.transform = 'translateX(100%)';
+      setTimeout(() => {
+        document.getElementById('sideMenu').classList.add('hidden');
+        document.body.classList.remove('menu-open');
+      }, 300);
+    }
+  });
+  
+  document.getElementById('menuLogoutBtn')?.addEventListener('click', () => {
+    cerrarSesion();
+  });
   // =============================================
 // PARCHE PARA CORREGIR PROBLEMAS
 // Agregar al FINAL del comercios-panel-script.js
@@ -2080,6 +2153,8 @@ console.log('📝 Para usar las funciones corregidas:');
 console.log('   - cargarUbicacionesFrecuentesCorregida()');
 console.log('   - cargarMisEnviosCorregida()');
 console.log('   - configurarTodosLosAutocompletados()');
+
+
 
   });
 }
