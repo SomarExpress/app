@@ -1432,20 +1432,26 @@ document.getElementById('menuLogoutBtn').addEventListener('click', () => {
   });
 
   document.getElementById('tabSolicitarEntrega').addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.classList.remove('border-brand-orange', 'brand-orange');
-      btn.classList.add('border-transparent', 'text-gray-500');
-    });
-    document.getElementById('tabSolicitarEntrega').classList.add('border-brand-orange', 'brand-orange');
-    document.getElementById('tabSolicitarEntrega').classList.remove('border-transparent', 'text-gray-500');
-    
-    document.getElementById('contentNuevoEnvio').classList.add('hidden');
-    document.getElementById('contentSolicitarEntrega').classList.remove('hidden');
-    document.getElementById('contentMisEnvios').classList.add('hidden');
-      // CONFIGURAR AUTOCOMPLETADOS AL ABRIR EL TAB
-  configurarAutocompletadosFormularioEntrega();
-  configurarEventListenerFotos();
+  // Cambiar estilos de tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('border-brand-orange', 'brand-orange');
+    btn.classList.add('border-transparent', 'text-gray-500');
   });
+  
+  document.getElementById('tabSolicitarEntrega').classList.add('border-brand-orange', 'brand-orange');
+  document.getElementById('tabSolicitarEntrega').classList.remove('border-transparent', 'text-gray-500');
+  
+  // Mostrar/ocultar contenido
+  document.getElementById('contentNuevoEnvio').classList.add('hidden');
+  document.getElementById('contentSolicitarEntrega').classList.remove('hidden');
+  document.getElementById('contentMisEnvios').classList.add('hidden');
+  
+  // Configurar autocompletados
+  configurarAutocompletadosFormularioEntrega();
+  
+  // Configurar event listener de fotos
+  configurarEventListenerFotos();
+});
 
   document.getElementById('tabMisEnvios').addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(btn => {
