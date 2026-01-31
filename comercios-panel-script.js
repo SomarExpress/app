@@ -905,7 +905,7 @@ function renderizarEnvios() {
       <div class="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition">
         <div class="flex justify-between items-start mb-3">
           <div>
-            <p class="font-bold text-lg">${icono} ${tipoLabel} #${id}</p>
+            <p class="font-bold text-lg">${id}</p>
             <p class="text-sm text-gray-600">${new Date(fecha).toLocaleString('es-HN')}</p>
           </div>
           <span class="status-badge status-${estado}">${estado.replace(/_/g, ' ')}</span>
