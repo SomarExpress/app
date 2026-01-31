@@ -1128,10 +1128,6 @@ async function procesarEnvio(e) {
   }
 }
 
-// ============================================
-// SOLICITAR ENTREGA
-// ============================================
-
 async function procesarSolicitudEntrega(e) {
   e.preventDefault();
 
@@ -1177,18 +1173,18 @@ async function procesarSolicitudEntrega(e) {
     };
 
   } else if (tipoServicioEntrega === 'RECOGER_PAQUETE') {
-  const nombreContacto = document.getElementById('nombreContacto').value;
-  const telefonoContacto = document.getElementById('telefonoContacto').value;
-  const ubicacionRecogida = document.getElementById('ubicacionRecogidaPaquete').value;
-  const destinoPaquete = document.querySelector('input[name="destinoPaquete"]:checked').value;
-  const descripcion = document.getElementById('descripcionPaquete2').value;
-  const pagarAlRecoger = document.querySelector('input[name="pagarAlRecoger"]:checked').value;
-  const montoRecoger = pagarAlRecoger === 'SI' ? document.getElementById('montoRecoger').value : 0;
+    const nombreContacto = document.getElementById('nombreContacto').value;
+    const telefonoContacto = document.getElementById('telefonoContacto').value;
+    const ubicacionRecogida = document.getElementById('ubicacionRecogidaPaquete').value;
+    const destinoPaquete = document.querySelector('input[name="destinoPaquete"]:checked').value;
+    const descripcion = document.getElementById('descripcionPaquete2').value;
+    const pagarAlRecoger = document.querySelector('input[name="pagarAlRecoger"]:checked').value;
+    const montoRecoger = pagarAlRecoger === 'SI' ? document.getElementById('montoRecoger').value : 0;
 
-  if (!nombreContacto || !ubicacionRecogida || !descripcion) {
-    alert('⚠️ Por favor completa todos los campos obligatorios');
-    return;
-  }
+    if (!nombreContacto || !ubicacionRecogida || !descripcion) {
+      alert('⚠️ Por favor completa todos los campos obligatorios');
+      return;
+    }
 
     let ubicacionEntrega = appData.comercio.ubicacionGPS;
     if (destinoPaquete === 'OTRA_DIRECCION') {
@@ -1257,8 +1253,42 @@ async function procesarSolicitudEntrega(e) {
   }
 
   const submitBtn = document.querySelector('#solicitarEntregaForm button[type="submit"]');
+  const originalText = submitBtn.textContent;
   submitBtn.textContent = 'Procesando...';
   submitBtn.disabled = true;
+
+  // ========================================
+  // SUBIR FOTOS A CLOUDINARY
+  // ========================================
+  let fotosUrls = [];
+  if (fotosReferencia.length > 0) {
+    console.log(`📸 Subiendo ${fotosReferencia.length} fotos...`);
+    
+    for (let i = 0; i < fotosReferencia.length; i++) {
+      submitBtn.textContent = `Subiendo fotos (${i + 1}/${fotosReferencia.length})...`;
+      
+      try {
+        const resultado = await subirFotoCloudinary(fotosReferencia[i].file);
+        
+        if (resultado.success) {
+          fotosUrls.push(resultado.url);
+          console.log(`✅ Foto ${i + 1} subida: ${resultado.url}`);
+        } else {
+          console.error(`❌ Error subiendo foto ${i + 1}:`, resultado.error);
+        }
+      } catch (error) {
+        console.error(`❌ Error subiendo foto ${i + 1}:`, error);
+      }
+    }
+    
+    console.log(`✅ Total: ${fotosUrls.length}/${fotosReferencia.length} fotos subidas correctamente`);
+  }
+
+  // Agregar fotos a los datos
+  datos.fotosReferencia = fotosUrls.join('||'); // URLs separadas por ||
+  datos.cantidadFotos = fotosUrls.length;
+
+  submitBtn.textContent = 'Registrando solicitud...';
 
   try {
     await fetch(SCRIPT_URL, {
@@ -1271,9 +1301,12 @@ async function procesarSolicitudEntrega(e) {
       })
     });
 
-    alert('✅ Solicitud de entrega registrada exitosamente.\n\nUn delivery será asignado pronto.');
+    alert(`✅ Solicitud de entrega registrada exitosamente${fotosUrls.length > 0 ? ` con ${fotosUrls.length} foto(s)` : ''}.\n\nUn delivery será asignado pronto.`);
+    
     document.getElementById('solicitarEntregaForm').reset();
-    submitBtn.textContent = '🚀 Solicitar Servicio';
+    limpiarFotosReferencia(); // Limpiar fotos
+    
+    submitBtn.textContent = originalText;
     submitBtn.disabled = false;
 
     document.getElementById('seccionTrasladoTiendas').classList.remove('hidden');
@@ -1285,7 +1318,7 @@ async function procesarSolicitudEntrega(e) {
   } catch (error) {
     console.error('Error:', error);
     alert('⚠️ Error al registrar solicitud');
-    submitBtn.textContent = '🚀 Solicitar Servicio';
+    submitBtn.textContent = originalText;
     submitBtn.disabled = false;
   }
 }
@@ -1727,6 +1760,139 @@ document.getElementById('menuLogoutBtn').addEventListener('click', () => {
       }
     });
   });
+
+
+  // ========================================
+// MÚLTIPLES FOTOS DE REFERENCIA
+// ========================================
+
+let fotosReferencia = [];
+const MAX_FOTOS = 10;
+const MAX_SIZE_MB = 5;
+
+document.getElementById('fotosReferencia')?.addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files);
+  const errorDiv = document.getElementById('fotosError');
+  
+  // Limpiar errores previos
+  errorDiv.classList.add('hidden');
+  errorDiv.textContent = '';
+  
+  // Validar cantidad total
+  if (fotosReferencia.length + files.length > MAX_FOTOS) {
+    errorDiv.textContent = `⚠️ Solo puedes agregar ${MAX_FOTOS} fotos en total. Ya tienes ${fotosReferencia.length} fotos.`;
+    errorDiv.classList.remove('hidden');
+    e.target.value = '';
+    return;
+  }
+  
+  // Validar y procesar cada archivo
+  const nuevasFotos = [];
+  for (const file of files) {
+    // Validar tamaño
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      errorDiv.textContent = `⚠️ La imagen "${file.name}" es muy grande. Máximo ${MAX_SIZE_MB}MB por foto.`;
+      errorDiv.classList.remove('hidden');
+      continue;
+    }
+    
+    // Validar tipo
+    if (!file.type.startsWith('image/')) {
+      errorDiv.textContent = `⚠️ El archivo "${file.name}" no es una imagen válida.`;
+      errorDiv.classList.remove('hidden');
+      continue;
+    }
+    
+    // Leer como base64 para preview
+    const reader = new FileReader();
+    const base64Promise = new Promise((resolve) => {
+      reader.onload = (event) => resolve(event.target.result);
+      reader.readAsDataURL(file);
+    });
+    
+    const base64 = await base64Promise;
+    
+    nuevasFotos.push({
+      file: file,
+      base64: base64,
+      nombre: file.name
+    });
+  }
+  
+  // Agregar nuevas fotos al array
+  fotosReferencia.push(...nuevasFotos);
+  
+  // Actualizar UI
+  actualizarPreviewFotos();
+  
+  // Limpiar input para permitir agregar más fotos
+  e.target.value = '';
+});
+
+function actualizarPreviewFotos() {
+  const container = document.getElementById('fotosPreviewContainer');
+  const grid = document.getElementById('fotosPreviewGrid');
+  const counter = document.getElementById('fotoCounter');
+  const counterNumber = document.getElementById('fotoCountNumber');
+  
+  if (fotosReferencia.length === 0) {
+    container.classList.add('hidden');
+    counter.classList.add('hidden');
+    return;
+  }
+  
+  // Mostrar contador
+  counter.classList.remove('hidden');
+  counterNumber.textContent = fotosReferencia.length;
+  
+  // Mostrar container
+  container.classList.remove('hidden');
+  
+  // Generar previews
+  grid.innerHTML = fotosReferencia.map((foto, index) => `
+    <div class="relative group">
+      <img src="${foto.base64}" alt="Foto ${index + 1}" class="w-full h-32 object-cover rounded-lg border-2 border-gray-200">
+      <button type="button" class="remove-foto absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-600 transition shadow-lg" data-index="${index}">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+      <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-1 rounded-b-lg truncate">
+        ${foto.nombre}
+      </div>
+    </div>
+  `).join('');
+  
+  // Event listeners para eliminar fotos
+  document.querySelectorAll('.remove-foto').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = parseInt(e.currentTarget.dataset.index);
+      eliminarFoto(index);
+    });
+  });
+}
+
+function eliminarFoto(index) {
+  fotosReferencia.splice(index, 1);
+  actualizarPreviewFotos();
+  
+  // Limpiar error si existía
+  document.getElementById('fotosError').classList.add('hidden');
+}
+
+function limpiarFotosReferencia() {
+  fotosReferencia = [];
+  actualizarPreviewFotos();
+  const inputFotos = document.getElementById('fotosReferencia');
+  if (inputFotos) {
+    inputFotos.value = '';
+  }
+  const errorDiv = document.getElementById('fotosError');
+  if (errorDiv) {
+    errorDiv.classList.add('hidden');
+  }
+}
+
 
   document.getElementById('solicitarEntregaForm').addEventListener('submit', procesarSolicitudEntrega);
 

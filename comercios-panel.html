@@ -721,6 +721,48 @@
           </div>
         </div>
 
+
+        <!-- SECCIÓN DE FOTOS -->
+<div class="border-t pt-6">
+  <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+    📸 Fotos de Referencia
+    <span class="text-sm font-normal text-gray-500">(Opcional - Máximo 10)</span>
+  </h3>
+  
+  <!-- Botón para agregar fotos -->
+  <div class="mb-4">
+    <label class="cursor-pointer">
+      <input type="file" id="fotosReferencia" accept="image/*" multiple class="hidden">
+      <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-brand-orange transition">
+        <div class="text-5xl mb-2">📷</div>
+        <p class="text-sm text-gray-600 font-semibold">Click para agregar fotos</p>
+        <p class="text-xs text-gray-500 mt-1">JPG, PNG (máx. 5MB c/u)</p>
+        <p class="text-xs text-gray-400 mt-1">Puedes seleccionar hasta 10 fotos</p>
+      </div>
+    </label>
+  </div>
+  
+  <!-- Contador de fotos -->
+  <div id="fotoCounter" class="hidden mb-2 flex items-center gap-2">
+    <span class="text-sm font-semibold text-gray-700">Fotos seleccionadas:</span>
+    <span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-bold text-sm">
+      <span id="fotoCountNumber">0</span>/10
+    </span>
+  </div>
+  
+  <!-- Preview de fotos -->
+  <div id="fotosPreviewContainer" class="hidden">
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="fotosPreviewGrid"></div>
+  </div>
+  
+  <!-- Mensaje de error -->
+  <div id="fotosError" class="hidden mt-2 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700"></div>
+</div>
+
+  
+
+
+
         <!-- SECCIONES COMUNES -->
         <div class="border-t pt-6">
           <h3 class="font-bold text-lg mb-4">💳 Información de Pago</h3>
