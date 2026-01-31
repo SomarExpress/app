@@ -1255,7 +1255,30 @@ async function procesarSolicitudEntrega(e) {
   const submitBtn = document.querySelector('#solicitarEntregaForm button[type="submit"]');
   const originalText = submitBtn.textContent;
   submitBtn.textContent = 'Procesando...';
-  submitBtn.disabled = true;
+submitBtn.disabled = true;
+
+// SUBIR FOTOS A CLOUDINARY
+let fotosUrls = [];
+if (fotosReferencia.length > 0) {
+  for (let i = 0; i < fotosReferencia.length; i++) {
+    submitBtn.textContent = 'Subiendo fotos (' + (i + 1) + '/' + fotosReferencia.length + ')...';
+    try {
+      const resultado = await subirFotoCloudinary(fotosReferencia[i].file);
+      if (resultado.success) {
+        fotosUrls.push(resultado.url);
+      }
+    } catch (error) {
+      console.error('Error subiendo foto:', error);
+    }
+  }
+}
+
+datos.fotosReferencia = fotosUrls.join('||');
+datos.cantidadFotos = fotosUrls.length;
+
+submitBtn.textContent = 'Registrando solicitud...';
+
+try {
 
   // ========================================
   // SUBIR FOTOS A CLOUDINARY
@@ -1432,24 +1455,21 @@ document.getElementById('menuLogoutBtn').addEventListener('click', () => {
   });
 
   document.getElementById('tabSolicitarEntrega').addEventListener('click', () => {
-  // Cambiar estilos de tabs
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.remove('border-brand-orange', 'brand-orange');
     btn.classList.add('border-transparent', 'text-gray-500');
   });
-  
   document.getElementById('tabSolicitarEntrega').classList.add('border-brand-orange', 'brand-orange');
   document.getElementById('tabSolicitarEntrega').classList.remove('border-transparent', 'text-gray-500');
   
-  // Mostrar/ocultar contenido
   document.getElementById('contentNuevoEnvio').classList.add('hidden');
   document.getElementById('contentSolicitarEntrega').classList.remove('hidden');
   document.getElementById('contentMisEnvios').classList.add('hidden');
   
-  // Configurar autocompletados
+  // CONFIGURAR AUTOCOMPLETADOS AL ABRIR EL TAB
   configurarAutocompletadosFormularioEntrega();
   
-  // Configurar event listener de fotos
+  // CONFIGURAR EVENT LISTENER DE FOTOS
   configurarEventListenerFotos();
 });
 
@@ -1949,6 +1969,114 @@ function limpiarFotosReferencia() {
   if (errorDiv) {
     errorDiv.classList.add('hidden');
   }
+}
+
+
+// MULTIPLES FOTOS DE REFERENCIA
+let fotosReferencia = [];
+const MAX_FOTOS = 10;
+const MAX_SIZE_MB = 5;
+
+function configurarEventListenerFotos() {
+  const inputFotos = document.getElementById('fotosReferencia');
+  if (!inputFotos) return;
+  
+  inputFotos.removeEventListener('change', manejarSeleccionFotos);
+  inputFotos.addEventListener('change', manejarSeleccionFotos);
+}
+
+async function manejarSeleccionFotos(e) {
+  const files = Array.from(e.target.files);
+  const errorDiv = document.getElementById('fotosError');
+  
+  errorDiv.classList.add('hidden');
+  errorDiv.textContent = '';
+  
+  if (fotosReferencia.length + files.length > MAX_FOTOS) {
+    errorDiv.textContent = 'Solo puedes agregar ' + MAX_FOTOS + ' fotos en total.';
+    errorDiv.classList.remove('hidden');
+    e.target.value = '';
+    return;
+  }
+  
+  const nuevasFotos = [];
+  for (const file of files) {
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      errorDiv.textContent = 'La imagen es muy grande. Maximo 5MB.';
+      errorDiv.classList.remove('hidden');
+      continue;
+    }
+    
+    if (!file.type.startsWith('image/')) {
+      errorDiv.textContent = 'El archivo no es una imagen valida.';
+      errorDiv.classList.remove('hidden');
+      continue;
+    }
+    
+    const reader = new FileReader();
+    const base64Promise = new Promise((resolve) => {
+      reader.onload = (event) => resolve(event.target.result);
+      reader.readAsDataURL(file);
+    });
+    
+    const base64 = await base64Promise;
+    nuevasFotos.push({ file: file, base64: base64, nombre: file.name });
+  }
+  
+  fotosReferencia.push(...nuevasFotos);
+  actualizarPreviewFotos();
+  e.target.value = '';
+}
+
+function actualizarPreviewFotos() {
+  const container = document.getElementById('fotosPreviewContainer');
+  const grid = document.getElementById('fotosPreviewGrid');
+  const counter = document.getElementById('fotoCounter');
+  const counterNumber = document.getElementById('fotoCountNumber');
+  
+  if (!container || !grid || !counter || !counterNumber) return;
+  
+  if (fotosReferencia.length === 0) {
+    container.classList.add('hidden');
+    counter.classList.add('hidden');
+    return;
+  }
+  
+  counter.classList.remove('hidden');
+  counterNumber.textContent = fotosReferencia.length;
+  container.classList.remove('hidden');
+  
+  grid.innerHTML = fotosReferencia.map((foto, index) => 
+    '<div class="relative group">' +
+      '<img src="' + foto.base64 + '" class="w-full h-32 object-cover rounded-lg border-2 border-gray-200">' +
+      '<button type="button" class="remove-foto absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full" data-index="' + index + '">' +
+        '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>' +
+      '</button>' +
+      '<div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-1 rounded-b-lg truncate">' + foto.nombre + '</div>' +
+    '</div>'
+  ).join('');
+  
+  document.querySelectorAll('.remove-foto').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = parseInt(e.currentTarget.dataset.index);
+      eliminarFoto(index);
+    });
+  });
+}
+
+function eliminarFoto(index) {
+  fotosReferencia.splice(index, 1);
+  actualizarPreviewFotos();
+  document.getElementById('fotosError').classList.add('hidden');
+}
+
+function limpiarFotosReferencia() {
+  fotosReferencia = [];
+  actualizarPreviewFotos();
+  const inputFotos = document.getElementById('fotosReferencia');
+  if (inputFotos) inputFotos.value = '';
+  const errorDiv = document.getElementById('fotosError');
+  if (errorDiv) errorDiv.classList.add('hidden');
 }
 
 
