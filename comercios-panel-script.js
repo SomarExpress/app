@@ -1444,6 +1444,7 @@ document.getElementById('menuLogoutBtn').addEventListener('click', () => {
     document.getElementById('contentMisEnvios').classList.add('hidden');
       // CONFIGURAR AUTOCOMPLETADOS AL ABRIR EL TAB
   configurarAutocompletadosFormularioEntrega();
+  configurarEventListenerFotos();
   });
 
   document.getElementById('tabMisEnvios').addEventListener('click', () => {
@@ -1770,9 +1771,34 @@ let fotosReferencia = [];
 const MAX_FOTOS = 10;
 const MAX_SIZE_MB = 5;
 
-document.getElementById('fotosReferencia')?.addEventListener('change', async (e) => {
+// Configurar event listener cuando se abre el tab de Solicitar Entrega
+function configurarEventListenerFotos() {
+  const inputFotos = document.getElementById('fotosReferencia');
+  
+  if (!inputFotos) {
+    console.error('❌ Input fotosReferencia no encontrado');
+    return;
+  }
+  
+  console.log('✅ Configurando event listener de fotos');
+  
+  // Remover listener previo si existe
+  inputFotos.removeEventListener('change', manejarSeleccionFotos);
+  
+  // Agregar nuevo listener
+  inputFotos.addEventListener('change', manejarSeleccionFotos);
+}
+
+async function manejarSeleccionFotos(e) {
+  console.log('📸 Fotos seleccionadas:', e.target.files.length);
+  
   const files = Array.from(e.target.files);
   const errorDiv = document.getElementById('fotosError');
+  
+  if (!errorDiv) {
+    console.error('❌ Div de error no encontrado');
+    return;
+  }
   
   // Limpiar errores previos
   errorDiv.classList.add('hidden');
@@ -1789,6 +1815,8 @@ document.getElementById('fotosReferencia')?.addEventListener('change', async (e)
   // Validar y procesar cada archivo
   const nuevasFotos = [];
   for (const file of files) {
+    console.log('📄 Procesando:', file.name, file.size / 1024 / 1024, 'MB');
+    
     // Validar tamaño
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
       errorDiv.textContent = `⚠️ La imagen "${file.name}" es muy grande. Máximo ${MAX_SIZE_MB}MB por foto.`;
@@ -1819,21 +1847,32 @@ document.getElementById('fotosReferencia')?.addEventListener('change', async (e)
     });
   }
   
+  console.log('✅ Fotos procesadas:', nuevasFotos.length);
+  
   // Agregar nuevas fotos al array
   fotosReferencia.push(...nuevasFotos);
+  
+  console.log('📊 Total fotos en array:', fotosReferencia.length);
   
   // Actualizar UI
   actualizarPreviewFotos();
   
   // Limpiar input para permitir agregar más fotos
   e.target.value = '';
-});
+}
 
 function actualizarPreviewFotos() {
+  console.log('🔄 Actualizando preview, fotos:', fotosReferencia.length);
+  
   const container = document.getElementById('fotosPreviewContainer');
   const grid = document.getElementById('fotosPreviewGrid');
   const counter = document.getElementById('fotoCounter');
   const counterNumber = document.getElementById('fotoCountNumber');
+  
+  if (!container || !grid || !counter || !counterNumber) {
+    console.error('❌ Elementos de preview no encontrados');
+    return;
+  }
   
   if (fotosReferencia.length === 0) {
     container.classList.add('hidden');
@@ -1847,6 +1886,8 @@ function actualizarPreviewFotos() {
   
   // Mostrar container
   container.classList.remove('hidden');
+  
+  console.log('✅ Mostrando', fotosReferencia.length, 'fotos');
   
   // Generar previews
   grid.innerHTML = fotosReferencia.map((foto, index) => `
@@ -1873,14 +1914,19 @@ function actualizarPreviewFotos() {
 }
 
 function eliminarFoto(index) {
+  console.log('🗑️ Eliminando foto:', index);
   fotosReferencia.splice(index, 1);
   actualizarPreviewFotos();
   
   // Limpiar error si existía
-  document.getElementById('fotosError').classList.add('hidden');
+  const errorDiv = document.getElementById('fotosError');
+  if (errorDiv) {
+    errorDiv.classList.add('hidden');
+  }
 }
 
 function limpiarFotosReferencia() {
+  console.log('🧹 Limpiando fotos');
   fotosReferencia = [];
   actualizarPreviewFotos();
   const inputFotos = document.getElementById('fotosReferencia');
@@ -1888,6 +1934,12 @@ function limpiarFotosReferencia() {
     inputFotos.value = '';
   }
   const errorDiv = document.getElementById('fotosError');
+  if (errorDiv) {
+    errorDiv.classList.add('hidden');
+  }
+}
+
+
   if (errorDiv) {
     errorDiv.classList.add('hidden');
   }
