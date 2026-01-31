@@ -884,7 +884,7 @@ function renderizarEnvios() {
   }
 
   if (enviosFiltrados.length === 0) {
-    container.innerHTML = '<div class="text-center py-12 text-gray-500"><p>No hay envos para mostrar</p></div>';
+    container.innerHTML = '<div class="text-center py-12 text-gray-500"><p>No hay envios para mostrar</p></div>';
     return;
   }
 
@@ -899,7 +899,7 @@ function renderizarEnvios() {
     
     const esEntrega = tipoRegistro === 'SOLICITUD_ENTREGA';
     const icono = esEntrega ? '' : '';
-    const tipoLabel = esEntrega ? 'SOLICITUD DE ENTREGA' : 'ENVO';
+    const tipoLabel = esEntrega ? 'SOLICITUD DE ENTREGA' : 'ENVIO';
     
     return `
       <div class="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition">
@@ -1064,7 +1064,7 @@ async function procesarEnvio(e) {
     }
   }
 
-  submitBtn.textContent = 'Registrando envo...';
+  submitBtn.textContent = 'Registrando envio...';
 
   const datos = {
     esEntrega: false,
@@ -1102,9 +1102,9 @@ async function procesarEnvio(e) {
       })
     });
 
-    console.log(' Envo registrado en backend');
+    console.log(' Envio registrado en backend');
     
-    alert(' Envo registrado exitosamente' + (fotoUrl ? ' con foto' : ''));
+    alert(' Envio registrado exitosamente' + (fotoUrl ? ' con foto' : ''));
     
     // Limpiar formulario
     document.getElementById('nuevoEnvioForm').reset();
@@ -1121,8 +1121,8 @@ async function procesarEnvio(e) {
     document.getElementById('tabMisEnvios').click();
     
   } catch (error) {
-    console.error(' Error al registrar envo:', error);
-    alert('ï Error al registrar envo: ' + error.message);
+    console.error(' Error al registrar envio:', error);
+    alert('ï Error al registrar envio: ' + error.message);
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
   }
@@ -2075,7 +2075,7 @@ function configurarTodosLosAutocompletados() {
 // CORRECCIN 3: Reemplazar cargarMisEnvios para agregar logs de depuracin
 async function cargarMisEnviosCorregida() {
   try {
-    console.log(' === CARGANDO MIS ENVOS ===');
+    console.log(' === CARGANDO MIS ENVIOS ===');
     console.log('Comercio ID:', appData.comercio?.id);
     console.log('URL:', `${SCRIPT_URL}?action=obtenerEnviosComercio&idComercio=${appData.comercio.id}`);
     
@@ -2088,14 +2088,14 @@ async function cargarMisEnviosCorregida() {
 
     if (result.success) {
       appData.envios = result.envios || [];
-      console.log(` ${appData.envios.length} envos cargados`);
+      console.log(` ${appData.envios.length} envios cargados`);
       renderizarEnvios();
     } else {
       console.error(' Error del servidor:', result.error);
       const container = document.getElementById('listaEnvios');
       container.innerHTML = `
         <div class="text-center py-12">
-          <div class="text-red-500 font-bold mb-2">Error al cargar envos</div>
+          <div class="text-red-500 font-bold mb-2">Error al cargar envios</div>
           <div class="text-sm text-gray-600">${result.error || 'Error desconocido'}</div>
           <button onclick="cargarMisEnviosCorregida()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
             Reintentar
@@ -2104,7 +2104,7 @@ async function cargarMisEnviosCorregida() {
       `;
     }
   } catch (error) {
-    console.error(' Error cargando envos:', error);
+    console.error(' Error cargando envios:', error);
     const container = document.getElementById('listaEnvios');
     container.innerHTML = `
       <div class="text-center py-12">
