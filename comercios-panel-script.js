@@ -1944,6 +1944,9 @@ function limpiarFotosReferencia() {
   }
 }
 
+// Exponer globalmente
+window.limpiarFotosReferencia = limpiarFotosReferencia;
+
 
   document.getElementById('solicitarEntregaForm').addEventListener('submit', procesarSolicitudEntrega);
 
