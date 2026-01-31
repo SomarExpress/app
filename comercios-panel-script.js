@@ -1920,28 +1920,27 @@ function actualizarPreviewFotos() {
 }
 
 function eliminarFoto(index) {
-  console.log('ï Eliminando foto:', index);
+  console.log('Eliminando foto:', index);
   fotosReferencia.splice(index, 1);
   actualizarPreviewFotos();
   
-  // Limpiar error si exista
-  const errorDiv = document.getElementById('fotosError');
+  var errorDiv = document.getElementById('fotosError');
   if (errorDiv) {
     errorDiv.classList.add('hidden');
   }
 }
 
 function limpiarFotosReferencia() {
-  console.log(' Limpiando fotos');
+  console.log('Limpiando fotos');
   fotosReferencia = [];
   actualizarPreviewFotos();
-  const inputFotos = document.getElementById('fotosReferencia');
+  var inputFotos = document.getElementById('fotosReferencia');
   if (inputFotos) {
     inputFotos.value = '';
   }
-  const errorDiv = document.getElementById('fotosError');
-  if (errorDiv) {
-    errorDiv.classList.add('hidden');
+  var errorDiv2 = document.getElementById('fotosError');
+  if (errorDiv2) {
+    errorDiv2.classList.add('hidden');
   }
 }
 
