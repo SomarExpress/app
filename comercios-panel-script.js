@@ -1154,7 +1154,7 @@ async function procesarSolicitudEntrega(e) {
     const descripcion = document.getElementById('descripcionTraslado').value;
 
     if (!tiendaOrigen || !tiendaDestino || !ubicacionOrigen || !ubicacionDestino || !descripcion) {
-      alert('âš ï¸ Por favor completa todos los campos obligatorios');
+      alert('Por favor completa todos los campos obligatorios');
       return;
     }
 
@@ -1182,7 +1182,7 @@ async function procesarSolicitudEntrega(e) {
     const montoRecoger = pagarAlRecoger === 'SI' ? document.getElementById('montoRecoger').value : 0;
 
     if (!nombreContacto || !ubicacionRecogida || !descripcion) {
-      alert('âš ï¸ Por favor completa todos los campos obligatorios');
+      alert('Por favor completa todos los campos obligatorios');
       return;
     }
 
@@ -1190,7 +1190,7 @@ async function procesarSolicitudEntrega(e) {
     if (destinoPaquete === 'OTRA_DIRECCION') {
       ubicacionEntrega = document.getElementById('ubicacionEntregaPaquete').value;
       if (!ubicacionEntrega) {
-        alert('âš ï¸ Debes especificar la ubicaciÃ³n de entrega');
+        alert('Debes especificar la ubicacion de entrega');
         return;
       }
     }
@@ -1221,7 +1221,7 @@ async function procesarSolicitudEntrega(e) {
     const destinoCompra = document.querySelector('input[name="destinoCompra"]:checked').value;
 
     if (!nombreComercioCompra || !ubicacionComercio || !listaProductos || !presupuesto || !comision) {
-      alert('âš ï¸ Por favor completa todos los campos obligatorios');
+      alert('Por favor completa todos los campos obligatorios');
       return;
     }
 
@@ -1229,7 +1229,8 @@ async function procesarSolicitudEntrega(e) {
     if (destinoCompra === 'OTRA_DIRECCION') {
       ubicacionEntrega = document.getElementById('ubicacionEntregaCompra').value;
       if (!ubicacionEntrega) {
-        alert('âš ï¸ Debes especificar la ubicaciÃ³n de entrega');
+        alert('Debes especificar la ubicacion de entrega');
+    
         return;
       }
     }
@@ -1262,7 +1263,7 @@ async function procesarSolicitudEntrega(e) {
   // ========================================
   let fotosUrls = [];
   if (fotosReferencia.length > 0) {
-    console.log(`ðŸ“¸ Subiendo ${fotosReferencia.length} fotos...`);
+    console.log('Subiendo ' + fotosReferencia.length + ' fotos...');
     
     for (let i = 0; i < fotosReferencia.length; i++) {
       submitBtn.textContent = `Subiendo fotos (${i + 1}/${fotosReferencia.length})...`;
@@ -1272,16 +1273,16 @@ async function procesarSolicitudEntrega(e) {
         
         if (resultado.success) {
           fotosUrls.push(resultado.url);
-          console.log(`âœ… Foto ${i + 1} subida: ${resultado.url}`);
+          console.log('Foto ' + (i + 1) + ' subida: ' + resultado.url);
         } else {
-          console.error(`âŒ Error subiendo foto ${i + 1}:`, resultado.error);
+          console.error('Error subiendo foto ' + (i + 1) + ':', resultado.error);
         }
       } catch (error) {
-        console.error(`âŒ Error subiendo foto ${i + 1}:`, error);
+        console.error('Error subiendo foto ' + (i + 1) + ':', error);
       }
     }
     
-    console.log(`âœ… Total: ${fotosUrls.length}/${fotosReferencia.length} fotos subidas correctamente`);
+    console.log('Total: ' + fotosUrls.length + '/' + fotosReferencia.length + ' fotos subidas correctamente');
   }
 
   // Agregar fotos a los datos
@@ -1301,10 +1302,12 @@ async function procesarSolicitudEntrega(e) {
       })
     });
 
-    alert(`âœ… Solicitud de entrega registrada exitosamente${fotosUrls.length > 0 ? ` con ${fotosUrls.length} foto(s)` : ''}.\n\nUn delivery serÃ¡ asignado pronto.`);
+    alert('Solicitud de entrega registrada exitosamente' + (fotosUrls.length > 0 ? ' con ' + fotosUrls.length + ' foto(s)' : '') + '.\n\nUn delivery sera asignado pronto.');
     
     document.getElementById('solicitarEntregaForm').reset();
-    limpiarFotosReferencia(); // Limpiar fotos
+    if (typeof limpiarFotosReferencia === 'function') {
+  limpiarFotosReferencia();
+}
     
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
@@ -1317,7 +1320,7 @@ async function procesarSolicitudEntrega(e) {
     document.getElementById('tabMisEnvios').click();
   } catch (error) {
     console.error('Error:', error);
-    alert('âš ï¸ Error al registrar solicitud');
+    alert('Error al registrar solicitud');
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
   }
