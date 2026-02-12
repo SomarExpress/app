@@ -352,6 +352,18 @@ body.cart-active {
           <span class="font-semibold">Volver</span>
         </button>
         <h2 id="categoriaTitulo" class="text-xl font-bold mt-2 mb-3"></h2>
+
+        <!-- Comercios Destacados -->
+<div id="destacadosContainer" class="hidden bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-4 mb-4 border-2 border-orange-200">
+  <div class="flex items-center gap-2 mb-3">
+    <span class="text-2xl">⭐</span>
+    <h3 class="font-bold text-lg text-gray-800">Destacados de esta categoría</h3>
+  </div>
+  
+  <div id="destacadosList" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <!-- Los destacados se renderizan aquí dinámicamente -->
+  </div>
+</div>
         
         <div class="flex gap-2 mb-3">
           <div class="relative flex-1">
@@ -1485,22 +1497,98 @@ async function cargarPerfilUsuario() {
       }, 500);
     }
 
-    async function openCategoria(nombreCategoria, rowId) {
-      appData.selectedCategoria = rowId;
-      document.getElementById('categoriasSection').classList.add('hidden');
-      document.getElementById('comerciosSection').classList.remove('hidden');
-      document.getElementById('categoriaTitulo').textContent = nombreCategoria;
-      
-      const loader = document.getElementById('comerciosLoader');
-      loader.classList.remove('hidden');
-      loader.classList.add('grid');
-      document.getElementById('comerciosList').innerHTML = '';
-      
-      await calcularDistanciasComercios();
-      
-      loader.classList.add('hidden');
-      loader.classList.remove('grid');
-    }
+
+async function openCategoria(nombreCategoria, rowId) {
+  appData.selectedCategoria = rowId;
+  document.getElementById('categoriasSection').classList.add('hidden');
+  document.getElementById('comerciosSection').classList.remove('hidden');
+  document.getElementById('categoriaTitulo').textContent = nombreCategoria;
+  
+  const loader = document.getElementById('comerciosLoader');
+  loader.classList.remove('hidden');
+  loader.classList.add('grid');
+  document.getElementById('comerciosList').innerHTML = '';
+  
+  // ✅ RENDERIZAR DESTACADOS PRIMERO
+  renderDestacados(nombreCategoria, rowId);
+  
+  await calcularDistanciasComercios();
+  
+  loader.classList.add('hidden');
+  loader.classList.remove('grid');
+}
+
+
+function renderDestacados(nombreCategoria, rowId) {
+  console.log('🌟 Renderizando destacados para:', nombreCategoria);
+  
+  const comerciosDestacados = appData.comercios.filter(c => {
+    const categoriaMatch = c.CATEGORIA == rowId;
+    const esDestacado = c['DESTACADO?'] === 'SI' || 
+                        c.DESTACADO === 'SI' || 
+                        c.DESTACADO === true ||
+                        c['DESTACADO?'] === true;
+    
+    return categoriaMatch && esDestacado;
+  });
+  
+  console.log(`📌 ${comerciosDestacados.length} comercios destacados encontrados`);
+  
+  const container = document.getElementById('destacadosContainer');
+  const list = document.getElementById('destacadosList');
+  
+  if (comerciosDestacados.length === 0) {
+    container.classList.add('hidden');
+    return;
+  }
+  
+  container.classList.remove('hidden');
+  
+  const destacadosLimitados = comerciosDestacados.slice(0, 3);
+  
+  list.innerHTML = destacadosLimitados.map(c => {
+    const abierto = c['ABIERTO?'] === 'SI' || c['ABIERTO?'] === true || c['ABIERTO?'] === 'TRUE';
+    const imageUrl = getImageUrl(c.IMAGEN, c.COMERCIO);
+    const placeholderUrl = 'https://placehold.co/300/FF8C00/FFFFFF/png?text=' + encodeURIComponent(c.COMERCIO.substring(0, 2));
+    
+    return `
+      <div class="comercio-card-destacado bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer border-2 border-orange-300 relative fade-in" data-id="${c.ID}">
+        <div class="absolute top-2 left-2 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg z-10">
+          ⭐ DESTACADO
+        </div>
+        
+        <div class="relative">
+          <img src="${imageUrl}" alt="${c.COMERCIO}" class="w-full h-32 object-cover" onerror="this.src='${placeholderUrl}'">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+          ${!abierto ? `
+            <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+              <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">Cerrado</span>
+            </div>
+          ` : ''}
+        </div>
+        
+        <div class="p-3">
+          <h3 class="font-bold text-base mb-1">${c.COMERCIO}</h3>
+          <p class="text-xs text-gray-500 line-clamp-1">${c.SECTOR || c.CIUDAD || ''}</p>
+          <div class="mt-2 flex items-center justify-between">
+            ${abierto ? 
+              '<p class="text-xs text-green-600 font-semibold">🟢 Abierto</p>' : 
+              '<p class="text-xs text-gray-500 font-semibold">⚫ Cerrado</p>'
+            }
+            <span class="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-semibold">⚡ Recomendado</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  document.querySelectorAll('.comercio-card-destacado').forEach(card => {
+    card.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      openComercio(id);
+    });
+  });
+}
 
     function renderComercios() {
       let comerciosFiltrados = [...appData.comerciosConDistancia];
@@ -1981,24 +2069,46 @@ document.getElementById('openFloatingCart').addEventListener('click', () => {
         document.getElementById('sortProducto').value = 'default';
       });
 
-      document.getElementById('checkoutBtn').addEventListener('click', () => {
-        if (appData.cart.length === 0) {
-          alert('Tu carrito está vacío');
-          return;
-        }
-        document.getElementById('cartModal').classList.add('hidden');
-        document.getElementById('checkoutModal').classList.remove('hidden');
-        
-        actualizarTotalesCheckout();
-        
-        document.getElementById('checkoutForm').reset();
-        document.getElementById('efectivoSection').classList.remove('hidden');
-        document.getElementById('transferenciaSection').classList.add('hidden');
-        document.getElementById('cambioDisplay').classList.add('hidden');
-        document.getElementById('uploadPlaceholder').classList.remove('hidden');
-        document.getElementById('uploadPreview').classList.add('hidden');
-        document.getElementById('propinaRow').classList.add('hidden');
-      });
+      document.getElementById('checkoutBtn').addEventListener('click', async () => {
+  if (appData.cart.length === 0) {
+    alert('Tu carrito está vacío');
+    return;
+  }
+  document.getElementById('cartModal').classList.add('hidden');
+  document.getElementById('checkoutModal').classList.remove('hidden');
+  
+  // ✅ AUTO-LLENAR CELULAR Y DIRECCIÓN
+  if (authData.isAuthenticated && authData.usuario && authData.usuario.celular) {
+    document.getElementById('celular').value = authData.usuario.celular;
+    document.getElementById('celular').setAttribute('readonly', 'readonly');
+    document.getElementById('celular').classList.add('bg-gray-100');
+  }
+  
+  if (authData.isAuthenticated && authData.usuario && authData.usuario.direccion) {
+    document.getElementById('direccion').value = authData.usuario.direccion;
+  }
+  
+  await calcularYMostrarTarifaEnCheckout();
+  actualizarTotalesCheckout();
+  
+  document.getElementById('checkoutForm').reset();
+  document.getElementById('efectivoSection').classList.remove('hidden');
+  document.getElementById('transferenciaSection').classList.add('hidden');
+  document.getElementById('cambioDisplay').classList.add('hidden');
+  document.getElementById('uploadPlaceholder').classList.remove('hidden');
+  document.getElementById('uploadPreview').classList.add('hidden');
+  document.getElementById('propinaRow').classList.add('hidden');
+  
+  // ✅ VOLVER A LLENAR DESPUÉS DEL RESET
+  if (authData.isAuthenticated && authData.usuario && authData.usuario.celular) {
+    document.getElementById('celular').value = authData.usuario.celular;
+    document.getElementById('celular').setAttribute('readonly', 'readonly');
+    document.getElementById('celular').classList.add('bg-gray-100');
+  }
+  if (authData.isAuthenticated && authData.usuario && authData.usuario.direccion) {
+    document.getElementById('direccion').value = authData.usuario.direccion;
+  }
+});
 
       
       // PERFIL Y CERRAR SESIÓN
