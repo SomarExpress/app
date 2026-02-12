@@ -267,18 +267,17 @@ body.cart-active {
   scroll-snap-align: start;
 }
 
-/* Tarjeta destacada optimizada para móvil */
+/* ✅ REDUCIDO 30% */
 .comercio-card-destacado-mobile {
-  min-width: 200px;
-  max-width: 200px;
+  min-width: 140px;  /* Era 200px */
+  max-width: 140px;
   flex-shrink: 0;
 }
 
-/* En pantallas grandes (tablets y desktop) */
 @media (min-width: 768px) {
   .comercio-card-destacado-mobile {
-    min-width: 240px;
-    max-width: 240px;
+    min-width: 168px;  /* Era 240px */
+    max-width: 168px;
   }
 }
 
@@ -1663,6 +1662,38 @@ function renderDestacados(nombreCategoria, rowId) {
       openComercio(id);
     });
   });
+
+
+  // ✅ AUTO-HIDE AL HACER SCROLL
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) {
+      // Cuando sale de vista, ocultar contenedor
+      setTimeout(() => {
+        if (!entry.isIntersecting) {
+          container.style.opacity = '0';
+          container.style.pointerEvents = 'none';
+          container.style.maxHeight = '0px';
+          container.style.overflow = 'hidden';
+          container.style.transition = 'all 0.3s ease-out';
+        }
+      }, 100);
+    } else {
+      // Cuando vuelve a vista, mostrar
+      container.style.opacity = '1';
+      container.style.pointerEvents = 'auto';
+      container.style.maxHeight = '500px';
+      container.style.overflow = 'visible';
+    }
+  });
+}, {
+  threshold: 0.1,
+  rootMargin: '-50px 0px 0px 0px'
+});
+
+// Observar el contenedor de destacados
+observer.observe(container);
+
 }
 
     function renderComercios() {
@@ -2124,15 +2155,15 @@ function agregarProductoAlCarrito(producto) {
         document.getElementById('cartModal').classList.remove('hidden');
         renderCart();
 
-// Abrir carrito desde barra flotante
-document.getElementById('openFloatingCart').addEventListener('click', () => {
-  document.getElementById('cartModal').classList.remove('hidden');
-  renderCart();
-});
 
       document.getElementById('closeCartBtn').addEventListener('click', () => {
         document.getElementById('cartModal').classList.add('hidden');
       });
+
+      document.getElementById('openFloatingCart').addEventListener('click', () => {
+  document.getElementById('cartModal').classList.remove('hidden');
+  renderCart();
+});
 
       document.getElementById('backBtn').addEventListener('click', () => {
         document.getElementById('productosSection').classList.add('hidden');
