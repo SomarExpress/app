@@ -2744,6 +2744,17 @@ if (datos.tarifaEnvio > 0) {
       submitBtn.disabled = false;
     }
   }
+
+  // ✅ FILTRO DE EMERGENCIA - Agregar al final
+if (appData && appData.comercios) {
+  const original = appData.comercios.length;
+  appData.comercios = appData.comercios.filter(c => {
+    const visible = c['VISIBLE?'] || c.VISIBLE;
+    return visible === 'SI' || visible === 'Si' || visible === true;
+  });
+  console.log(`✅ Filtrado: ${appData.comercios.length} de ${original} comercios`);
+}
+
   </script>
 
 
