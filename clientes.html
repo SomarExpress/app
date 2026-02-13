@@ -1431,15 +1431,22 @@ async function cargarPerfilUsuario() {
     });
 
     function loadApp(data) {
-      if (!data.success) {
-        alert('Error al cargar datos: ' + data.error);
-        return;
-      }
+  if (!data.success) {
+    alert('Error al cargar datos: ' + data.error);
+    return;
+  }
 
-      appData.comercios = data.comercios;
-      appData.categorias = data.categorias;
-      appData.productos = data.productos;
-      appData.categoriasxcomercio = data.categoriasxcomercio;
+  // ✅ FILTRAR COMERCIOS VISIBLES
+ const totalOriginal = data.comercios.length;
+appData.comercios = data.comercios.filter(c => {
+  const visible = c['VISIBLE?'] || c.VISIBLE;
+  return visible === 'SI' || visible === 'Si' || visible === true;
+});
+console.log(`✅ Filtro VISIBLE: ${appData.comercios.length} de ${totalOriginal} comercios`);
+  
+  appData.categorias = data.categorias;
+  appData.productos = data.productos;
+  appData.categoriasxcomercio = data.categoriasxcomercio;
 
       document.getElementById('loading').classList.add('hidden');
       document.getElementById('categoriasSection').classList.remove('hidden');
