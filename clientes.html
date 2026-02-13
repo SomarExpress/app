@@ -2202,7 +2202,7 @@ document.getElementById('backBtn').addEventListener('click', () => {
     document.getElementById('direccion').value = authData.usuario.direccion;
   }
   
-  await calcularYMostrarTarifaEnCheckout();
+  await actualizarTotalesCheckout();
   actualizarTotalesCheckout();
   
   document.getElementById('checkoutForm').reset();
@@ -2747,8 +2747,10 @@ if (datos.tarifaEnvio > 0) {
       document.getElementById('checkoutForm').reset();
       
       const submitBtn = document.querySelector('#checkoutForm button[type="submit"]');
-      submitBtn.textContent = 'Confirmar Pedido';
-      submitBtn.disabled = false;
+      if (submitBtn) {
+  submitBtn.textContent = 'Confirmar Pedido';
+  submitBtn.disabled = false;
+}
     }
   }
 
