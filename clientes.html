@@ -2140,40 +2140,41 @@ function agregarProductoAlCarrito(producto) {
         appData.sortProducto = e.target.value;
         renderProductos();
       });
-
       document.getElementById('backToCategorias').addEventListener('click', () => {
-        document.getElementById('comerciosSection').classList.add('hidden');
-        document.getElementById('categoriasSection').classList.remove('hidden');
-        appData.selectedCategoria = null;
-        appData.searchTermComercio = '';
-        appData.sortComercio = 'default';
-        document.getElementById('searchComercio').value = '';
-        document.getElementById('sortComercio').value = 'default';
-      });
+  console.log('🔙 Volviendo de comercios a categorías...');
+  document.getElementById('comerciosSection').classList.add('hidden');
+  document.getElementById('categoriasSection').classList.remove('hidden');
+  appData.selectedCategoria = null;
+  appData.searchTermComercio = '';
+  appData.sortComercio = 'default';
+  document.getElementById('searchComercio').value = '';
+  document.getElementById('sortComercio').value = 'default';
+});
 
-      document.getElementById('cartBtn').addEventListener('click', () => {
-        document.getElementById('cartModal').classList.remove('hidden');
-        renderCart();
-
-
-      document.getElementById('closeCartBtn').addEventListener('click', () => {
-        document.getElementById('cartModal').classList.add('hidden');
-      });
-
-      document.getElementById('openFloatingCart').addEventListener('click', () => {
+document.getElementById('cartBtn').addEventListener('click', () => {
   document.getElementById('cartModal').classList.remove('hidden');
   renderCart();
 });
 
-      document.getElementById('backBtn').addEventListener('click', () => {
-        document.getElementById('productosSection').classList.add('hidden');
-        document.getElementById('comerciosSection').classList.remove('hidden');
-        appData.currentComercio = null;
-        appData.searchTermProducto = '';
-        appData.sortProducto = 'default';
-        document.getElementById('searchProducto').value = '';
-        document.getElementById('sortProducto').value = 'default';
-      });
+document.getElementById('closeCartBtn').addEventListener('click', () => {
+  document.getElementById('cartModal').classList.add('hidden');
+});
+
+document.getElementById('openFloatingCart').addEventListener('click', () => {
+  document.getElementById('cartModal').classList.remove('hidden');
+  renderCart();
+});
+
+document.getElementById('backBtn').addEventListener('click', () => {
+  console.log('🔙 Volviendo de productos a comercios...');
+  document.getElementById('productosSection').classList.add('hidden');
+  document.getElementById('comerciosSection').classList.remove('hidden');
+  appData.currentComercio = null;
+  appData.searchTermProducto = '';
+  appData.sortProducto = 'default';
+  document.getElementById('searchProducto').value = '';
+  document.getElementById('sortProducto').value = 'default';
+});
 
       document.getElementById('checkoutBtn').addEventListener('click', async () => {
   if (appData.cart.length === 0) {
@@ -2259,24 +2260,44 @@ function agregarProductoAlCarrito(producto) {
       });
 
       document.getElementById('customProductForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const nombre = document.getElementById('customName').value;
-        const precio = document.getElementById('customPrice').value;
-        
-        addToCart({
-          NOMBRE: nombre,
-          PRECIO: precio,
-          COMERCIO: appData.currentComercio.ID,
-          NOMBRE_COMERCIO: appData.currentComercio.COMERCIO,
-          DESCRIPCION: 'Producto personalizado',
-          IMAGEN: ''
-        });
-
-        addToCart(productoPersonalizado);
-
-        document.getElementById('customProductModal').classList.add('hidden');
-        document.getElementById('customProductForm').reset();
-      });
+  e.preventDefault();
+  console.log('➕ Agregando producto personalizado...');
+  
+  const nombre = document.getElementById('customName').value;
+  const precio = document.getElementById('customPrice').value;
+  
+  // Validación
+  if (!nombre || !precio) {
+    alert('⚠️ Completa todos los campos');
+    return;
+  }
+  
+  if (!appData.currentComercio) {
+    alert('⚠️ Error: No se detectó el comercio actual');
+    return;
+  }
+  
+  // ✅ AGREGAR PRODUCTO AL CARRITO
+  const productoPersonalizado = {
+    NOMBRE: nombre,
+    PRECIO: parseFloat(precio),
+    COMERCIO: appData.currentComercio.ID,
+    NOMBRE_COMERCIO: appData.currentComercio.COMERCIO,
+    DESCRIPCION: 'Producto personalizado',
+    IMAGEN: ''
+  };
+  
+  addToCart(productoPersonalizado);
+  
+  console.log('✅ Producto agregado:', productoPersonalizado);
+  
+  // Cerrar modal y resetear
+  document.getElementById('customProductModal').classList.add('hidden');
+  document.getElementById('customProductForm').reset();
+  
+  // Mostrar confirmación
+  alert(`✅ "${nombre}" agregado al carrito`);
+});
 
       // NUEVOS EVENT LISTENERS PARA CHECKOUT MEJORADO
 
