@@ -155,48 +155,74 @@
    * Carga todas las ubicaciones frecuentes.
    * (Globales por defecto; en fases futuras se filtra por comercio)
    */
-  async function obtenerUbicacionesFrecuentes(comercioId = null) {
+  async function obtenerUbicacionesFrecuentes(comercioUsuarioId = null) {
+    // ubicaciones_frecuentes usa referencia_id TEXT (no comercio_id ni comercio_usuario_id)
+    // Cargamos: globales del sistema (tipo ZONA/COMERCIO) + las del usuario actual
     let query = getAuthClient()
       .from('ubicaciones_frecuentes')
-      .select('id, nombre, direccion, ubicacion_gps, ciudad, colonia')
-      .order('nombre', { ascending: true });
+      .select('id, nombre, descripcion, ubicacion_gps, ciudad, tipo, referencia_id')
+      .eq('activa', true)
+      .order('orden', { ascending: true });
 
-    if (comercioId) {
-      query = query.eq('comercio_id', comercioId);
+    if (comercioUsuarioId) {
+      // Cargar globales + las propias del comercio
+      query = query.or(`tipo.in.(ZONA,COMERCIO),referencia_id.eq.${comercioUsuarioId}`);
     }
 
     const { data, error } = await query;
     if (error) throw new Error('Error cargando ubicaciones: ' + error.message);
 
-    // Normalizar para que el autocomplete funcione igual que antes
     return (data || []).map(u => ({
       id: u.id,
       nombre: u.nombre,
-      direccion: u.direccion,
+      direccion: u.descripcion || '',
       ubicacion: u.ubicacion_gps,
       ciudad: u.ciudad || 'CHOLOMA',
-      colonia: u.colonia || ''
+      colonia: '',
+      tipo: u.tipo
     }));
   }
 
   /**
    * Guarda o actualiza una ubicación frecuente.
    */
-  async function guardarUbicacionFrecuente({ nombre, direccion, ubicacionGPS, ciudad, colonia, clienteId }) {
+  async function guardarUbicacionFrecuente({ nombre, descripcion, ubicacionGPS, ciudad, tipo = 'PERSONALIZADO', referenciaId = null }) {
     if (!nombre || !ubicacionGPS) return;
 
-    const { error } = await getAuthClient()
+    // Verificar si ya existe por nombre + referencia_id
+    const { data: existing } = await getAuthClient()
       .from('ubicaciones_frecuentes')
-      .upsert({
-        nombre: san(nombre),
-        direccion: san(direccion || ''),
-        ubicacion_gps: san(ubicacionGPS),
-        ciudad: san(ciudad || 'CHOLOMA'),
-        colonia: san(colonia || ''),
-        cliente_id: clienteId || null
-      }, { onConflict: 'nombre' });
+      .select('id')
+      .eq('nombre', san(nombre))
+      .eq('referencia_id', referenciaId ?? '')
+      .limit(1);
 
-    if (error) window.secureLog('⚠️ Error guardando ubicación:', error.message);
+    if (existing && existing.length > 0) {
+      // Actualizar existente
+      const { error } = await getAuthClient()
+        .from('ubicaciones_frecuentes')
+        .update({
+          descripcion:   san(descripcion || ''),
+          ubicacion_gps: san(ubicacionGPS),
+          ciudad:        san(ciudad || 'CHOLOMA'),
+        })
+        .eq('id', existing[0].id);
+      if (error) window.secureLog('⚠️ Error actualizando ubicación:', error.message);
+    } else {
+      // Insertar nueva
+      const { error } = await getAuthClient()
+        .from('ubicaciones_frecuentes')
+        .insert({
+          nombre:        san(nombre),
+          descripcion:   san(descripcion || ''),
+          ubicacion_gps: san(ubicacionGPS),
+          ciudad:        san(ciudad || 'CHOLOMA'),
+          tipo,
+          referencia_id: referenciaId ?? null,
+          activa:        true,
+        });
+      if (error) window.secureLog('⚠️ Error guardando ubicación:', error.message);
+    }
   }
 
   // ── 3. PEDIDOS ─────────────────────────────────────────────
