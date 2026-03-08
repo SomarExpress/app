@@ -109,15 +109,16 @@
   /**
    * Registra un comercio nuevo en Supabase.
    */
-  async function registrarComercio({ celular, nombre, direccion, ubicacionGPS }) {
+  async function registrarComercio({ celular, nombre, nombreNegocio, direccion, ubicacionGPS }) {
     const result = await callEdge('registrar-comercio', {
-      celular: san(celular),
-      nombre: san(nombre),
-      direccion: san(direccion),
-      ubicacionGPS: san(ubicacionGPS || '')
+      celular:       san(celular),
+      nombre:        san(nombre),          // nombre de la persona
+      nombreNegocio: san(nombreNegocio || nombre), // nombre del negocio
+      direccion:     san(direccion),
+      ubicacionGPS:  san(ubicacionGPS || '')
     });
     if (!result.success) throw new Error(result.error || 'Error al registrar');
-    return result; // { success: true, comercio: {...} }
+    return result;
   }
 
   // ── 2. UBICACIONES FRECUENTES ──────────────────────────────
@@ -413,6 +414,26 @@
     return map[String(v).toUpperCase()] || 'DESTINATARIO';
   }
 
+  // ── 6. GESTIÓN DE USUARIOS (solo dueño) ───────────────────
+
+  async function listarUsuarios(duenoCelular) {
+    return callEdge('gestionar-usuarios', { action: 'listar', duenoCelular });
+  }
+
+  async function agregarUsuario(duenoCelular, nombre, celular) {
+    if (!nombre || nombre.length < 2) throw new Error('Nombre requerido');
+    return callEdge('gestionar-usuarios', {
+      action: 'agregar',
+      duenoCelular,
+      nombre: san(nombre),
+      celular
+    });
+  }
+
+  async function eliminarUsuario(duenoCelular, usuarioId) {
+    return callEdge('gestionar-usuarios', { action: 'eliminar', duenoCelular, usuarioId });
+  }
+
   // ── API pública ────────────────────────────────────────────
   window.SomarAPI = {
     init,
@@ -429,6 +450,10 @@
     desuscribirPedidos,
     registrarEnvio,
     registrarSolicitudEntrega,
+    // Gestión de usuarios (solo dueño)
+    listarUsuarios,
+    agregarUsuario,
+    eliminarUsuario,
     // Acceso directo al cliente (para casos avanzados)
     get client() { return getClient(); }
   };

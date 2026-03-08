@@ -330,6 +330,10 @@ async function verificarCodigoIngresado(codigo) {
         document.getElementById('comercioName').textContent = appData.comercio.nombre;
         document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
         appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
+        // Mostrar tab Mi Equipo solo al dueño
+        if (appData.comercio.esDueno) {
+          document.getElementById('tabMiEquipo')?.classList.remove('hidden');
+        }
         await cargarUbicacionesFrecuentesCorregida();
         // Activar realtime para pedidos
         window.SomarAPI.suscribirPedidos(appData.comercio.usuarioId, () => cargarMisEnvios());
@@ -351,17 +355,18 @@ async function verificarCodigoIngresado(codigo) {
   }
 }
 
-async function completarRegistroComercio(nombre, direccion, ubicacionGPS) {
+async function completarRegistroComercio(nombreNegocio, nombrePersona, direccion, ubicacionGPS) {
   const submitBtn = document.querySelector('#authRegisterForm button[type="submit"]');
   try {
     submitBtn.textContent = 'Registrando...';
     submitBtn.disabled = true;
 
     const result = await window.SomarAPI.registrarComercio({
-      celular: appData.numeroTemporal,
-      nombre,
+      celular:       appData.numeroTemporal,
+      nombre:        nombrePersona,
+      nombreNegocio: nombreNegocio,
       direccion,
-      ubicacionGPS: ubicacionGPS || ''
+      ubicacionGPS:  ubicacionGPS || ''
     });
 
     appData.comercio = result.comercio;
@@ -371,6 +376,8 @@ async function completarRegistroComercio(nombre, direccion, ubicacionGPS) {
     document.getElementById('comercioName').textContent = appData.comercio.nombre;
     document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
     appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
+    // Dueño recién registrado → mostrar tab Mi Equipo
+    document.getElementById('tabMiEquipo')?.classList.remove('hidden');
     await cargarUbicacionesFrecuentes();
     window.SomarAPI.suscribirPedidos(appData.comercio.usuarioId, () => cargarMisEnvios());
     alert('✅ ¡Comercio registrado exitosamente!');
@@ -1303,11 +1310,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('authRegisterForm').addEventListener('submit', (e) => {
     e.preventDefault();
-    completarRegistroComercio(
-      document.getElementById('authNombreComercio').value,
-      document.getElementById('authDireccionComercio').value,
-      document.getElementById('authUbicacionGPS').value
-    );
+    const nombrePersona = document.getElementById('authNombrePersona')?.value.trim() || '';
+    const nombreNegocio = document.getElementById('authNombreComercio').value.trim();
+    const direccion     = document.getElementById('authDireccionComercio').value.trim();
+    const ubicacionGPS  = document.getElementById('authUbicacionGPS').value.trim();
+    if (!nombrePersona) { alert('Por favor ingresa tu nombre'); return; }
+    if (!nombreNegocio || !direccion) { alert('Por favor completa nombre del negocio y dirección'); return; }
+    completarRegistroComercio(nombreNegocio, nombrePersona, direccion, ubicacionGPS);
   });
 
   document.getElementById('resendCodeBtn').addEventListener('click', () => {
@@ -1390,6 +1399,7 @@ document.getElementById('menuLogoutBtn').addEventListener('click', () => {
     document.getElementById('contentNuevoEnvio').classList.remove('hidden');
     document.getElementById('contentSolicitarEntrega').classList.add('hidden');
     document.getElementById('contentMisEnvios').classList.add('hidden');
+    document.getElementById('contentMiEquipo')?.classList.add('hidden');
   });
 
   document.getElementById('tabSolicitarEntrega').addEventListener('click', () => {
@@ -1406,6 +1416,7 @@ document.getElementById('menuLogoutBtn').addEventListener('click', () => {
   document.getElementById('contentNuevoEnvio').classList.add('hidden');
   document.getElementById('contentSolicitarEntrega').classList.remove('hidden');
   document.getElementById('contentMisEnvios').classList.add('hidden');
+  document.getElementById('contentMiEquipo')?.classList.add('hidden');
   
   // Configurar autocompletados
   configurarAutocompletadosFormularioEntrega();
@@ -1425,8 +1436,55 @@ document.getElementById('menuLogoutBtn').addEventListener('click', () => {
     document.getElementById('contentNuevoEnvio').classList.add('hidden');
     document.getElementById('contentSolicitarEntrega').classList.add('hidden');
     document.getElementById('contentMisEnvios').classList.remove('hidden');
+    document.getElementById('contentMiEquipo')?.classList.add('hidden');
     cargarMisEnviosCorregida();
   });
+
+  // ── Tab Mi Equipo ────────────────────────────────────────
+  document.getElementById('tabMiEquipo')?.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('border-brand-orange', 'brand-orange');
+      btn.classList.add('border-transparent', 'text-gray-500');
+    });
+    document.getElementById('tabMiEquipo').classList.add('border-brand-orange', 'brand-orange');
+    document.getElementById('tabMiEquipo').classList.remove('border-transparent', 'text-gray-500');
+    document.getElementById('contentNuevoEnvio').classList.add('hidden');
+    document.getElementById('contentSolicitarEntrega').classList.add('hidden');
+    document.getElementById('contentMisEnvios').classList.add('hidden');
+    document.getElementById('contentMiEquipo').classList.remove('hidden');
+    cargarEquipo();
+  });
+
+  // ── Formulario agregar usuario ────────────────────────────
+  document.getElementById('formAgregarUsuario')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!appData.comercio?.esDueno) {
+      alert('Solo el dueño puede agregar usuarios');
+      return;
+    }
+    const btn    = document.getElementById('btnAgregarUsuario');
+    const nombre = document.getElementById('nuevoUsuarioNombre').value.trim();
+    const cel    = document.getElementById('nuevoUsuarioCelular').value.trim();
+    btn.textContent = 'Agregando...';
+    btn.disabled = true;
+    try {
+      const res = await window.SomarAPI.agregarUsuario(appData.comercio.celular, nombre, cel);
+      if (res.success) {
+        alert(res.mensaje);
+        document.getElementById('formAgregarUsuario').reset();
+        cargarEquipo();
+      } else {
+        alert('❌ ' + res.error);
+      }
+    } catch (err) {
+      alert('❌ Error: ' + err.message);
+    } finally {
+      btn.textContent = '➕ Agregar al Equipo';
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('btnRefrescarEquipo')?.addEventListener('click', cargarEquipo);
 
   document.querySelectorAll('input[name="tipoServicio"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
@@ -2025,6 +2083,78 @@ function configurarTodosLosAutocompletados() {
   
   console.log(` Total autocompletados configurados: ${configurados}/${inputsConfig.length}`);
 }
+
+// ============================================
+// GESTIÓN DE EQUIPO (Mi Equipo)
+// ============================================
+
+async function cargarEquipo() {
+  const container = document.getElementById('listaEquipo');
+  if (!container || !appData.comercio?.esDueno) return;
+  container.innerHTML = '<p class="text-center text-gray-400 py-6">Cargando...</p>';
+  try {
+    const res = await window.SomarAPI.listarUsuarios(appData.comercio.celular);
+    if (!res.success) throw new Error(res.error);
+    renderizarEquipo(res.usuarios || []);
+  } catch (err) {
+    container.innerHTML = `<p class="text-center text-red-500 py-4">Error: ${err.message}</p>`;
+  }
+}
+
+function renderizarEquipo(usuarios) {
+  const container = document.getElementById('listaEquipo');
+  if (!container) return;
+
+  if (usuarios.length === 0) {
+    container.innerHTML = '<p class="text-center text-gray-400 py-6">No hay usuarios en el equipo aún.</p>';
+    return;
+  }
+
+  container.innerHTML = usuarios.map(u => {
+    const celMostrar = u.celular.startsWith('504') ? u.celular.slice(3) : u.celular;
+    const badge = u.es_dueno
+      ? '<span class="text-xs bg-orange-100 text-orange-700 font-bold px-2 py-1 rounded-full">Dueño</span>'
+      : '<span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">Usuario</span>';
+    const activadoBadge = u.activado_at
+      ? ''
+      : '<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full ml-1">Pendiente primer login</span>';
+    const activoIcon = u.activo ? '🟢' : '🔴';
+    const btnEliminar = !u.es_dueno && u.activo
+      ? `<button onclick="eliminarUsuarioEquipo('${u.id}', '${u.nombre}')"
+           class="text-xs text-red-500 hover:text-red-700 font-semibold ml-2">Eliminar</button>`
+      : '';
+
+    return `
+      <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">${activoIcon}</span>
+          <div>
+            <p class="font-semibold text-gray-800">${u.nombre}</p>
+            <p class="text-sm text-gray-500">${celMostrar}</p>
+            <div class="flex gap-1 mt-1">${badge}${activadoBadge}</div>
+          </div>
+        </div>
+        ${btnEliminar}
+      </div>`;
+  }).join('');
+}
+
+async function eliminarUsuarioEquipo(usuarioId, nombre) {
+  if (!confirm(`¿Eliminar a ${nombre} del equipo?`)) return;
+  try {
+    const res = await window.SomarAPI.eliminarUsuario(appData.comercio.celular, usuarioId);
+    if (res.success) {
+      alert('✅ ' + res.mensaje);
+      cargarEquipo();
+    } else {
+      alert('❌ ' + res.error);
+    }
+  } catch (err) {
+    alert('❌ Error: ' + err.message);
+  }
+}
+
+window.eliminarUsuarioEquipo = eliminarUsuarioEquipo;
 
 // cargarMisEnviosCorregida → alias de cargarMisEnvios (ya usa Supabase)
 async function cargarMisEnviosCorregida() {
