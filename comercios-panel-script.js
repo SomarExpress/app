@@ -261,13 +261,16 @@ configurarAutocomplete('ubicacionRecogidaPaquete', async (ubicacion) => {
 // AUTENTICACIN
 // ============================================
 
-function verificarSesion() {
+async function verificarSesion() {
   const comercioGuardado = window.APP_SECURITY.getSecureSession('somarComercioUser');
-  // Restaurar sesión Supabase autenticada si existe
+  // Restaurar sesión Supabase — AWAIT para que RLS funcione antes de cargar datos
   const savedAuthSession = window.APP_SECURITY.getSecureSession('somarComercioSession');
   if (savedAuthSession?.access_token) {
-    window.SomarAPI.setSession(savedAuthSession.access_token, savedAuthSession.refresh_token)
-      .catch(e => console.warn('No se pudo restaurar sesión Auth:', e));
+    try {
+      await window.SomarAPI.setSession(savedAuthSession.access_token, savedAuthSession.refresh_token);
+    } catch(e) {
+      console.warn('No se pudo restaurar sesión Auth:', e);
+    }
   }
   if (comercioGuardado) {
     try {
@@ -276,18 +279,23 @@ function verificarSesion() {
       document.getElementById('mainContent').classList.remove('hidden');
       document.getElementById('comercioName').textContent = appData.comercio.nombre;
 
-      // Actualizar info del men lateral
-document.getElementById('menuComercioNombre').textContent = appData.comercio.nombre;
-document.getElementById('menuComercioTelefono').textContent = appData.comercio.celular || '';
-const inicial = appData.comercio.nombre ? appData.comercio.nombre.charAt(0).toUpperCase() : 'C';
-document.getElementById('menuComercioInitial').textContent = inicial;
+      // Actualizar info del menú lateral
+      document.getElementById('menuComercioNombre').textContent = appData.comercio.nombre;
+      document.getElementById('menuComercioTelefono').textContent = appData.comercio.celular || '';
+      const inicial = appData.comercio.nombre ? appData.comercio.nombre.charAt(0).toUpperCase() : 'C';
+      document.getElementById('menuComercioInitial').textContent = inicial;
+
+      // Mostrar Mi Equipo si es dueño
+      if (appData.comercio.esDueno) {
+        document.getElementById('menuMiEquipo')?.classList.remove('hidden');
+      }
 
       document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
       appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
-      
-      // NUEVO: Cargar ubicaciones frecuentes
+
+      // Cargar ubicaciones (sesión ya activa)
       cargarUbicacionesFrecuentes();
-      
+
       return true;
     } catch (error) {
       localStorage.removeItem('somarComercioUser');
