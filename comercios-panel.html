@@ -239,33 +239,96 @@
 
         <!-- Paso 3: Registro -->
         <div id="authStep3" class="hidden">
-          <div class="text-center mb-6">
-            <h2 class="text-2xl font-bold mb-2">Completa tu Registro</h2>
-            <p class="text-gray-600">Cuéntanos sobre ti y tu negocio</p>
+          <div class="text-center mb-5">
+            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg class="w-8 h-8 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold mb-1">Crea tu Negocio</h2>
+            <p class="text-gray-500 text-sm">Completa la información de tu comercio</p>
           </div>
-          <form id="authRegisterForm">
-            <div class="mb-4">
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Tu Nombre *</label>
-              <input type="text" id="authNombrePersona" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="Ej: María López">
+          <form id="authRegisterForm" class="space-y-4">
+
+            <!-- Datos del dueño -->
+            <div>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">👤 Tu Nombre *</label>
+              <input type="text" id="authNombrePersona" required
+                class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition"
+                placeholder="Ej: María López">
             </div>
-            <div class="mb-4">
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Nombre del Negocio *</label>
-              <input type="text" id="authNombreComercio" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="Ej: Restaurante El Buen Sabor">
+
+            <!-- Nombre del negocio -->
+            <div>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">🏪 Nombre del Negocio *</label>
+              <input type="text" id="authNombreComercio" required
+                class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition"
+                placeholder="Ej: Restaurante El Buen Sabor">
             </div>
-            <div class="mb-4">
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Dirección del Comercio *</label>
-              <textarea id="authDireccionComercio" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" rows="2" placeholder="Colonia, calle, referencias..."></textarea>
+
+            <!-- Categoría -->
+            <div>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">📂 Categoría *</label>
+              <div class="grid grid-cols-2 gap-2" id="categoriasGrid">
+                <!-- Generado por JS -->
+              </div>
+              <input type="hidden" id="authCategoria" required>
             </div>
-            <div class="mb-4">
-              <label class="block font-semibold mb-2 text-sm text-gray-700">Ubicación GPS del Comercio</label>
+
+            <!-- Dirección -->
+            <div>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">📍 Dirección *</label>
+              <textarea id="authDireccionComercio" required rows="2"
+                class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition"
+                placeholder="Colonia, calle, referencias cercanas..."></textarea>
+            </div>
+
+            <!-- Ciudad -->
+            <div>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">🏙️ Ciudad *</label>
+              <select id="authCiudad" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition bg-white">
+                <option value="CHOLOMA">Choloma</option>
+                <option value="SAN_PEDRO_SULA">San Pedro Sula</option>
+                <option value="LA_LIMA">La Lima</option>
+                <option value="VILLANUEVA">Villanueva</option>
+                <option value="TEGUCIGALPA">Tegucigalpa</option>
+                <option value="LA_CEIBA">La Ceiba</option>
+                <option value="EL_PROGRESO">El Progreso</option>
+              </select>
+            </div>
+
+            <!-- GPS -->
+            <div>
+              <label class="block font-semibold mb-2 text-sm text-gray-700">🛰️ Ubicación GPS</label>
               <div class="flex gap-2">
-                <input type="text" id="authUbicacionGPS" class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition" placeholder="Lat, Lon" readonly>
-                <button type="button" id="getLocationBtn" class="bg-blue-500 text-white px-4 rounded-xl font-semibold hover:bg-blue-600 transition">
+                <input type="text" id="authUbicacionGPS" readonly
+                  class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition text-sm"
+                  placeholder="Toca 'Obtener' para capturar">
+                <button type="button" id="getLocationBtn"
+                  class="bg-blue-500 text-white px-4 rounded-xl font-semibold hover:bg-blue-600 transition text-sm whitespace-nowrap">
                   📍 Obtener
                 </button>
               </div>
+              <p class="text-xs text-gray-400 mt-1">Permite a los riders encontrarte fácilmente</p>
             </div>
-            <button type="submit" class="w-full bg-brand-orange text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg">Registrar Comercio</button>
+
+            <!-- Horario -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold mb-2 text-sm text-gray-700">🕐 Apertura</label>
+                <input type="time" id="authApertura" value="08:00"
+                  class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition">
+              </div>
+              <div>
+                <label class="block font-semibold mb-2 text-sm text-gray-700">🕐 Cierre</label>
+                <input type="time" id="authCierre" value="21:00"
+                  class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-orange focus:outline-none transition">
+              </div>
+            </div>
+
+            <button type="submit" class="w-full bg-brand-orange text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg mt-2">
+              🚀 Registrar Comercio
+            </button>
           </form>
         </div>
       </div>
