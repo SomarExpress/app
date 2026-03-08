@@ -650,129 +650,123 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   btn.disabled = true;
 
   try {
-    // ── Paso 1: Crear usuario en Supabase Auth ────────────────
-    btn.textContent = '1/4 Creando cuenta...';
-    const { data: signUpData, error: signUpError } = await sb.auth.signUp({ email, password: pwd });
+  btn.disabled = true;
 
-    if (signUpError) {
-      if (signUpError.message?.includes('already registered')) {
-        mostrarRegError('Este correo ya tiene una cuenta. Intenta iniciar sesión.');
-      } else {
-        mostrarRegError('Error al crear cuenta: ' + signUpError.message);
+  // Helper para mostrar error y rehabilitar botón
+  const regErr = (msg) => {
+    mostrarRegError(msg);
+    btn.disabled = false;
+    btn.textContent = 'Enviar Solicitud';
+  };
+
+  // ── PASO 1: Crear usuario Auth ──────────────────────────────
+  btn.textContent = '1/4 Creando cuenta...';
+  let uid = null;
+  let sessionToken = null;
+
+  const { data: signUpData, error: signUpErr } = await sb.auth.signUp({ email, password: pwd });
+
+  if (signUpErr) {
+    // Correo ya registrado → intentar login directo
+    if (signUpErr.message?.toLowerCase().includes('already') ||
+        signUpErr.message?.toLowerCase().includes('registered') ||
+        signUpErr.status === 400) {
+      const { data: loginData, error: loginErr2 } = await sb.auth.signInWithPassword({ email, password: pwd });
+      if (loginErr2 || !loginData?.user) {
+        return regErr('Este correo ya existe. Intenta iniciar sesión con tu contraseña.');
       }
-      btn.disabled = false; btn.textContent = 'Enviar Solicitud';
-      return;
-    }
-
-    const uid = signUpData?.user?.id;
-    if (!uid) {
-      mostrarRegError('No se pudo crear el usuario. Intenta de nuevo.');
-      btn.disabled = false; btn.textContent = 'Enviar Solicitud';
-      return;
-    }
-
-    console.log('[REGISTRO] Usuario creado:', uid);
-
-    // ── Paso 2: Activar sesión ────────────────────────────────
-    btn.textContent = '2/4 Autenticando...';
-    let sessionOk = false;
-
-    if (signUpData?.session?.access_token) {
-      // Email confirmation desactivado — sesión inmediata
-      await sb.auth.setSession({
-        access_token:  signUpData.session.access_token,
-        refresh_token: signUpData.session.refresh_token,
-      });
-      sessionOk = true;
-      console.log('[REGISTRO] Sesión activada desde signUp');
+      uid = loginData.user.id;
+      sessionToken = loginData.session;
     } else {
-      // Email confirmation activo — hacer login manual
-      console.log('[REGISTRO] Sin sesión en signUp, intentando login...');
-      const { data: loginData, error: loginError } = await sb.auth.signInWithPassword({ email, password: pwd });
-      if (!loginError && loginData?.session) {
-        sessionOk = true;
-        console.log('[REGISTRO] Login manual exitoso');
-      } else {
-        console.warn('[REGISTRO] Login falló:', loginError?.message);
-        // Supabase requiere verificar email — guardar para después
-        sessionOk = false;
-      }
+      return regErr('Error al crear cuenta: ' + signUpErr.message);
     }
+  } else {
+    uid = signUpData?.user?.id ?? null;
+    sessionToken = signUpData?.session ?? null;
+  }
 
-    // ── Paso 3: Subir fotos (solo si hay sesión) ──────────────
-    let duiUrl  = null;
-    let motoUrl = null;
+  if (!uid) {
+    return regErr('No se pudo obtener el ID de usuario. Intenta de nuevo.');
+  }
+  console.log('[REG] uid:', uid, '| sesión:', !!sessionToken);
 
-    if (sessionOk) {
-      btn.textContent = '3/4 Subiendo fotos...';
+  // ── PASO 2: Activar sesión ──────────────────────────────────
+  btn.textContent = '2/4 Autenticando...';
 
-      duiUrl  = await subirFotoConUID(duiFile,  'dui',  uid);
-      motoUrl = await subirFotoConUID(motoFile, 'moto', uid);
-      console.log('[REGISTRO] Fotos:', { duiUrl: !!duiUrl, motoUrl: !!motoUrl });
-
-      if (!duiUrl || !motoUrl) {
-        // Fotos fallaron pero cuenta ya está creada — guardar sin fotos
-        console.warn('[REGISTRO] Fotos no subidas, continuando sin ellas');
-      }
+  if (sessionToken?.access_token) {
+    await sb.auth.setSession({
+      access_token:  sessionToken.access_token,
+      refresh_token: sessionToken.refresh_token,
+    });
+    console.log('[REG] Sesión activa ✅');
+  } else {
+    // Sin sesión inmediata (email confirmation activo) → login manual
+    const { data: loginData, error: loginErr } = await sb.auth.signInWithPassword({ email, password: pwd });
+    if (!loginErr && loginData?.session) {
+      console.log('[REG] Login manual ✅');
+    } else {
+      console.warn('[REG] Sin sesión — fotos se omiten, registro continúa');
     }
+  }
 
-    // ── Paso 4: Insertar en tabla delivery ────────────────────
-    btn.textContent = '4/4 Guardando datos...';
+  // ── PASO 3: Subir fotos ─────────────────────────────────────
+  btn.textContent = '3/4 Subiendo fotos...';
+  let duiUrl  = null;
+  let motoUrl = null;
 
-    // Verificar si ya existe un registro con este perfil_id o email
-    const { data: existing } = await sb.from('delivery')
-      .select('id').eq('email', email).maybeSingle();
+  try {
+    duiUrl  = await subirFotoConUID(duiFile,  'dui',  uid);
+    motoUrl = await subirFotoConUID(motoFile, 'moto', uid);
+    console.log('[REG] DUI:', !!duiUrl, '| Moto:', !!motoUrl);
+  } catch(fotoErr) {
+    console.warn('[REG] Error fotos (no crítico):', fotoErr.message);
+  }
 
-    if (!existing) {
-      // Construir id único basado en timestamp para evitar conflictos con AppSheet IDs
-      // Generar ID numérico alto que no choque con IDs heredados de AppSheet
-      // AppSheet usaba IDs pequeños; usamos timestamp en ms truncado a 8 dígitos
-      const nuevoId = 90000000 + Math.floor(Math.random() * 9999999);
+  // ── PASO 4: Insertar en delivery ────────────────────────────
+  btn.textContent = '4/4 Guardando datos...';
 
-      const { error: delErr } = await sb.from('delivery').insert({
-        id:           nuevoId,
-        nombre,
-        celular,
-        email,
-        foto_dui_url:  duiUrl  ?? null,
-        foto_moto_url: motoUrl ?? null,
-        estatus:      'PENDIENTE_APROBACION',
-        turno:        'FUERA_TURNO',
-        pedidos_activos: 0,
-        perfil_id:    uid,
-      });
+  // Generar ID único que no choque con AppSheet (ellos usan IDs pequeños)
+  const nuevoId = 80000000 + Math.floor(Math.random() * 19999999);
 
-      if (delErr) {
-        console.error('[REGISTRO] Error insertar delivery:', delErr);
-        // Si falla por id duplicado, intentar sin id (SERIAL auto)
-        if (delErr.code === '23505') {
-          const { error: delErr2 } = await sb.from('delivery').insert({
-            nombre, celular, email,
-            foto_dui_url:  duiUrl  ?? null,
-            foto_moto_url: motoUrl ?? null,
-            estatus:      'PENDIENTE_APROBACION',
-            turno:        'FUERA_TURNO',
-            pedidos_activos: 0,
-            perfil_id:    uid,
-          });
-          if (delErr2) {
-            mostrarRegError('Cuenta creada pero error al guardar datos: ' + delErr2.message + ' — Contacta a soporte.');
-            btn.disabled = false; btn.textContent = 'Enviar Solicitud';
-            return;
-          }
-        } else {
-          mostrarRegError('Error al guardar datos: ' + delErr.message);
-          btn.disabled = false; btn.textContent = 'Enviar Solicitud';
-          return;
-        }
+  const deliveryData = {
+    id:            nuevoId,
+    nombre,
+    celular,
+    email,
+    foto_dui_url:  duiUrl  ?? null,
+    foto_moto_url: motoUrl ?? null,
+    estatus:       'PENDIENTE_APROBACION',
+    turno:         'FUERA_TURNO',
+    pedidos_activos: 0,
+    perfil_id:     uid,
+  };
+
+  const { error: insertErr } = await sb.from('delivery').insert(deliveryData);
+
+  if (insertErr) {
+    console.error('[REG] Insert error:', insertErr.code, insertErr.message);
+
+    if (insertErr.code === '23505') {
+      // Ya existe → actualizar perfil_id si está vacío
+      const { error: updErr } = await sb.from('delivery')
+        .update({ perfil_id: uid, foto_dui_url: duiUrl ?? null, foto_moto_url: motoUrl ?? null })
+        .eq('email', email)
+        .is('perfil_id', null);
+
+      if (updErr) {
+        // Ya tiene cuenta — mostrar pantalla de pendiente igual
+        console.warn('[REG] Ya existía registro delivery, continuando');
       }
+    } else if (insertErr.message?.includes('perfil_id') || insertErr.code === '42703') {
+      return regErr('⚠️ Ejecuta delivery-sql.sql en Supabase primero (columna perfil_id no existe).');
+    } else {
+      return regErr('Error al guardar: ' + insertErr.message);
     }
+  }
 
-    console.log('[REGISTRO] ✅ Registro completo');
-
-    // ── Mostrar pantalla de pendiente ─────────────────────────
-    document.getElementById('registerCard').style.display   = 'none';
-    document.getElementById('pendienteCard').style.display  = 'block';
+  console.log('[REG] ✅ Registro completo');
+  document.getElementById('registerCard').style.display  = 'none';
+  document.getElementById('pendienteCard').style.display = 'block';
 
   } catch (e) {
     console.error('[REGISTRO] Excepción inesperada:', e);
