@@ -10,17 +10,30 @@
   let _sb = null;           // Supabase client
   let _realtimeSub = null;  // Suscripción realtime activa
 
-  // ── Inicializar cliente Supabase ───────────────────────────
-  function init() {
+  // ── Lazy-init: se llama antes de cada operación.
+  // Garantiza que el cliente se crea solo cuando window.supabase
+  // (CDN) ya está disponible, sin depender del orden de eventos.
+  function getClient() {
+    if (_sb) return _sb;
+    if (!window.supabase) {
+      throw new Error('Supabase CDN no cargó. Verifica la conexión y el orden de scripts.');
+    }
+    if (!window.APP_CONFIG || !window.APP_CONFIG.supabase) {
+      throw new Error('APP_CONFIG no disponible. config-seguro-comercios.js no cargó.');
+    }
     const { url, key } = window.APP_CONFIG.supabase;
     _sb = window.supabase.createClient(url, key, {
-      auth: { persistSession: false }   // Usamos nuestra propia sesión
+      auth: { persistSession: false }
     });
-    window.secureLog('✅ Supabase client listo');
+    console.log('✅ Supabase client inicializado');
+    return _sb;
   }
 
+  // Alias público (para compatibilidad, ya no hace falta llamarlo manualmente)
+  function init() { return getClient(); }
+
   // ── Utilidades internas ────────────────────────────────────
-  function san(v) { return window.APP_SECURITY.sanitize(v); }
+  function san(v) { return window.APP_SECURITY ? window.APP_SECURITY.sanitize(v) : String(v).trim(); }
 
   function generarOTP() {
     // 6 dígitos criptográficamente seguros
@@ -44,14 +57,14 @@
     const codigo = generarOTP();
 
     // Eliminar códigos anteriores del mismo número
-    await _sb
+    await getClient()
       .from('codigos_verificacion')
       .delete()
       .eq('celular', celular)
       .eq('tipo', 'COMERCIO');
 
     // Guardar nuevo código en Supabase (expira en 10 min por schema)
-    const { error } = await _sb
+    const { error } = await getClient()
       .from('codigos_verificacion')
       .insert({ celular, codigo, tipo: 'COMERCIO' });
 
@@ -86,7 +99,7 @@
     const codigoClean = san(codigo).trim();
 
     // Buscar código válido (no usado, no expirado)
-    const { data: otpRows, error: otpErr } = await _sb
+    const { data: otpRows, error: otpErr } = await getClient()
       .from('codigos_verificacion')
       .select('*')
       .eq('celular', celular)
@@ -102,13 +115,13 @@
     }
 
     // Marcar como usado
-    await _sb
+    await getClient()
       .from('codigos_verificacion')
       .update({ usado: true })
       .eq('id', otpRows[0].id);
 
     // Buscar si ya existe un usuario de comercio con ese celular
-    const { data: usuarioRows } = await _sb
+    const { data: usuarioRows } = await getClient()
       .from('comercios_usuarios')
       .select(`
         id, celular, nombre, ubicacion_gps, direccion,
@@ -151,7 +164,7 @@
     if (!dir) throw new Error('Dirección requerida');
 
     // Insertar en comercios_usuarios (perfil_id null por ahora, sin Supabase Auth)
-    const { data: nuevoUsuario, error } = await _sb
+    const { data: nuevoUsuario, error } = await getClient()
       .from('comercios_usuarios')
       .insert({
         celular: cel,
@@ -186,7 +199,7 @@
    * (Globales por defecto; en fases futuras se filtra por comercio)
    */
   async function obtenerUbicacionesFrecuentes(comercioId = null) {
-    let query = _sb
+    let query = getClient()
       .from('ubicaciones_frecuentes')
       .select('id, nombre, direccion, ubicacion_gps, ciudad, colonia')
       .order('nombre', { ascending: true });
@@ -215,7 +228,7 @@
   async function guardarUbicacionFrecuente({ nombre, direccion, ubicacionGPS, ciudad, colonia, clienteId }) {
     if (!nombre || !ubicacionGPS) return;
 
-    const { error } = await _sb
+    const { error } = await getClient()
       .from('ubicaciones_frecuentes')
       .upsert({
         nombre: san(nombre),
@@ -235,7 +248,7 @@
    * Carga los pedidos del comercio desde Supabase.
    */
   async function obtenerPedidosComercio(comercioUsuarioId) {
-    const { data, error } = await _sb
+    const { data, error } = await getClient()
       .from('pedidos')
       .select(`
         id, no_orden, created_at, estatus,
@@ -263,11 +276,11 @@
   function suscribirPedidos(comercioUsuarioId, callback) {
     // Limpiar suscripción anterior si existe
     if (_realtimeSub) {
-      _sb.removeChannel(_realtimeSub);
+      getClient().removeChannel(_realtimeSub);
       _realtimeSub = null;
     }
 
-    _realtimeSub = _sb
+    _realtimeSub = getClient()
       .channel(`pedidos_comercio_${comercioUsuarioId}`)
       .on(
         'postgres_changes',
@@ -290,7 +303,7 @@
 
   function desuscribirPedidos() {
     if (_realtimeSub) {
-      _sb.removeChannel(_realtimeSub);
+      getClient().removeChannel(_realtimeSub);
       _realtimeSub = null;
       window.secureLog('📡 Realtime desuscrito');
     }
@@ -307,7 +320,7 @@
     // Intenta obtener tarifa del servidor (más confiable)
     if (distKm > 0) {
       try {
-        const { data: tarifaData } = await _sb
+        const { data: tarifaData } = await getClient()
           .rpc('calcular_tarifa', { p_distancia_km: distKm });
         if (tarifaData?.tarifa_final) {
           tarifaCalculada = tarifaData.tarifa_final;
@@ -362,7 +375,7 @@
         : null
     };
 
-    const { data, error } = await _sb
+    const { data, error } = await getClient()
       .from('pedidos')
       .insert(pedido)
       .select('id, no_orden')
@@ -392,7 +405,7 @@
 
     if (distKm > 0) {
       try {
-        const { data: tarifaData } = await _sb
+        const { data: tarifaData } = await getClient()
           .rpc('calcular_tarifa', { p_distancia_km: distKm });
         if (tarifaData?.tarifa_final) tarifaCalculada = tarifaData.tarifa_final;
       } catch (e) { /* usa tarifa del cliente */ }
@@ -442,7 +455,7 @@
       }
     };
 
-    const { data, error } = await _sb
+    const { data, error } = await getClient()
       .from('pedidos')
       .insert(pedido)
       .select('id, no_orden')
@@ -489,18 +502,8 @@
     registrarEnvio,
     registrarSolicitudEntrega,
     // Acceso directo al cliente (para casos avanzados)
-    get client() { return _sb; }
+    get client() { return getClient(); }
   };
 
-  // ── Auto-init: se ejecuta inmediatamente cuando el script carga.
-  // config-seguro-comercios.js siempre carga antes, así que APP_CONFIG
-  // ya está disponible en este punto. No depender de DOMContentLoaded.
-  if (window.APP_CONFIG && window.APP_CONFIG.supabase) {
-    init();
-  } else {
-    // Fallback: esperar a que config cargue (no debería ocurrir normalmente)
-    document.addEventListener('DOMContentLoaded', () => {
-      if (!_sb && window.APP_CONFIG) init();
-    });
-  }
+  // No se necesita init() explícito — getClient() hace lazy-init automático.
 })();
