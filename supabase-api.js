@@ -491,4 +491,16 @@
     // Acceso directo al cliente (para casos avanzados)
     get client() { return _sb; }
   };
+
+  // ── Auto-init: se ejecuta inmediatamente cuando el script carga.
+  // config-seguro-comercios.js siempre carga antes, así que APP_CONFIG
+  // ya está disponible en este punto. No depender de DOMContentLoaded.
+  if (window.APP_CONFIG && window.APP_CONFIG.supabase) {
+    init();
+  } else {
+    // Fallback: esperar a que config cargue (no debería ocurrir normalmente)
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!_sb && window.APP_CONFIG) init();
+    });
+  }
 })();
