@@ -505,41 +505,54 @@ function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
 }
 
 function obtenerCiudad(lat, lon) {
+  // Bounding boxes precisas — se verifican ANTES que la distancia euclidiana
+  // SAN PEDRO SULA: cubre el área urbana real (más grande que Choloma)
+  if (lat >= 15.42 && lat <= 15.58 && lon >= -88.18 && lon <= -87.92) {
+    window.secureLog('Ciudad detectada: San Pedro Sula');
+    return 'SAN_PEDRO_SULA';
+  }
+  // CHOLOMA: al norte de SPS, separada por coordenadas
+  if (lat >= 15.58 && lat <= 15.72 && lon >= -88.05 && lon <= -87.82) {
+    window.secureLog('Ciudad detectada: Choloma');
+    return 'CHOLOMA';
+  }
+  // VILLANUEVA: al sur-oeste de SPS
+  if (lat >= 15.28 && lat <= 15.40 && lon >= -88.10 && lon <= -87.90) {
+    window.secureLog('Ciudad detectada: Villanueva');
+    return 'VILLANUEVA';
+  }
+  // LA LIMA
+  if (lat >= 15.38 && lat <= 15.50 && lon >= -87.98 && lon <= -87.82) {
+    window.secureLog('Ciudad detectada: La Lima');
+    return 'LA_LIMA';
+  }
+
+  // Fallback: distancia euclidiana para otras ciudades
   const ciudades = [
-    { nombre: 'Choloma', lat: 15.61, lon: -87.95, radio: 0.10 },
-    { nombre: 'San Pedro Sula', lat: 15.50, lon: -88.03, radio: 0.15 },
-    { nombre: 'Tegucigalpa', lat: 14.08, lon: -87.21, radio: 0.15 },
-    { nombre: 'La Ceiba', lat: 15.78, lon: -86.80, radio: 0.10 },
-    { nombre: 'El Progreso', lat: 15.40, lon: -87.80, radio: 0.08 },
-    { nombre: 'Comayagua', lat: 14.45, lon: -87.64, radio: 0.10 },
-    { nombre: 'Puerto Corts', lat: 15.85, lon: -87.94, radio: 0.08 },
-    { nombre: 'Villanueva', lat: 15.32, lon: -88.00, radio: 0.08 },
-    { nombre: 'La Lima', lat: 15.43, lon: -87.91, radio: 0.06 },
-    { nombre: 'Choluteca', lat: 13.30, lon: -87.19, radio: 0.10 },
-    { nombre: 'Danl', lat: 14.03, lon: -86.58, radio: 0.08 },
-    { nombre: 'Juticalpa', lat: 14.66, lon: -86.22, radio: 0.08 },
-    { nombre: 'Santa Rosa de Copn', lat: 14.77, lon: -88.78, radio: 0.08 },
-    { nombre: 'Siguatepeque', lat: 14.60, lon: -87.84, radio: 0.08 },
-    { nombre: 'Tocoa', lat: 15.66, lon: -86.00, radio: 0.08 },
-    { nombre: 'Tela', lat: 15.78, lon: -87.46, radio: 0.08 }
+    { nombre: 'TEGUCIGALPA',        lat: 14.08, lon: -87.21, radio: 0.15 },
+    { nombre: 'LA_CEIBA',           lat: 15.78, lon: -86.80, radio: 0.10 },
+    { nombre: 'EL_PROGRESO',        lat: 15.40, lon: -87.80, radio: 0.08 },
+    { nombre: 'COMAYAGUA',          lat: 14.45, lon: -87.64, radio: 0.10 },
+    { nombre: 'PUERTO_CORTES',      lat: 15.85, lon: -87.94, radio: 0.08 },
+    { nombre: 'CHOLUTECA',          lat: 13.30, lon: -87.19, radio: 0.10 },
+    { nombre: 'DANLI',              lat: 14.03, lon: -86.58, radio: 0.08 },
+    { nombre: 'JUTICALPA',          lat: 14.66, lon: -86.22, radio: 0.08 },
+    { nombre: 'SANTA_ROSA_COPAN',   lat: 14.77, lon: -88.78, radio: 0.08 },
+    { nombre: 'SIGUATEPEQUE',       lat: 14.60, lon: -87.84, radio: 0.08 },
+    { nombre: 'TELA',               lat: 15.78, lon: -87.46, radio: 0.08 },
+    { nombre: 'TOCOA',              lat: 15.66, lon: -86.00, radio: 0.08 },
   ];
 
   for (const ciudad of ciudades) {
     const distancia = Math.sqrt(Math.pow(lat - ciudad.lat, 2) + Math.pow(lon - ciudad.lon, 2));
     if (distancia < ciudad.radio) {
-      window.secureLog(` Ciudad detectada: ${ciudad.nombre}`);
+      window.secureLog(`Ciudad detectada: ${ciudad.nombre}`);
       return ciudad.nombre;
     }
   }
 
-  if (lat >= 15.3 && lat <= 16.0 && lon >= -88.5 && lon <= -87.3) return 'Corts';
-  else if (lat >= 13.8 && lat <= 14.4 && lon >= -87.5 && lon <= -86.8) return 'Francisco Morazn';
-  else if (lat >= 15.5 && lat <= 16.0 && lon >= -87.0 && lon <= -86.0) return 'Atlntida';
-  else if (lat >= 14.4 && lat <= 15.0 && lon >= -86.8 && lon <= -86.0) return 'Olancho';
-  else if (lat >= 13.0 && lat <= 13.8 && lon >= -87.5 && lon <= -86.8) return 'Choluteca';
-
-  window.secureLog('ï Ciudad no detectada, usando genrico');
-  return 'Honduras';
+  window.secureLog('Ciudad no detectada, usando CHOLOMA como default');
+  return 'CHOLOMA';
 }
 
 async function calcularDistanciaOSRM(lat1, lon1, lat2, lon2) {
@@ -1459,7 +1472,7 @@ document.getElementById('menuLogoutBtn').addEventListener('click', () => {
     document.getElementById('contentSolicitarEntrega').classList.add('hidden');
     document.getElementById('contentMisEnvios').classList.remove('hidden');
     document.getElementById('contentMiEquipo')?.classList.add('hidden');
-    cargarMisEnviosCorregida();
+    cargarMisEnvios();
   });
 
   // ── Tab Mi Equipo ────────────────────────────────────────
