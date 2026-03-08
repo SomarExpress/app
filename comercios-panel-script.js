@@ -263,6 +263,12 @@ configurarAutocomplete('ubicacionRecogidaPaquete', async (ubicacion) => {
 
 function verificarSesion() {
   const comercioGuardado = window.APP_SECURITY.getSecureSession('somarComercioUser');
+  // Restaurar sesión Supabase autenticada si existe
+  const savedAuthSession = window.APP_SECURITY.getSecureSession('somarComercioSession');
+  if (savedAuthSession?.access_token) {
+    window.SomarAPI.setSession(savedAuthSession.access_token, savedAuthSession.refresh_token)
+      .catch(e => console.warn('No se pudo restaurar sesión Auth:', e));
+  }
   if (comercioGuardado) {
     try {
       appData.comercio = comercioGuardado;
@@ -323,8 +329,19 @@ async function verificarCodigoIngresado(codigo) {
 
     if (result.success) {
       if (!result.esNuevo) {
+        // ── Activar sesión autenticada (RLS por auth.uid()) ──
+        if (result.session?.access_token) {
+          await window.SomarAPI.setSession(
+            result.session.access_token,
+            result.session.refresh_token
+          );
+        }
         appData.comercio = result.comercio;
         window.APP_SECURITY.saveSecureSession('somarComercioUser', appData.comercio);
+        // Guardar sesión para restaurarla si recarga la página
+        if (result.session) {
+          window.APP_SECURITY.saveSecureSession('somarComercioSession', result.session);
+        }
         document.getElementById('authModal').classList.add('hidden');
         document.getElementById('mainContent').classList.remove('hidden');
         document.getElementById('comercioName').textContent = appData.comercio.nombre;

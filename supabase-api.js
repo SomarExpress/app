@@ -7,12 +7,11 @@
 (function () {
   'use strict';
 
-  let _sb = null;           // Supabase client
+  let _sb = null;           // Supabase client (anon, sin sesión)
+  let _sbAuth = null;       // Supabase client (con sesión del usuario)
   let _realtimeSub = null;  // Suscripción realtime activa
 
-  // ── Lazy-init: se llama antes de cada operación.
-  // Garantiza que el cliente se crea solo cuando window.supabase
-  // (CDN) ya está disponible, sin depender del orden de eventos.
+  // ── Lazy-init del cliente base (sin sesión) ──────────────
   function getClient() {
     if (_sb) return _sb;
     if (!window.supabase) {
@@ -31,6 +30,35 @@
 
   // Alias público (para compatibilidad, ya no hace falta llamarlo manualmente)
   function init() { return getClient(); }
+
+  /**
+   * Configura la sesión del usuario autenticado.
+   * Llamar después de verificar OTP con el token devuelto.
+   * A partir de aquí, todas las operaciones usan este cliente
+   * autenticado y las políticas RLS filtran por auth.uid().
+   */
+  async function setSession(accessToken, refreshToken) {
+    if (!accessToken) return;
+    const { url, key } = window.APP_CONFIG.supabase;
+    _sbAuth = window.supabase.createClient(url, key, {
+      auth: { persistSession: false, autoRefreshToken: true }
+    });
+    const { error } = await _sbAuth.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken ?? accessToken,
+    });
+    if (error) {
+      console.warn('⚠️ Error setting session, fallback to anon:', error.message);
+      _sbAuth = null;
+    } else {
+      console.log('🔐 Sesión autenticada activa');
+    }
+  }
+
+  /** Devuelve cliente autenticado si existe, sino el anon base */
+  function getAuthClient() {
+    return _sbAuth ?? getClient();
+  }
 
   // ── Utilidades internas ────────────────────────────────────
   function san(v) { return window.APP_SECURITY ? window.APP_SECURITY.sanitize(v) : String(v).trim(); }
@@ -128,7 +156,7 @@
    * (Globales por defecto; en fases futuras se filtra por comercio)
    */
   async function obtenerUbicacionesFrecuentes(comercioId = null) {
-    let query = getClient()
+    let query = getAuthClient()
       .from('ubicaciones_frecuentes')
       .select('id, nombre, direccion, ubicacion_gps, ciudad, colonia')
       .order('nombre', { ascending: true });
@@ -157,7 +185,7 @@
   async function guardarUbicacionFrecuente({ nombre, direccion, ubicacionGPS, ciudad, colonia, clienteId }) {
     if (!nombre || !ubicacionGPS) return;
 
-    const { error } = await getClient()
+    const { error } = await getAuthClient()
       .from('ubicaciones_frecuentes')
       .upsert({
         nombre: san(nombre),
@@ -177,7 +205,7 @@
    * Carga los pedidos del comercio desde Supabase.
    */
   async function obtenerPedidosComercio(comercioUsuarioId) {
-    const { data, error } = await getClient()
+    const { data, error } = await getAuthClient()
       .from('pedidos')
       .select(`
         id, no_orden, created_at, estatus,
@@ -205,7 +233,7 @@
   function suscribirPedidos(comercioUsuarioId, callback) {
     // Limpiar suscripción anterior si existe
     if (_realtimeSub) {
-      getClient().removeChannel(_realtimeSub);
+      getAuthClient().removeChannel(_realtimeSub);
       _realtimeSub = null;
     }
 
@@ -232,7 +260,7 @@
 
   function desuscribirPedidos() {
     if (_realtimeSub) {
-      getClient().removeChannel(_realtimeSub);
+      getAuthClient().removeChannel(_realtimeSub);
       _realtimeSub = null;
       window.secureLog('📡 Realtime desuscrito');
     }
@@ -249,7 +277,7 @@
     // Intenta obtener tarifa del servidor (más confiable)
     if (distKm > 0) {
       try {
-        const { data: tarifaData } = await getClient()
+        const { data: tarifaData } = await getAuthClient()
           .rpc('calcular_tarifa', { p_distancia_km: distKm });
         if (tarifaData?.tarifa_final) {
           tarifaCalculada = tarifaData.tarifa_final;
@@ -304,7 +332,7 @@
         : null
     };
 
-    const { data, error } = await getClient()
+    const { data, error } = await getAuthClient()
       .from('pedidos')
       .insert(pedido)
       .select('id, no_orden')
@@ -334,7 +362,7 @@
 
     if (distKm > 0) {
       try {
-        const { data: tarifaData } = await getClient()
+        const { data: tarifaData } = await getAuthClient()
           .rpc('calcular_tarifa', { p_distancia_km: distKm });
         if (tarifaData?.tarifa_final) tarifaCalculada = tarifaData.tarifa_final;
       } catch (e) { /* usa tarifa del cliente */ }
@@ -384,7 +412,7 @@
       }
     };
 
-    const { data, error } = await getClient()
+    const { data, error } = await getAuthClient()
       .from('pedidos')
       .insert(pedido)
       .select('id, no_orden')
@@ -450,6 +478,8 @@
     desuscribirPedidos,
     registrarEnvio,
     registrarSolicitudEntrega,
+    // Autenticación
+    setSession,
     // Gestión de usuarios (solo dueño)
     listarUsuarios,
     agregarUsuario,
