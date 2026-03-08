@@ -1,93 +1,77 @@
 // ========================================
-// CONFIGURACIÓN SEGURA - COMERCIOS PANEL
-// Somar Express v2.0 — Supabase Edition
+// CONFIGURACIÓN — SOMAR EXPRESS COMERCIOS
 // ========================================
+// La anon/public key de Supabase es segura en el frontend —
+// es una clave JWT de solo lectura pública por diseño.
+// La service_role key NUNCA va aquí, solo en Edge Functions.
 
-(function () {
-  'use strict';
+window.APP_CONFIG = {
+  // Google Apps Script (legacy)
+  apiEndpoint: atob('aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4OU0wbE5jVzZxREE1WDBaa0NvZzVLYXpoblRDSkc0MmxscmlIdVcwSXQ1YTZRVzBpS3dXMzNlTjRqSjVkNGVaQkVkUS9leGVj'),
 
-  // ── Credenciales Supabase (anon key es segura en el frontend,
-  //    la protección real viene de las políticas RLS en la BD) ──
-  // Ofuscadas con atob para evitar scrapers automáticos
-  const _sb = {
-    u: atob('aHR0cHM6Ly9qanJtem91aWdjbWV6dGt5YnJ2cC5zdXBhYmFzZS5jbw=='),
-    k: atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SWlwcWFuSm1lbTkxYVdkallXMWxlblJyZVdKeWRuQWlMQ0p5YjJ4bElqb2lZVzV2YmlJc0ltbGhkQ0k2TVRjM01qa3pNVEUwT0N3aVpYQWlPakl3T0RnMU1EY3hORGg5LnROVUh4R1dNV2g3UTZ2NG1IMnk1Z094cGN6cEVKSHdOcXdIMlRlaEw2MUk=')
-  };
+  // ── Supabase ─────────────────────────────────────────────
+  supabase: {
+    url: 'https://jjrmzouigcmeztkybrvp.supabase.co',
+    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impqcm16b3VpZ2NtZXp0a3licnZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MzExNDgsImV4cCI6MjA4ODUwNzE0OH0.tNUHxGWMWh7Q6v4mH3y5gOxpczpEJHwNqwH2TehL61I'
+  },
 
-  // Apps Script ya no se usa para OTP — todo pasa por Supabase Edge Functions
+  // ── Cloudinary ───────────────────────────────────────────
+  cloudinary: {
+    cloudName:    'drkaxsziu',
+    uploadPreset: 'PAQUETES_COMERCIOS'
+  },
 
-  // ── Cloudinary ──
-  const _cl = {
-    n: atob('ZHJrYXhzeml1'),
-    p: atob('UEFRVUVURV9DT01FUkNJT1M=')
-  };
+  debug: true,
+  allowedDomain: window.location.hostname
+};
 
-  // ── Dominios permitidos ──
-  const ALLOWED_DOMAINS = [
-    'localhost',
-    '127.0.0.1',
-    'somarexpress.github.io',
-    'github.io',
-    'vercel.app',
-    'pages.dev'
-  ];
+// ── Logs seguros ─────────────────────────────────────────
+window.secureLog = function(...args) {
+  if (window.APP_CONFIG.debug) console.log(...args);
+};
 
-  // ── Seguridad ──
-  const Security = {
-    validateOrigin() {
-      return ALLOWED_DOMAINS.some(d => window.location.hostname.includes(d));
-    },
-    _key: 'SomarX_2025',
-    encryptData(data) {
-      try { return btoa(unescape(encodeURIComponent(JSON.stringify(data)))); }
-      catch { return null; }
-    },
-    decryptData(data) {
-      try { return JSON.parse(decodeURIComponent(escape(atob(data)))); }
-      catch { return null; }
-    },
-    saveSecureSession(key, data) {
-      const enc = this.encryptData(data);
-      if (enc) sessionStorage.setItem(key, enc);   // sessionStorage > localStorage (expira al cerrar tab)
-    },
-    getSecureSession(key) {
-      const enc = sessionStorage.getItem(key);
-      if (!enc) return null;
-      return this.decryptData(enc);
-    },
-    clearSession(key) {
-      sessionStorage.removeItem(key);
-    },
-    // Sanitizar inputs antes de enviar a la BD
-    sanitize(str) {
-      if (typeof str !== 'string') return str;
-      return str.trim().replace(/[<>]/g, '');
-    },
-    // Validar número de teléfono hondureño
-    validatePhone(num) {
-      const clean = num.replace(/\D/g, '');
-      return clean.length >= 8 && clean.length <= 15;
-    }
-  };
+// ── Funciones de seguridad y sesiones ────────────────────
+window.APP_SECURITY = {
+  validateOrigin: function() {
+    const valid = ['localhost', '127.0.0.1', 'somarexpress.github.io', 'github.io', 'vercel.app', 'pages.dev'];
+    return valid.some(d => window.location.hostname.includes(d));
+  },
 
-  // ── Logs seguros (off en producción) ──
-  const DEBUG = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  window.secureLog = function (...args) {
-    if (DEBUG) console.log(...args);
-  };
+  validatePhone: function(phone) {
+    const digits = String(phone || '').replace(/\D/g, '');
+    return digits.length >= 8 && digits.length <= 11;
+  },
 
-  // ── Exportar configuración ──
-  window.APP_CONFIG = {
-    supabase: { url: _sb.u, key: _sb.k },
-    // whatsappEndpoint eliminado — OTP va por Edge Functions
-    cloudinary: { cloudName: _cl.n, uploadPreset: _cl.p },
-    debug: DEBUG
-  };
-  window.APP_SECURITY = Security;
+  sanitize: function(v) {
+    return String(v ?? '').trim().replace(/<[^>]*>/g, '');
+  },
 
-  if (DEBUG) {
-    console.log('✅ Config Somar Express cargada');
-    console.log('🌐 Dominio:', window.location.hostname);
-    console.log('🔒 Origen válido:', Security.validateOrigin());
+  encryptData: function(data) {
+    try { return btoa(unescape(encodeURIComponent(JSON.stringify(data)))); }
+    catch(e) { return null; }
+  },
+
+  decryptData: function(data) {
+    try { return JSON.parse(decodeURIComponent(escape(atob(data)))); }
+    catch(e) { return null; }
+  },
+
+  saveSecureSession: function(key, data) {
+    const enc = this.encryptData(data);
+    if (enc) localStorage.setItem(key, enc);
+  },
+
+  getSecureSession: function(key) {
+    const enc = localStorage.getItem(key);
+    if (!enc) return null;
+    return this.decryptData(enc);
+  },
+
+  clearSession: function(key) {
+    localStorage.removeItem(key);
   }
-})();
+};
+
+// ── Verificación en consola ───────────────────────────────
+console.log('✅ Config cargada | Supabase URL:', window.APP_CONFIG.supabase.url);
+console.log('🔑 Anon key OK:', window.APP_CONFIG.supabase.key.startsWith('eyJ'));
