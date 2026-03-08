@@ -261,11 +261,24 @@ configurarAutocomplete('ubicacionRecogidaPaquete', async (ubicacion) => {
 // AUTENTICACIN
 // ============================================
 
-function verificarSesion() {
+async function verificarSesion() {
   const comercioGuardado = window.APP_SECURITY.getSecureSession('somarComercioUser');
   if (comercioGuardado) {
     try {
       appData.comercio = comercioGuardado;
+
+      // ── Restaurar JWT de sesión guardada ──────────────────
+      if (appData.comercio._accessToken) {
+        await window.SomarAPI.setJWTSession(
+          appData.comercio._accessToken,
+          appData.comercio._refreshToken ?? ''
+        ).catch(() => {
+          // Token expirado — limpiar y pedir login nuevo
+          window.APP_SECURITY.clearSession('somarComercioUser');
+          location.reload();
+          return false;
+        });
+      }
 
       // Refrescar esDueno desde Supabase (puede haber cambiado o ser sesión vieja)
       if (appData.comercio.usuarioId) {
@@ -346,6 +359,15 @@ async function verificarCodigoIngresado(codigo) {
     if (result.success) {
       if (!result.esNuevo) {
         appData.comercio = result.comercio;
+        // ── Inyectar JWT para RLS ──────────────────────────
+        if (result.session?.access_token) {
+          await window.SomarAPI.setJWTSession(
+            result.session.access_token,
+            result.session.refresh_token ?? ''
+          );
+          appData.comercio._accessToken  = result.session.access_token;
+          appData.comercio._refreshToken = result.session.refresh_token;
+        }
         window.APP_SECURITY.saveSecureSession('somarComercioUser', appData.comercio);
         document.getElementById('authModal').classList.add('hidden');
         document.getElementById('mainContent').classList.remove('hidden');
@@ -396,6 +418,15 @@ async function completarRegistroComercio(nombreNegocio, nombrePersona, direccion
     });
 
     appData.comercio = result.comercio;
+    // ── Inyectar JWT para RLS ──────────────────────────────
+    if (result.session?.access_token) {
+      await window.SomarAPI.setJWTSession(
+        result.session.access_token,
+        result.session.refresh_token
+      );
+      appData.comercio._accessToken  = result.session.access_token;
+      appData.comercio._refreshToken = result.session.refresh_token;
+    }
     window.APP_SECURITY.saveSecureSession('somarComercioUser', appData.comercio);
     document.getElementById('authModal').classList.add('hidden');
     document.getElementById('mainContent').classList.remove('hidden');
