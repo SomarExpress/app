@@ -71,13 +71,17 @@
     });
   }
 
-  async function registrarComercio({ celular, nombre, nombreNegocio, direccion, ubicacionGPS }) {
+  async function registrarComercio({ celular, nombre, nombreNegocio, direccion, ubicacionGPS, ciudad, categoria, apertura, cierre }) {
     const result = await callEdge('registrar-comercio', {
       celular:        san(celular),
       nombre:         san(nombre),
       nombreNegocio:  san(nombreNegocio || nombre),
       direccion:      san(direccion),
-      ubicacionGPS:   san(ubicacionGPS || '')
+      ubicacionGPS:   san(ubicacionGPS || ''),
+      ciudad:         san(ciudad || 'CHOLOMA'),
+      categoria:      san(categoria || 'OTRO'),
+      apertura:       apertura || '08:00',
+      cierre:         cierre   || '21:00'
     });
     if (!result.success) throw new Error(result.error || 'Error al registrar');
     return result;
