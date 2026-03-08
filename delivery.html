@@ -582,8 +582,7 @@
 // ── Config ──────────────────────────────────────────────────
 const SUPA_URL  = 'https://jjrmzouigcmeztkybrvp.supabase.co';
 const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impqcm16b3VpZ2NtZXp0a3licnZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MzExNDgsImV4cCI6MjA4ODUwNzE0OH0.tNUHxGWMWh7Q6v4mH3y5gOxpczpEJHwNqwH2TehL61I';
-const CLOUDINARY_CLOUD = 'drkaxsziu';
-const CLOUDINARY_PRESET = 'PAQUETES_COMERCIOS';
+// Cloudinary no usado en delivery — se usa Supabase Storage
 const EDGE_URL = `${SUPA_URL}/functions/v1`;
 
 const sb = supabase.createClient(SUPA_URL, SUPA_ANON);
@@ -643,25 +642,26 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   const btn = document.getElementById('registerBtn');
   btn.disabled = true; btn.textContent = 'Enviando...';
 
-  // Subir fotos a Cloudinary
+  // Subir fotos a Supabase Storage
   const duiFile  = document.getElementById('duiInput').files[0];
   const motoFile = document.getElementById('motoInput').files[0];
   if (!duiFile || !motoFile) { mostrarRegError('Sube la foto del DUI y del vehículo'); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
 
   btn.textContent = 'Subiendo fotos...';
-  const duiUrl  = await subirCloudinary(duiFile);
-  const motoUrl = await subirCloudinary(motoFile);
-  if (!duiUrl || !motoUrl) { mostrarRegError('Error al subir fotos, intenta de nuevo'); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
-
+  // Para subir fotos antes del login, usamos signup primero y luego subimos
+  // Crear auth user primero para tener uid
   btn.textContent = 'Creando cuenta...';
-  // Crear usuario en Supabase Auth
-  const { data, error } = await sb.auth.signUp({ email, password: pwd });
-  if (error) { mostrarRegError(error.message); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
-
-  const uid = data.user?.id;
+  const { data: signUpData, error: signUpError } = await sb.auth.signUp({ email, password: pwd });
+  if (signUpError) { mostrarRegError(signUpError.message); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
+  const uid = signUpData.user?.id;
   if (!uid) { mostrarRegError('Error al crear cuenta'); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
 
-  // Insertar en tabla delivery
+  btn.textContent = 'Subiendo fotos...';
+  const duiUrl  = await subirFotoAnon(duiFile,  'dui',  uid);
+  const motoUrl = await subirFotoAnon(motoFile, 'moto', uid);
+  if (!duiUrl || !motoUrl) { mostrarRegError('Error al subir fotos, intenta de nuevo'); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
+
+  // Insertar en tabla delivery (uid ya fue creado arriba)
   const { error: delErr } = await sb.from('delivery').insert({
     nombre, celular, email,
     foto_dui_url: duiUrl,
@@ -1081,7 +1081,7 @@ async function avanzarEstado(pedidoId, estatusActual) {
     if (!file) { showToast('⚠️ Sube la foto de la factura'); return; }
 
     showToast('📤 Subiendo factura...');
-    const fotoUrl = await subirCloudinary(file);
+    const fotoUrl = await subirFoto(file, 'factura');
     if (!fotoUrl) { showToast('❌ Error al subir foto'); return; }
 
     const { error } = await sb.from('pedidos').update({
@@ -1217,16 +1217,53 @@ async function cerrarSesion() {
   mostrarAuthScreen();
 }
 
-// ── Cloudinary ───────────────────────────────────────────────
-async function subirCloudinary(file) {
-  const fd = new FormData();
-  fd.append('file', file);
-  fd.append('upload_preset', CLOUDINARY_PRESET);
-  try {
-    const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method:'POST', body: fd });
-    const data = await res.json();
-    return data.secure_url ?? null;
-  } catch(e) { return null; }
+// ── Supabase Storage ─────────────────────────────────────────
+// ── Subir foto anon (durante registro, con uid explícito) ────
+async function subirFotoAnon(file, nombreArchivo, uid) {
+  const ext  = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const path = `${uid}/${nombreArchivo}_${Date.now()}.${ext}`;
+
+  const { data, error } = await sb.storage
+    .from('delivery-docs')
+    .upload(path, file, { cacheControl: '3600', upsert: true, contentType: file.type });
+
+  if (error) { console.error('Storage anon error:', error.message); return null; }
+
+  const { data: urlData } = await sb.storage
+    .from('delivery-docs')
+    .createSignedUrl(data.path, 60 * 60 * 24 * 365 * 10);
+
+  return urlData?.signedUrl ?? null;
+}
+
+// ── Subir foto a Supabase Storage ────────────────────────────
+async function subirFoto(file, nombreArchivo) {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { console.error('Sin sesión para subir foto'); return null; }
+
+  const uid  = session.user.id;
+  const ext  = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const path = `${uid}/${nombreArchivo}_${Date.now()}.${ext}`;
+
+  const { data, error } = await sb.storage
+    .from('delivery-docs')
+    .upload(path, file, {
+      cacheControl: '3600',
+      upsert: true,
+      contentType: file.type,
+    });
+
+  if (error) {
+    console.error('Storage error:', error.message);
+    return null;
+  }
+
+  // URL pública firmada (válida 10 años)
+  const { data: urlData } = await sb.storage
+    .from('delivery-docs')
+    .createSignedUrl(data.path, 60 * 60 * 24 * 365 * 10);
+
+  return urlData?.signedUrl ?? null;
 }
 
 function previewFoto(input, previewId, boxId) {
