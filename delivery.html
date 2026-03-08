@@ -588,6 +588,7 @@ const EDGE_URL = `${SUPA_URL}/functions/v1`;
 const sb = supabase.createClient(SUPA_URL, SUPA_ANON);
 
 // ── State ────────────────────────────────────────────────────
+let pendingUpload = null; // fotos pendientes si email confirmation está activo
 let appState = {
   delivery: null,         // datos del delivery logueado
   pedidosActivos: [],     // pedidos con estatus activo
@@ -660,9 +661,16 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   if (signUpData.session?.access_token) {
     await sb.auth.setSession({ access_token: signUpData.session.access_token, refresh_token: signUpData.session.refresh_token });
   } else {
-    // Email confirmation activo: hacer login con las credenciales recién creadas
-    const { error: loginErr } = await sb.auth.signInWithPassword({ email, password: pwd });
-    if (loginErr) { mostrarRegError('Cuenta creada, inicia sesión manualmente.'); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
+    // Supabase tiene confirmación de email activa.
+    // Guardar fotos en memoria para subirlas al primer login.
+    pendingUpload = { duiFile, motoFile, uid, nombre, celular, email };
+    // Mostrar pantalla de espera — las fotos se subirán al confirmar email y hacer login
+    document.getElementById('registerCard').style.display = 'none';
+    document.getElementById('pendienteCard').style.display = 'block';
+    document.getElementById('pendienteCard').querySelector('div[style*="font-size:14px"]').innerHTML =
+      'Tu solicitud fue recibida.<br><br>⚠️ Para completar el registro, desactiva <b>Email Confirmations</b> en Supabase Auth → Settings.';
+    btn.disabled=false; btn.textContent='Enviar Solicitud';
+    return;
   }
 
   btn.textContent = 'Subiendo fotos...';
@@ -695,8 +703,21 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
 // ── Iniciar app ─────────────────────────────────────────────
 async function iniciarApp(user) {
   // Buscar datos del delivery
-  const { data: del } = await sb.from('delivery')
+  const { data: del, error: delFetchErr } = await sb.from('delivery')
     .select('*').eq('perfil_id', user.id).single();
+
+  if (delFetchErr) {
+    if (delFetchErr.code === '406' || delFetchErr.message?.includes('406') || delFetchErr.message?.includes('perfil_id')) {
+      mostrarLoginError('⚠️ Ejecuta primero delivery-sql.sql en Supabase (columna perfil_id no existe)');
+    } else if (delFetchErr.code === 'PGRST116') {
+      // No encontrado — usuario auth sin registro delivery
+      mostrarAuthScreen();
+    } else {
+      mostrarLoginError('Error: ' + delFetchErr.message);
+    }
+    await sb.auth.signOut();
+    return;
+  }
 
   if (!del) {
     // Usuario auth pero sin registro delivery
