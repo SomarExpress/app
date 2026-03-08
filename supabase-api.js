@@ -12,8 +12,12 @@
 
   let _sb = null;
   let _realtimeSub = null;
+  let _session = null; // JWT session del usuario autenticado
 
-  // ── Cliente Supabase (anon) ────────────────────────────────
+  // ── Cliente Supabase ───────────────────────────────────────
+  // Siempre usa anon key para crear el cliente.
+  // Si hay sesión JWT activa, setSession() la inyecta para que
+  // todas las queries vayan como 'authenticated' → RLS activo.
   function getClient() {
     if (_sb) return _sb;
     if (!window.supabase)
@@ -22,10 +26,28 @@
       throw new Error('APP_CONFIG no disponible.');
     const { url, key } = window.APP_CONFIG.supabase;
     _sb = window.supabase.createClient(url, key, {
-      auth: { persistSession: false }
+      auth: { persistSession: false, autoRefreshToken: true }
     });
     console.log('✅ Supabase client inicializado');
     return _sb;
+  }
+
+  // Inyectar sesión JWT — llamar después de login/registro
+  async function setJWTSession(access_token, refresh_token) {
+    if (!access_token) return false;
+    try {
+      const { error } = await getClient().auth.setSession({ access_token, refresh_token });
+      if (error) {
+        console.warn('⚠️ setSession error:', error.message);
+        return false;
+      }
+      _session = { access_token, refresh_token };
+      console.log('✅ Sesión JWT activa — RLS habilitado');
+      return true;
+    } catch(e) {
+      console.warn('⚠️ setSession excepción:', e.message);
+      return false;
+    }
   }
 
   function san(v) {
@@ -298,7 +320,8 @@
 
   // ── API pública ────────────────────────────────────────────
   window.SomarAPI = {
-    init: () => getClient(),
+    init:           () => getClient(),
+    setJWTSession:  setJWTSession,
     enviarOTP,
     verificarOTP,
     registrarComercio,
