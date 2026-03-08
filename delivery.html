@@ -656,6 +656,15 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   const uid = signUpData.user?.id;
   if (!uid) { mostrarRegError('Error al crear cuenta'); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
 
+  // Activar sesión antes de subir (necesario para RLS de Storage)
+  if (signUpData.session?.access_token) {
+    await sb.auth.setSession({ access_token: signUpData.session.access_token, refresh_token: signUpData.session.refresh_token });
+  } else {
+    // Email confirmation activo: hacer login con las credenciales recién creadas
+    const { error: loginErr } = await sb.auth.signInWithPassword({ email, password: pwd });
+    if (loginErr) { mostrarRegError('Cuenta creada, inicia sesión manualmente.'); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
+  }
+
   btn.textContent = 'Subiendo fotos...';
   const duiUrl  = await subirFotoAnon(duiFile,  'dui',  uid);
   const motoUrl = await subirFotoAnon(motoFile, 'moto', uid);
@@ -1223,12 +1232,22 @@ async function subirFotoAnon(file, nombreArchivo, uid) {
   const ext  = file.name.split('.').pop()?.toLowerCase() || 'jpg';
   const path = `${uid}/${nombreArchivo}_${Date.now()}.${ext}`;
 
+  console.log(`[STORAGE] Subiendo ${path}...`);
+
   const { data, error } = await sb.storage
     .from('delivery-docs')
     .upload(path, file, { cacheControl: '3600', upsert: true, contentType: file.type });
 
-  if (error) { console.error('Storage anon error:', error.message); return null; }
+  if (error) {
+    console.error('[STORAGE] Error:', error.message);
+    // Si falla RLS, intentar con el path sin restricción de carpeta
+    if (error.message.includes('row-level security') || error.message.includes('policy')) {
+      console.warn('[STORAGE] RLS bloqueó — verifica que el SQL delivery-storage-setup.sql fue ejecutado');
+    }
+    return null;
+  }
 
+  console.log('[STORAGE] ✅ Subido:', data.path);
   const { data: urlData } = await sb.storage
     .from('delivery-docs')
     .createSignedUrl(data.path, 60 * 60 * 24 * 365 * 10);
