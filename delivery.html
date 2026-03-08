@@ -628,76 +628,157 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 });
 
 document.getElementById('registerBtn').addEventListener('click', async () => {
+  const btn    = document.getElementById('registerBtn');
+  const errEl  = document.getElementById('registerError');
+  errEl.style.display = 'none';
+
+  // ── Validaciones ──────────────────────────────────────────
   const nombre   = document.getElementById('regNombre').value.trim();
   const celular  = document.getElementById('regCelular').value.trim();
   const email    = document.getElementById('regEmail').value.trim();
   const pwd      = document.getElementById('regPassword').value;
   const pwd2     = document.getElementById('regPassword2').value;
-  const errEl    = document.getElementById('registerError');
-
-  errEl.style.display = 'none';
-  if (!nombre || !celular || !email || !pwd) { mostrarRegError('Completa todos los campos'); return; }
-  if (pwd !== pwd2) { mostrarRegError('Las contraseñas no coinciden'); return; }
-  if (pwd.length < 8) { mostrarRegError('La contraseña debe tener mínimo 8 caracteres'); return; }
-
-  const btn = document.getElementById('registerBtn');
-  btn.disabled = true; btn.textContent = 'Enviando...';
-
-  // Subir fotos a Supabase Storage
   const duiFile  = document.getElementById('duiInput').files[0];
   const motoFile = document.getElementById('motoInput').files[0];
-  if (!duiFile || !motoFile) { mostrarRegError('Sube la foto del DUI y del vehículo'); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
 
-  btn.textContent = 'Subiendo fotos...';
-  // Para subir fotos antes del login, usamos signup primero y luego subimos
-  // Crear auth user primero para tener uid
-  btn.textContent = 'Creando cuenta...';
-  const { data: signUpData, error: signUpError } = await sb.auth.signUp({ email, password: pwd });
-  if (signUpError) { mostrarRegError(signUpError.message); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
-  const uid = signUpData.user?.id;
-  if (!uid) { mostrarRegError('Error al crear cuenta'); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
+  if (!nombre || !celular || !email || !pwd) { mostrarRegError('Completa todos los campos'); return; }
+  if (pwd !== pwd2)    { mostrarRegError('Las contraseñas no coinciden'); return; }
+  if (pwd.length < 8)  { mostrarRegError('La contraseña debe tener mínimo 8 caracteres'); return; }
+  if (!duiFile)        { mostrarRegError('Sube la foto del DUI'); return; }
+  if (!motoFile)       { mostrarRegError('Sube la foto del vehículo'); return; }
 
-  // Activar sesión antes de subir (necesario para RLS de Storage)
-  if (signUpData.session?.access_token) {
-    await sb.auth.setSession({ access_token: signUpData.session.access_token, refresh_token: signUpData.session.refresh_token });
-  } else {
-    // Supabase tiene confirmación de email activa.
-    // Guardar fotos en memoria para subirlas al primer login.
-    pendingUpload = { duiFile, motoFile, uid, nombre, celular, email };
-    // Mostrar pantalla de espera — las fotos se subirán al confirmar email y hacer login
-    document.getElementById('registerCard').style.display = 'none';
-    document.getElementById('pendienteCard').style.display = 'block';
-    document.getElementById('pendienteCard').querySelector('div[style*="font-size:14px"]').innerHTML =
-      'Tu solicitud fue recibida.<br><br>⚠️ Para completar el registro, desactiva <b>Email Confirmations</b> en Supabase Auth → Settings.';
-    btn.disabled=false; btn.textContent='Enviar Solicitud';
-    return;
+  btn.disabled = true;
+
+  try {
+    // ── Paso 1: Crear usuario en Supabase Auth ────────────────
+    btn.textContent = '1/4 Creando cuenta...';
+    const { data: signUpData, error: signUpError } = await sb.auth.signUp({ email, password: pwd });
+
+    if (signUpError) {
+      if (signUpError.message?.includes('already registered')) {
+        mostrarRegError('Este correo ya tiene una cuenta. Intenta iniciar sesión.');
+      } else {
+        mostrarRegError('Error al crear cuenta: ' + signUpError.message);
+      }
+      btn.disabled = false; btn.textContent = 'Enviar Solicitud';
+      return;
+    }
+
+    const uid = signUpData?.user?.id;
+    if (!uid) {
+      mostrarRegError('No se pudo crear el usuario. Intenta de nuevo.');
+      btn.disabled = false; btn.textContent = 'Enviar Solicitud';
+      return;
+    }
+
+    console.log('[REGISTRO] Usuario creado:', uid);
+
+    // ── Paso 2: Activar sesión ────────────────────────────────
+    btn.textContent = '2/4 Autenticando...';
+    let sessionOk = false;
+
+    if (signUpData?.session?.access_token) {
+      // Email confirmation desactivado — sesión inmediata
+      await sb.auth.setSession({
+        access_token:  signUpData.session.access_token,
+        refresh_token: signUpData.session.refresh_token,
+      });
+      sessionOk = true;
+      console.log('[REGISTRO] Sesión activada desde signUp');
+    } else {
+      // Email confirmation activo — hacer login manual
+      console.log('[REGISTRO] Sin sesión en signUp, intentando login...');
+      const { data: loginData, error: loginError } = await sb.auth.signInWithPassword({ email, password: pwd });
+      if (!loginError && loginData?.session) {
+        sessionOk = true;
+        console.log('[REGISTRO] Login manual exitoso');
+      } else {
+        console.warn('[REGISTRO] Login falló:', loginError?.message);
+        // Supabase requiere verificar email — guardar para después
+        sessionOk = false;
+      }
+    }
+
+    // ── Paso 3: Subir fotos (solo si hay sesión) ──────────────
+    let duiUrl  = null;
+    let motoUrl = null;
+
+    if (sessionOk) {
+      btn.textContent = '3/4 Subiendo fotos...';
+
+      duiUrl  = await subirFotoConUID(duiFile,  'dui',  uid);
+      motoUrl = await subirFotoConUID(motoFile, 'moto', uid);
+      console.log('[REGISTRO] Fotos:', { duiUrl: !!duiUrl, motoUrl: !!motoUrl });
+
+      if (!duiUrl || !motoUrl) {
+        // Fotos fallaron pero cuenta ya está creada — guardar sin fotos
+        console.warn('[REGISTRO] Fotos no subidas, continuando sin ellas');
+      }
+    }
+
+    // ── Paso 4: Insertar en tabla delivery ────────────────────
+    btn.textContent = '4/4 Guardando datos...';
+
+    // Verificar si ya existe un registro con este perfil_id o email
+    const { data: existing } = await sb.from('delivery')
+      .select('id').eq('email', email).maybeSingle();
+
+    if (!existing) {
+      // Construir id único basado en timestamp para evitar conflictos con AppSheet IDs
+      // Generar ID numérico alto que no choque con IDs heredados de AppSheet
+      // AppSheet usaba IDs pequeños; usamos timestamp en ms truncado a 8 dígitos
+      const nuevoId = 90000000 + Math.floor(Math.random() * 9999999);
+
+      const { error: delErr } = await sb.from('delivery').insert({
+        id:           nuevoId,
+        nombre,
+        celular,
+        email,
+        foto_dui_url:  duiUrl  ?? null,
+        foto_moto_url: motoUrl ?? null,
+        estatus:      'PENDIENTE_APROBACION',
+        turno:        'FUERA_TURNO',
+        pedidos_activos: 0,
+        perfil_id:    uid,
+      });
+
+      if (delErr) {
+        console.error('[REGISTRO] Error insertar delivery:', delErr);
+        // Si falla por id duplicado, intentar sin id (SERIAL auto)
+        if (delErr.code === '23505') {
+          const { error: delErr2 } = await sb.from('delivery').insert({
+            nombre, celular, email,
+            foto_dui_url:  duiUrl  ?? null,
+            foto_moto_url: motoUrl ?? null,
+            estatus:      'PENDIENTE_APROBACION',
+            turno:        'FUERA_TURNO',
+            pedidos_activos: 0,
+            perfil_id:    uid,
+          });
+          if (delErr2) {
+            mostrarRegError('Cuenta creada pero error al guardar datos: ' + delErr2.message + ' — Contacta a soporte.');
+            btn.disabled = false; btn.textContent = 'Enviar Solicitud';
+            return;
+          }
+        } else {
+          mostrarRegError('Error al guardar datos: ' + delErr.message);
+          btn.disabled = false; btn.textContent = 'Enviar Solicitud';
+          return;
+        }
+      }
+    }
+
+    console.log('[REGISTRO] ✅ Registro completo');
+
+    // ── Mostrar pantalla de pendiente ─────────────────────────
+    document.getElementById('registerCard').style.display   = 'none';
+    document.getElementById('pendienteCard').style.display  = 'block';
+
+  } catch (e) {
+    console.error('[REGISTRO] Excepción inesperada:', e);
+    mostrarRegError('Error inesperado: ' + e.message + ' — Recarga e intenta de nuevo.');
+    btn.disabled = false; btn.textContent = 'Enviar Solicitud';
   }
-
-  btn.textContent = 'Subiendo fotos...';
-  const duiUrl  = await subirFotoAnon(duiFile,  'dui',  uid);
-  const motoUrl = await subirFotoAnon(motoFile, 'moto', uid);
-  if (!duiUrl || !motoUrl) { mostrarRegError('Error al subir fotos, intenta de nuevo'); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
-
-  // Insertar en tabla delivery (uid ya fue creado arriba)
-  const { error: delErr } = await sb.from('delivery').insert({
-    nombre, celular, email,
-    foto_dui_url: duiUrl,
-    foto_moto_url: motoUrl,
-    estatus: 'PENDIENTE_APROBACION',
-    turno: 'FUERA_TURNO',
-    pedidos_activos: 0,
-    perfil_id: uid,
-  });
-
-  if (delErr) {
-    mostrarRegError('Error al guardar datos: ' + delErr.message);
-    btn.disabled=false; btn.textContent='Enviar Solicitud';
-    return;
-  }
-
-  // Mostrar pantalla de pendiente
-  document.getElementById('registerCard').style.display = 'none';
-  document.getElementById('pendienteCard').style.display = 'block';
 });
 
 // ── Iniciar app ─────────────────────────────────────────────
@@ -1111,7 +1192,7 @@ async function avanzarEstado(pedidoId, estatusActual) {
     if (!file) { showToast('⚠️ Sube la foto de la factura'); return; }
 
     showToast('📤 Subiendo factura...');
-    const fotoUrl = await subirFoto(file, 'factura');
+    const fotoUrl = await subirFotoConUID(file, 'factura');
     if (!fotoUrl) { showToast('❌ Error al subir foto'); return; }
 
     const { error } = await sb.from('pedidos').update({
@@ -1249,62 +1330,47 @@ async function cerrarSesion() {
 
 // ── Supabase Storage ─────────────────────────────────────────
 // ── Subir foto anon (durante registro, con uid explícito) ────
-async function subirFotoAnon(file, nombreArchivo, uid) {
-  const ext  = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-  const path = `${uid}/${nombreArchivo}_${Date.now()}.${ext}`;
 
-  console.log(`[STORAGE] Subiendo ${path}...`);
-
-  const { data, error } = await sb.storage
-    .from('delivery-docs')
-    .upload(path, file, { cacheControl: '3600', upsert: true, contentType: file.type });
-
-  if (error) {
-    console.error('[STORAGE] Error:', error.message);
-    // Si falla RLS, intentar con el path sin restricción de carpeta
-    if (error.message.includes('row-level security') || error.message.includes('policy')) {
-      console.warn('[STORAGE] RLS bloqueó — verifica que el SQL delivery-storage-setup.sql fue ejecutado');
-    }
-    return null;
-  }
-
-  console.log('[STORAGE] ✅ Subido:', data.path);
-  const { data: urlData } = await sb.storage
-    .from('delivery-docs')
-    .createSignedUrl(data.path, 60 * 60 * 24 * 365 * 10);
-
-  return urlData?.signedUrl ?? null;
-}
 
 // ── Subir foto a Supabase Storage ────────────────────────────
-async function subirFoto(file, nombreArchivo) {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { console.error('Sin sesión para subir foto'); return null; }
+// ── Subir foto a Supabase Storage ────────────────────────────
+// uid opcional — si no se pasa, usa la sesión activa
+async function subirFotoConUID(file, nombreArchivo, uid = null) {
+  try {
+    if (!uid) {
+      const { data: { session } } = await sb.auth.getSession();
+      uid = session?.user?.id;
+    }
+    if (!uid) { console.error('[STORAGE] Sin uid'); return null; }
 
-  const uid  = session.user.id;
-  const ext  = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-  const path = `${uid}/${nombreArchivo}_${Date.now()}.${ext}`;
+    const ext  = file.name.split('.').pop()?.toLowerCase().replace('jpeg','jpg') || 'jpg';
+    const path = `${uid}/${nombreArchivo}_${Date.now()}.${ext}`;
+    console.log('[STORAGE] Subiendo:', path);
 
-  const { data, error } = await sb.storage
-    .from('delivery-docs')
-    .upload(path, file, {
-      cacheControl: '3600',
-      upsert: true,
-      contentType: file.type,
-    });
+    const { data, error } = await sb.storage
+      .from('delivery-docs')
+      .upload(path, file, { cacheControl: '3600', upsert: true, contentType: file.type });
 
-  if (error) {
-    console.error('Storage error:', error.message);
+    if (error) {
+      console.error('[STORAGE] Error upload:', error.message, error);
+      return null;
+    }
+
+    // URL firmada válida 10 años
+    const { data: urlData, error: urlErr } = await sb.storage
+      .from('delivery-docs')
+      .createSignedUrl(data.path, 60 * 60 * 24 * 365 * 10);
+
+    if (urlErr) { console.error('[STORAGE] Error URL:', urlErr.message); return null; }
+    console.log('[STORAGE] ✅ Listo:', urlData.signedUrl?.substring(0, 60) + '...');
+    return urlData.signedUrl;
+  } catch(e) {
+    console.error('[STORAGE] Excepción:', e.message);
     return null;
   }
-
-  // URL pública firmada (válida 10 años)
-  const { data: urlData } = await sb.storage
-    .from('delivery-docs')
-    .createSignedUrl(data.path, 60 * 60 * 24 * 365 * 10);
-
-  return urlData?.signedUrl ?? null;
 }
+// Alias para facturas (usa sesión activa)
+const subirFoto = (file, nombre) => subirFotoConUID(file, nombre);
 
 function previewFoto(input, previewId, boxId) {
   const file = input.files[0];
