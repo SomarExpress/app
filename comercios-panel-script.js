@@ -349,7 +349,7 @@ async function verificarCodigoIngresado(codigo) {
         appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
         // Mostrar tab Mi Equipo solo al dueño
         if (appData.comercio.esDueno) {
-          document.getElementById('tabMiEquipo')?.classList.remove('hidden');
+          document.getElementById('menuMiEquipo')?.classList.remove('hidden');
         }
         await cargarUbicacionesFrecuentesCorregida();
         // Activar realtime para pedidos
@@ -394,7 +394,7 @@ async function completarRegistroComercio(nombreNegocio, nombrePersona, direccion
     document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
     appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
     // Dueño recién registrado → mostrar tab Mi Equipo
-    document.getElementById('tabMiEquipo')?.classList.remove('hidden');
+    document.getElementById('menuMiEquipo')?.classList.remove('hidden');
     await cargarUbicacionesFrecuentes();
     window.SomarAPI.suscribirPedidos(appData.comercio.usuarioId, () => cargarMisEnvios());
     alert('✅ ¡Comercio registrado exitosamente!');
@@ -1458,13 +1458,15 @@ document.getElementById('menuLogoutBtn').addEventListener('click', () => {
   });
 
   // ── Tab Mi Equipo ────────────────────────────────────────
-  document.getElementById('tabMiEquipo')?.addEventListener('click', () => {
+  document.getElementById('menuMiEquipo')?.addEventListener('click', () => {
+    // Cerrar menú lateral
+    document.body.classList.remove('menu-open');
+    // Quitar resaltado de tabs
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.classList.remove('border-brand-orange', 'brand-orange');
       btn.classList.add('border-transparent', 'text-gray-500');
     });
-    document.getElementById('tabMiEquipo').classList.add('border-brand-orange', 'brand-orange');
-    document.getElementById('tabMiEquipo').classList.remove('border-transparent', 'text-gray-500');
+    // Mostrar Mi Equipo
     document.getElementById('contentNuevoEnvio').classList.add('hidden');
     document.getElementById('contentSolicitarEntrega').classList.add('hidden');
     document.getElementById('contentMisEnvios').classList.add('hidden');
