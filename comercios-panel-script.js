@@ -31,15 +31,14 @@ let appData = {
 
 async function cargarUbicacionesFrecuentes() {
   try {
-    window.secureLog('=== CARGANDO UBICACIONES FRECUENTES ===');
     const ubicaciones = await window.SomarAPI.obtenerUbicacionesFrecuentes(
-      appData.comercio?.id || null
+      appData.comercio?.usuarioId || null
     );
     appData.ubicacionesFrecuentes = ubicaciones;
+    window.ubicacionesFrecuentes = ubicaciones;
     window.secureLog(`✅ ${ubicaciones.length} ubicaciones cargadas`);
-    if (!document.getElementById('contentSolicitarEntrega').classList.contains('hidden')) {
-      configurarAutocompletadosFormularioEntrega();
-    }
+    // Configurar autocompletados en todos los formularios activos
+    try { configurarAutocompletadosFormularioEntrega(); } catch(e) {}
   } catch (error) {
     console.error('Error cargando ubicaciones:', error);
   }
@@ -261,17 +260,8 @@ configurarAutocomplete('ubicacionRecogidaPaquete', async (ubicacion) => {
 // AUTENTICACIN
 // ============================================
 
-async function verificarSesion() {
+function verificarSesion() {
   const comercioGuardado = window.APP_SECURITY.getSecureSession('somarComercioUser');
-  // Restaurar sesión Supabase — AWAIT para que RLS funcione antes de cargar datos
-  const savedAuthSession = window.APP_SECURITY.getSecureSession('somarComercioSession');
-  if (savedAuthSession?.access_token) {
-    try {
-      await window.SomarAPI.setSession(savedAuthSession.access_token, savedAuthSession.refresh_token);
-    } catch(e) {
-      console.warn('No se pudo restaurar sesión Auth:', e);
-    }
-  }
   if (comercioGuardado) {
     try {
       appData.comercio = comercioGuardado;
@@ -337,19 +327,8 @@ async function verificarCodigoIngresado(codigo) {
 
     if (result.success) {
       if (!result.esNuevo) {
-        // ── Activar sesión autenticada (RLS por auth.uid()) ──
-        if (result.session?.access_token) {
-          await window.SomarAPI.setSession(
-            result.session.access_token,
-            result.session.refresh_token
-          );
-        }
         appData.comercio = result.comercio;
         window.APP_SECURITY.saveSecureSession('somarComercioUser', appData.comercio);
-        // Guardar sesión para restaurarla si recarga la página
-        if (result.session) {
-          window.APP_SECURITY.saveSecureSession('somarComercioSession', result.session);
-        }
         document.getElementById('authModal').classList.add('hidden');
         document.getElementById('mainContent').classList.remove('hidden');
         document.getElementById('comercioName').textContent = appData.comercio.nombre;
@@ -359,7 +338,7 @@ async function verificarCodigoIngresado(codigo) {
         if (appData.comercio.esDueno) {
           document.getElementById('menuMiEquipo')?.classList.remove('hidden');
         }
-        await cargarUbicacionesFrecuentesCorregida();
+        await cargarUbicacionesFrecuentes();
         // Activar realtime para pedidos
         window.SomarAPI.suscribirPedidos(appData.comercio.usuarioId, () => cargarMisEnvios());
         alert(`✅ Bienvenido ${appData.comercio.nombre}!`);
@@ -1462,7 +1441,7 @@ document.getElementById('menuLogoutBtn').addEventListener('click', () => {
     document.getElementById('contentSolicitarEntrega').classList.add('hidden');
     document.getElementById('contentMisEnvios').classList.remove('hidden');
     document.getElementById('contentMiEquipo')?.classList.add('hidden');
-    cargarMisEnviosCorregida();
+    cargarMisEnvios();
   });
 
   // ── Tab Mi Equipo ────────────────────────────────────────
@@ -2002,201 +1981,3 @@ window.limpiarFotosReferencia = limpiarFotosReferencia;
 
   // =============================================
 // PARCHE PARA CORREGIR PROBLEMAS
-// Agregar al FINAL del comercios-panel-script.js
-// ANTES del cierre de DOMContentLoaded
-// =============================================
-
-// CORRECCIN 1: Reemplazar la funcin cargarUbicacionesFrecuentes
-async function cargarUbicacionesFrecuentesCorregida() {
-  try {
-    window.secureLog('Cargando ubicaciones frecuentes...');
-    const ubicaciones = await window.SomarAPI.obtenerUbicacionesFrecuentes(
-      appData.comercio?.id || null
-    );
-    appData.ubicacionesFrecuentes = ubicaciones;
-    window.ubicacionesFrecuentes = ubicaciones;
-    window.secureLog(`✅ ${ubicaciones.length} ubicaciones cargadas`);
-    configurarTodosLosAutocompletados();
-  } catch (error) {
-    console.error('Error cargando ubicaciones:', error);
-  }
-}
-
-// CORRECCIN 2: Nueva funcin para configurar todos los autocompletados
-function configurarTodosLosAutocompletados() {
-  if (!appData.ubicacionesFrecuentes || appData.ubicacionesFrecuentes.length === 0) {
-    console.log('ï No hay ubicaciones para configurar autocompletado');
-    return;
-  }
-  
-  console.log(' Configurando autocompletados con', appData.ubicacionesFrecuentes.length, 'ubicaciones...');
-  
-  // Verificar que los inputs existan antes de configurar
-  const inputsConfig = [
-    {
-      id: 'ubicacionOrigenTraslado',
-      parejaid: 'ubicacionDestinoTraslado',
-      esOrigen: true
-    },
-    {
-      id: 'ubicacionDestinoTraslado',
-      parejaid: 'ubicacionOrigenTraslado',
-      esOrigen: false
-    },
-    {
-      id: 'ubicacionRecogidaPaquete',
-      callback: async (ubicacion) => {
-        const destinoPaquete = document.querySelector('input[name="destinoPaquete"]:checked')?.value;
-        let ubicacionEntrega = appData.comercio.ubicacionGPS;
-        if (destinoPaquete === 'OTRA_DIRECCION') {
-          ubicacionEntrega = document.getElementById('ubicacionEntregaPaquete')?.value.trim();
-        }
-        if (ubicacionEntrega) {
-          await calcularTarifaEntrega(ubicacion.ubicacion, ubicacionEntrega);
-        }
-      }
-    },
-    {
-      id: 'ubicacionEntregaPaquete',
-      parejaid: 'ubicacionRecogidaPaquete',
-      esOrigen: false
-    },
-    {
-      id: 'ubicacionComercioCompra',
-      callback: async (ubicacion) => {
-        const destinoCompra = document.querySelector('input[name="destinoCompra"]:checked')?.value;
-        let ubicacionEntrega = appData.comercio.ubicacionGPS;
-        if (destinoCompra === 'OTRA_DIRECCION') {
-          ubicacionEntrega = document.getElementById('ubicacionEntregaCompra')?.value.trim();
-        }
-        if (ubicacionEntrega) {
-          await calcularTarifaEntrega(ubicacion.ubicacion, ubicacionEntrega);
-        }
-      }
-    },
-    {
-      id: 'ubicacionEntregaCompra',
-      parejaid: 'ubicacionComercioCompra',
-      esOrigen: false
-    }
-  ];
-  
-  let configurados = 0;
-  
-  inputsConfig.forEach(config => {
-    const input = document.getElementById(config.id);
-    
-    if (input) {
-      const callback = config.callback || (async (ubicacion) => {
-        if (config.parejaid) {
-          const pareja = document.getElementById(config.parejaid)?.value.trim();
-          if (pareja) {
-            if (config.esOrigen) {
-              await calcularTarifaEntrega(ubicacion.ubicacion, pareja);
-            } else {
-              await calcularTarifaEntrega(pareja, ubicacion.ubicacion);
-            }
-          }
-        }
-      });
-      
-      configurarAutocomplete(config.id, callback);
-      configurados++;
-      console.log(` Autocompletado configurado para: ${config.id}`);
-    } else {
-      console.log(`ï Input no encontrado: ${config.id}`);
-    }
-  });
-  
-  console.log(` Total autocompletados configurados: ${configurados}/${inputsConfig.length}`);
-}
-
-// ============================================
-// GESTIÓN DE EQUIPO (Mi Equipo)
-// ============================================
-
-async function cargarEquipo() {
-  const container = document.getElementById('listaEquipo');
-  if (!container || !appData.comercio?.esDueno) return;
-  container.innerHTML = '<p class="text-center text-gray-400 py-6">Cargando...</p>';
-  try {
-    const res = await window.SomarAPI.listarUsuarios(appData.comercio.celular);
-    if (!res.success) throw new Error(res.error);
-    renderizarEquipo(res.usuarios || []);
-  } catch (err) {
-    container.innerHTML = `<p class="text-center text-red-500 py-4">Error: ${err.message}</p>`;
-  }
-}
-
-function renderizarEquipo(usuarios) {
-  const container = document.getElementById('listaEquipo');
-  if (!container) return;
-
-  if (usuarios.length === 0) {
-    container.innerHTML = '<p class="text-center text-gray-400 py-6">No hay usuarios en el equipo aún.</p>';
-    return;
-  }
-
-  container.innerHTML = usuarios.map(u => {
-    const celMostrar = u.celular.startsWith('504') ? u.celular.slice(3) : u.celular;
-    const badge = u.es_dueno
-      ? '<span class="text-xs bg-orange-100 text-orange-700 font-bold px-2 py-1 rounded-full">Dueño</span>'
-      : '<span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">Usuario</span>';
-    const activadoBadge = u.activado_at
-      ? ''
-      : '<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full ml-1">Pendiente primer login</span>';
-    const activoIcon = u.activo ? '🟢' : '🔴';
-    const btnEliminar = !u.es_dueno && u.activo
-      ? `<button onclick="eliminarUsuarioEquipo('${u.id}', '${u.nombre}')"
-           class="text-xs text-red-500 hover:text-red-700 font-semibold ml-2">Eliminar</button>`
-      : '';
-
-    return `
-      <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-        <div class="flex items-center gap-3">
-          <span class="text-2xl">${activoIcon}</span>
-          <div>
-            <p class="font-semibold text-gray-800">${u.nombre}</p>
-            <p class="text-sm text-gray-500">${celMostrar}</p>
-            <div class="flex gap-1 mt-1">${badge}${activadoBadge}</div>
-          </div>
-        </div>
-        ${btnEliminar}
-      </div>`;
-  }).join('');
-}
-
-async function eliminarUsuarioEquipo(usuarioId, nombre) {
-  if (!confirm(`¿Eliminar a ${nombre} del equipo?`)) return;
-  try {
-    const res = await window.SomarAPI.eliminarUsuario(appData.comercio.celular, usuarioId);
-    if (res.success) {
-      alert('✅ ' + res.mensaje);
-      cargarEquipo();
-    } else {
-      alert('❌ ' + res.error);
-    }
-  } catch (err) {
-    alert('❌ Error: ' + err.message);
-  }
-}
-
-window.eliminarUsuarioEquipo = eliminarUsuarioEquipo;
-
-// cargarMisEnviosCorregida → alias de cargarMisEnvios (ya usa Supabase)
-async function cargarMisEnviosCorregida() {
-  return cargarMisEnvios();
-}
-
-// CORRECCIN 4: Exponer funciones corregidas globalmente
-window.cargarMisEnviosCorregida = cargarMisEnviosCorregida;
-window.cargarUbicacionesFrecuentesCorregida = cargarUbicacionesFrecuentesCorregida;
-window.configurarTodosLosAutocompletados = configurarTodosLosAutocompletados;
-
-console.log(' Parche de correcciones cargado');
-console.log(' Para usar las funciones corregidas:');
-console.log('   - cargarUbicacionesFrecuentesCorregida()');
-console.log('   - cargarMisEnviosCorregida()');
-console.log('   - configurarTodosLosAutocompletados()');
-
-});
