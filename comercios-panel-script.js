@@ -377,7 +377,7 @@ async function verificarCodigoIngresado(codigo) {
   }
 }
 
-async function completarRegistroComercio(nombreNegocio, nombrePersona, direccion, ubicacionGPS) {
+async function completarRegistroComercio(nombreNegocio, nombrePersona, direccion, ubicacionGPS, ciudad = 'CHOLOMA', categoria = 'OTRO', apertura = '08:00', cierre = '21:00') {
   const submitBtn = document.querySelector('#authRegisterForm button[type="submit"]');
   try {
     submitBtn.textContent = 'Registrando...';
@@ -388,7 +388,11 @@ async function completarRegistroComercio(nombreNegocio, nombrePersona, direccion
       nombre:        nombrePersona,
       nombreNegocio: nombreNegocio,
       direccion,
-      ubicacionGPS:  ubicacionGPS || ''
+      ubicacionGPS:  ubicacionGPS || '',
+      ciudad:        ciudad,
+      categoria:     categoria,
+      apertura:      apertura,
+      cierre:        cierre
     });
 
     appData.comercio = result.comercio;
@@ -1362,15 +1366,57 @@ window.addEventListener('DOMContentLoaded', () => {
     verificarCodigoIngresado(document.getElementById('authCode').value);
   });
 
+  // ── Categorías de comercio ──────────────────────────────
+  const CATEGORIAS = [
+    { id: 'RESTAURANTES',    nombre: 'Restaurantes',    emoji: '🍽️' },
+    { id: 'VARIEDADES',      nombre: 'Variedades',      emoji: '🛍️' },
+    { id: 'FARMACIAS',       nombre: 'Farmacias',       emoji: '💊' },
+    { id: 'TIENDAS_ROPA',    nombre: 'Ropa y Moda',     emoji: '👗' },
+    { id: 'FLORISTERIAS',    nombre: 'Floristerías',    emoji: '💐' },
+    { id: 'SUPERMERCADOS',   nombre: 'Supermercados',   emoji: '🛒' },
+    { id: 'ELECTRONICOS',    nombre: 'Electrónicos',    emoji: '📱' },
+    { id: 'PANADERIA',       nombre: 'Panaderías',      emoji: '🥐' },
+    { id: 'COSMETICOS',      nombre: 'Cosméticos',      emoji: '💄' },
+    { id: 'MASCOTAS',        nombre: 'Mascotas',        emoji: '🐾' },
+    { id: 'FERRETERIAS',     nombre: 'Ferreterías',     emoji: '🔧' },
+    { id: 'OTRO',            nombre: 'Otro',            emoji: '🏪' },
+  ];
+
+  const gridCategorias = document.getElementById('categoriasGrid');
+  if (gridCategorias) {
+    gridCategorias.innerHTML = CATEGORIAS.map(cat => `
+      <label class="cursor-pointer">
+        <input type="radio" name="categoriaComercio" value="${cat.id}" class="sr-only peer">
+        <div class="border-2 border-gray-200 rounded-xl p-3 text-center peer-checked:border-brand-orange peer-checked:bg-orange-50 transition hover:border-orange-300">
+          <div class="text-2xl mb-1">${cat.emoji}</div>
+          <div class="text-xs font-semibold text-gray-700 leading-tight">${cat.nombre}</div>
+        </div>
+      </label>
+    `).join('');
+
+    // Actualizar hidden input cuando se selecciona categoría
+    gridCategorias.addEventListener('change', (e) => {
+      if (e.target.name === 'categoriaComercio') {
+        document.getElementById('authCategoria').value = e.target.value;
+      }
+    });
+  }
+
   document.getElementById('authRegisterForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const nombrePersona = document.getElementById('authNombrePersona')?.value.trim() || '';
     const nombreNegocio = document.getElementById('authNombreComercio').value.trim();
     const direccion     = document.getElementById('authDireccionComercio').value.trim();
     const ubicacionGPS  = document.getElementById('authUbicacionGPS').value.trim();
+    const ciudad        = document.getElementById('authCiudad').value;
+    const categoria     = document.getElementById('authCategoria').value;
+    const apertura      = document.getElementById('authApertura').value;
+    const cierre        = document.getElementById('authCierre').value;
+
     if (!nombrePersona) { alert('Por favor ingresa tu nombre'); return; }
     if (!nombreNegocio || !direccion) { alert('Por favor completa nombre del negocio y dirección'); return; }
-    completarRegistroComercio(nombreNegocio, nombrePersona, direccion, ubicacionGPS);
+    if (!categoria) { alert('Por favor selecciona una categoría'); return; }
+    completarRegistroComercio(nombreNegocio, nombrePersona, direccion, ubicacionGPS, ciudad, categoria, apertura, cierre);
   });
 
   document.getElementById('resendCodeBtn').addEventListener('click', () => {
