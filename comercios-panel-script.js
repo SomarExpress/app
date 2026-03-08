@@ -505,54 +505,65 @@ function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
 }
 
 function obtenerCiudad(lat, lon) {
-  // Bounding boxes precisas — se verifican ANTES que la distancia euclidiana
-  // SAN PEDRO SULA: cubre el área urbana real (más grande que Choloma)
-  if (lat >= 15.42 && lat <= 15.58 && lon >= -88.18 && lon <= -87.92) {
-    window.secureLog('Ciudad detectada: San Pedro Sula');
-    return 'SAN_PEDRO_SULA';
+  // ── Valle de Sula: SPS vs Choloma ────────────────────────────
+  // Separación clave: Choloma está al NORESTE de SPS
+  //   SPS:     centro 15.503°N, -88.025°W  (más al SUR y al OESTE)
+  //   Choloma: centro 15.613°N, -87.948°W  (más al NORTE y al ESTE)
+  //
+  // Regla: si lon > -87.97 (más al este) Y lat > 15.55 → Choloma
+  //        si lon < -87.97 (más al oeste) Y lat 15.40-15.60 → SPS
+  //        zona central (overlap): prioridad por distancia al centro
+
+  const distSPS     = Math.sqrt(Math.pow(lat-15.503,2) + Math.pow(lon+88.025,2));
+  const distCholoma = Math.sqrt(Math.pow(lat-15.613,2) + Math.pow(lon+87.948,2));
+
+  if (lat >= 15.40 && lat <= 15.70 && lon >= -88.25 && lon <= -87.75) {
+    // Estamos en el Valle de Sula — decidir por distancia al centro
+    if (distCholoma < distSPS) {
+      window.secureLog('Ciudad detectada: Choloma');
+      return 'CHOLOMA';
+    } else {
+      window.secureLog('Ciudad detectada: San Pedro Sula');
+      return 'SAN_PEDRO_SULA';
+    }
   }
-  // CHOLOMA: al norte de SPS, separada por coordenadas
-  if (lat >= 15.58 && lat <= 15.72 && lon >= -88.05 && lon <= -87.82) {
-    window.secureLog('Ciudad detectada: Choloma');
-    return 'CHOLOMA';
-  }
-  // VILLANUEVA: al sur-oeste de SPS
-  if (lat >= 15.28 && lat <= 15.40 && lon >= -88.10 && lon <= -87.90) {
+
+  // VILLANUEVA
+  if (lat >= 15.28 && lat <= 15.42 && lon >= -88.12 && lon <= -87.92) {
     window.secureLog('Ciudad detectada: Villanueva');
     return 'VILLANUEVA';
   }
   // LA LIMA
-  if (lat >= 15.38 && lat <= 15.50 && lon >= -87.98 && lon <= -87.82) {
+  if (lat >= 15.38 && lat <= 15.50 && lon >= -87.96 && lon <= -87.82) {
     window.secureLog('Ciudad detectada: La Lima');
     return 'LA_LIMA';
   }
 
-  // Fallback: distancia euclidiana para otras ciudades
+  // Otras ciudades: distancia euclidiana
   const ciudades = [
-    { nombre: 'TEGUCIGALPA',        lat: 14.08, lon: -87.21, radio: 0.15 },
-    { nombre: 'LA_CEIBA',           lat: 15.78, lon: -86.80, radio: 0.10 },
-    { nombre: 'EL_PROGRESO',        lat: 15.40, lon: -87.80, radio: 0.08 },
-    { nombre: 'COMAYAGUA',          lat: 14.45, lon: -87.64, radio: 0.10 },
-    { nombre: 'PUERTO_CORTES',      lat: 15.85, lon: -87.94, radio: 0.08 },
-    { nombre: 'CHOLUTECA',          lat: 13.30, lon: -87.19, radio: 0.10 },
-    { nombre: 'DANLI',              lat: 14.03, lon: -86.58, radio: 0.08 },
-    { nombre: 'JUTICALPA',          lat: 14.66, lon: -86.22, radio: 0.08 },
-    { nombre: 'SANTA_ROSA_COPAN',   lat: 14.77, lon: -88.78, radio: 0.08 },
-    { nombre: 'SIGUATEPEQUE',       lat: 14.60, lon: -87.84, radio: 0.08 },
-    { nombre: 'TELA',               lat: 15.78, lon: -87.46, radio: 0.08 },
-    { nombre: 'TOCOA',              lat: 15.66, lon: -86.00, radio: 0.08 },
+    { nombre: 'TEGUCIGALPA',      lat: 14.083, lon: -87.207, radio: 0.15 },
+    { nombre: 'LA_CEIBA',         lat: 15.783, lon: -86.800, radio: 0.10 },
+    { nombre: 'EL_PROGRESO',      lat: 15.400, lon: -87.800, radio: 0.08 },
+    { nombre: 'COMAYAGUA',        lat: 14.450, lon: -87.640, radio: 0.10 },
+    { nombre: 'PUERTO_CORTES',    lat: 15.850, lon: -87.940, radio: 0.08 },
+    { nombre: 'CHOLUTECA',        lat: 13.300, lon: -87.190, radio: 0.10 },
+    { nombre: 'DANLI',            lat: 14.033, lon: -86.583, radio: 0.08 },
+    { nombre: 'JUTICALPA',        lat: 14.660, lon: -86.220, radio: 0.08 },
+    { nombre: 'SANTA_ROSA_COPAN', lat: 14.770, lon: -88.780, radio: 0.08 },
+    { nombre: 'SIGUATEPEQUE',     lat: 14.600, lon: -87.840, radio: 0.08 },
+    { nombre: 'TELA',             lat: 15.783, lon: -87.460, radio: 0.08 },
+    { nombre: 'TOCOA',            lat: 15.660, lon: -86.000, radio: 0.08 },
   ];
 
   for (const ciudad of ciudades) {
-    const distancia = Math.sqrt(Math.pow(lat - ciudad.lat, 2) + Math.pow(lon - ciudad.lon, 2));
-    if (distancia < ciudad.radio) {
+    const d = Math.sqrt(Math.pow(lat-ciudad.lat,2) + Math.pow(lon-ciudad.lon,2));
+    if (d < ciudad.radio) {
       window.secureLog(`Ciudad detectada: ${ciudad.nombre}`);
       return ciudad.nombre;
     }
   }
 
-  window.secureLog('Ciudad no detectada, usando CHOLOMA como default');
-  return 'CHOLOMA';
+  return 'CHOLOMA'; // default para el área de operación
 }
 
 async function calcularDistanciaOSRM(lat1, lon1, lat2, lon2) {
@@ -1112,6 +1123,14 @@ async function procesarEnvio(e) {
   };
 
   try {
+    // Diagnóstico — verificar que usuarioId esté presente
+    if (!appData.comercio.usuarioId) {
+      console.error('❌ appData.comercio.usuarioId es null. Sesión desactualizada. Cerrando sesión...');
+      window.APP_SECURITY.clearSession('somarComercioUser');
+      alert('⚠️ Tu sesión expiró. Por favor vuelve a iniciar sesión.');
+      location.reload();
+      return;
+    }
     window.secureLog('Registrando envío en Supabase...', datos);
 
     const result = await window.SomarAPI.registrarEnvio(datos, appData.comercio);
