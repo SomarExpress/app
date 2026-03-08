@@ -156,7 +156,7 @@
         ubicacion_recogida_gps, ubicacion_entrega_gps,
         distancia_km, tarifa_envio, total,
         monto_cobrar, quien_paga, metodo_pago,
-        notas, estatus_comercio
+        detalle_json, estatus_comercio
       `)
       .eq('comercio_usuario_id', comercioUsuarioId)
       .order('created_at', { ascending: false })
@@ -218,8 +218,7 @@
       quien_paga:             _mapQuienPaga(datos.quienPaga),
       metodo_pago:            _mapMetodoPago(datos.tipoPagoEnvio),
       distancia_km:           parseFloat(datos.distanciaKm) || 0,
-      notas:                  san(datos.notasAdicionales || ''),
-      detalle_json:           datos.tipoServicio ? { tipo_servicio: datos.tipoServicio } : null
+      detalle_json:           { tipo_servicio: datos.tipoServicio || 'SOLO_ENTREGA', notas: san(datos.notasAdicionales || '') || undefined }
     };
     const { data, error } = await getClient()
       .from('pedidos').insert(pedido).select('id, no_orden').single();
@@ -248,7 +247,6 @@
       monto_cobrar:           parseFloat(datos.montoCobrar) || 0,
       metodo_pago:            _mapMetodoPago(datos.metodoPago),
       distancia_km:           parseFloat(datos.distanciaKm) || 0,
-      notas:                  san(datos.notasAdicionales || ''),
       detalle_json: {
         tipo_servicio:    datos.tipoServicio,
         ...(datos.tiendaOrigen         && { tienda_origen:     san(datos.tiendaOrigen) }),
