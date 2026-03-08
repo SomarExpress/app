@@ -191,82 +191,80 @@
     }
   }
 
-  // Registrar envío vía Edge Function (usa service_role → sin problemas de RLS)
+  // Registrar envío — insert directo con anon key (RLS abierto para anon)
   async function registrarEnvio(datos, comercio) {
-    const result = await callEdge('registrar-pedido', {
-      tipo: 'ENVIO',
-      datos: {
-        canal:                  'PANEL_COMERCIO',
-        tipo:                   'DELIVERY',
-        estatus:                'PENDIENTE',
-        comercio_usuario_id:    comercio.usuarioId,
-        comercio_id:            comercio.id || null,
-        nombre_comercio:        san(comercio.nombre),
-        whatsapp_comercio:      san(comercio.celular),
-        ubicacion_comercio:     san(comercio.ubicacionGPS || ''),
-        ubicacion_recogida_gps: san(datos.ubicacionRecogidaGPS || ''),
-        direccion_recogida:     san(datos.direccionRecogida || ''),
-        ciudad_origen:          san(datos.ciudadOrigen || 'CHOLOMA'),
-        ubicacion_entrega_gps:  san(datos.ubicacionEntregaGPS || ''),
-        direccion_entrega:      san(datos.direccionEntrega || ''),
-        ciudad_destino:         san(datos.ciudadDestino || 'CHOLOMA'),
-        nombre_destinatario:    san(datos.nombreDestinatario || ''),
-        telefono_destinatario:  san(datos.telefonoDestinatario || ''),
-        descripcion_paquete:    san(datos.descripcionPaquete || ''),
-        foto_paquete_url:       datos.fotoUrl || null,
-        tarifa_envio:           parseFloat(datos.tarifaEstimada) || 0,
-        total:                  parseFloat(datos.tarifaEstimada) || 0,
-        monto_cobrar:           parseFloat(datos.montoCobrar) || 0,
-        quien_paga:             _mapQuienPaga(datos.quienPaga),
-        metodo_pago:            _mapMetodoPago(datos.tipoPagoEnvio),
-        distancia_km:           parseFloat(datos.distanciaKm) || 0,
-        notas:                  san(datos.notasAdicionales || ''),
-        detalle_json:           datos.tipoServicio ? { tipo_servicio: datos.tipoServicio } : null
-      }
-    });
-    if (!result.success) throw new Error(result.error || 'Error registrando envío');
-    return { success: true, noOrden: result.noOrden, id: result.id };
+    const pedido = {
+      canal:                  'PANEL_COMERCIO',
+      tipo:                   'DELIVERY',
+      estatus:                'PENDIENTE',
+      comercio_usuario_id:    comercio.usuarioId,
+      comercio_id:            comercio.id || null,
+      nombre_comercio:        san(comercio.nombre),
+      whatsapp_comercio:      san(comercio.celular),
+      ubicacion_comercio:     san(comercio.ubicacionGPS || ''),
+      ubicacion_recogida_gps: san(datos.ubicacionRecogidaGPS || ''),
+      direccion_recogida:     san(datos.direccionRecogida || ''),
+      ciudad_origen:          san(datos.ciudadOrigen || 'CHOLOMA'),
+      ubicacion_entrega_gps:  san(datos.ubicacionEntregaGPS || ''),
+      direccion_entrega:      san(datos.direccionEntrega || ''),
+      ciudad_destino:         san(datos.ciudadDestino || 'CHOLOMA'),
+      nombre_destinatario:    san(datos.nombreDestinatario || ''),
+      telefono_destinatario:  san(datos.telefonoDestinatario || ''),
+      descripcion_paquete:    san(datos.descripcionPaquete || ''),
+      foto_paquete_url:       datos.fotoUrl || null,
+      tarifa_envio:           parseFloat(datos.tarifaEstimada) || 0,
+      total:                  parseFloat(datos.tarifaEstimada) || 0,
+      monto_cobrar:           parseFloat(datos.montoCobrar) || 0,
+      quien_paga:             _mapQuienPaga(datos.quienPaga),
+      metodo_pago:            _mapMetodoPago(datos.tipoPagoEnvio),
+      distancia_km:           parseFloat(datos.distanciaKm) || 0,
+      notas:                  san(datos.notasAdicionales || ''),
+      detalle_json:           datos.tipoServicio ? { tipo_servicio: datos.tipoServicio } : null
+    };
+    const { data, error } = await getClient()
+      .from('pedidos').insert(pedido).select('id, no_orden').single();
+    if (error) throw new Error('Error registrando envío: ' + error.message);
+    return { success: true, noOrden: data.no_orden, id: data.id };
   }
 
   async function registrarSolicitudEntrega(datos, comercio) {
-    const result = await callEdge('registrar-pedido', {
-      tipo: 'SOLICITUD',
-      datos: {
-        canal:                  'PANEL_COMERCIO',
-        tipo:                   'DELIVERY',
-        estatus:                'PENDIENTE',
-        comercio_usuario_id:    comercio.usuarioId,
-        comercio_id:            comercio.id || null,
-        nombre_comercio:        san(comercio.nombre),
-        whatsapp_comercio:      san(comercio.celular),
-        ubicacion_comercio:     san(comercio.ubicacionGPS || ''),
-        ubicacion_recogida_gps: san(datos.ubicacionOrigen || ''),
-        ciudad_origen:          san(datos.ciudadOrigen || 'CHOLOMA'),
-        ubicacion_entrega_gps:  san(datos.ubicacionDestino || ''),
-        ciudad_destino:         san(datos.ciudadDestino || 'CHOLOMA'),
-        descripcion_paquete:    san(datos.descripcionContenido || ''),
-        fotos_referencia:       datos.fotosReferencia ? datos.fotosReferencia.split('||').filter(Boolean) : null,
-        tarifa_envio:           parseFloat(datos.tarifa) || 0,
-        total:                  parseFloat(datos.tarifa) || 0,
-        monto_cobrar:           parseFloat(datos.montoCobrar) || 0,
-        metodo_pago:            _mapMetodoPago(datos.metodoPago),
-        distancia_km:           parseFloat(datos.distanciaKm) || 0,
-        notas:                  san(datos.notasAdicionales || ''),
-        detalle_json: {
-          tipo_servicio:    datos.tipoServicio,
-          ...(datos.tiendaOrigen       && { tienda_origen:     san(datos.tiendaOrigen) }),
-          ...(datos.tiendaDestino      && { tienda_destino:    san(datos.tiendaDestino) }),
-          ...(datos.nombreContacto     && { nombre_contacto:   san(datos.nombreContacto) }),
-          ...(datos.telefonoContacto   && { telefono_contacto: san(datos.telefonoContacto) }),
-          ...(datos.nombreComercioCompra && { comercio_compra: san(datos.nombreComercioCompra) }),
-          ...(datos.listaProductos     && { lista_productos:   san(datos.listaProductos) }),
-          ...(datos.presupuesto        && { presupuesto:       parseFloat(datos.presupuesto) }),
-          ...(datos.comision           && { comision:          parseFloat(datos.comision) })
-        }
+    const pedido = {
+      canal:                  'PANEL_COMERCIO',
+      tipo:                   'DELIVERY',
+      estatus:                'PENDIENTE',
+      comercio_usuario_id:    comercio.usuarioId,
+      comercio_id:            comercio.id || null,
+      nombre_comercio:        san(comercio.nombre),
+      whatsapp_comercio:      san(comercio.celular),
+      ubicacion_comercio:     san(comercio.ubicacionGPS || ''),
+      ubicacion_recogida_gps: san(datos.ubicacionOrigen || ''),
+      ciudad_origen:          san(datos.ciudadOrigen || 'CHOLOMA'),
+      ubicacion_entrega_gps:  san(datos.ubicacionDestino || ''),
+      ciudad_destino:         san(datos.ciudadDestino || 'CHOLOMA'),
+      descripcion_paquete:    san(datos.descripcionContenido || ''),
+      fotos_referencia:       datos.fotosReferencia ? datos.fotosReferencia.split('||').filter(Boolean) : null,
+      tarifa_envio:           parseFloat(datos.tarifa) || 0,
+      total:                  parseFloat(datos.tarifa) || 0,
+      monto_cobrar:           parseFloat(datos.montoCobrar) || 0,
+      metodo_pago:            _mapMetodoPago(datos.metodoPago),
+      distancia_km:           parseFloat(datos.distanciaKm) || 0,
+      notas:                  san(datos.notasAdicionales || ''),
+      detalle_json: {
+        tipo_servicio:    datos.tipoServicio,
+        ...(datos.tiendaOrigen         && { tienda_origen:     san(datos.tiendaOrigen) }),
+        ...(datos.tiendaDestino        && { tienda_destino:    san(datos.tiendaDestino) }),
+        ...(datos.nombreContacto       && { nombre_contacto:   san(datos.nombreContacto) }),
+        ...(datos.telefonoContacto     && { telefono_contacto: san(datos.telefonoContacto) }),
+        ...(datos.nombreComercioCompra && { comercio_compra:   san(datos.nombreComercioCompra) }),
+        ...(datos.listaProductos       && { lista_productos:   san(datos.listaProductos) }),
+        ...(datos.presupuesto          && { presupuesto:       parseFloat(datos.presupuesto) }),
+        ...(datos.comision             && { comision:          parseFloat(datos.comision) })
       }
-    });
-    if (!result.success) throw new Error(result.error || 'Error registrando solicitud');
-    return { success: true, noOrden: result.noOrden, id: result.id };
+    };
+    const { data, error } = await getClient()
+      .from('pedidos').insert(pedido).select('id, no_orden').single();
+    if (error) throw new Error('Error registrando solicitud: ' + error.message);
+    return { success: true, noOrden: data.no_orden, id: data.id };
   }
 
   // ══════════════════════════════════════════════════════════
