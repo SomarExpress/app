@@ -605,7 +605,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   if (session) await iniciarApp(session.user);
 });
 
+let _registrando = false; // bloquea onAuthStateChange durante el registro
+
 sb.auth.onAuthStateChange(async (event, session) => {
+  if (_registrando) return; // registro en curso — ignorar
   if (event === 'SIGNED_IN' && session) await iniciarApp(session.user);
   if (event === 'SIGNED_OUT') mostrarAuthScreen();
 });
@@ -632,6 +635,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   const errEl = document.getElementById('registerError');
   errEl.style.display = 'none';
 
+  // Leer campos
   const nombre   = document.getElementById('regNombre').value.trim();
   const celular  = document.getElementById('regCelular').value.trim();
   const email    = document.getElementById('regEmail').value.trim();
@@ -640,82 +644,105 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   const duiFile  = document.getElementById('duiInput').files[0];
   const motoFile = document.getElementById('motoInput').files[0];
 
-  if (!nombre)   return mostrarRegError('Ingresa tu nombre');
-  if (!celular)  return mostrarRegError('Ingresa tu celular');
-  if (!email)    return mostrarRegError('Ingresa tu correo');
-  if (!pwd)      return mostrarRegError('Ingresa una contraseña');
+  // Validaciones
+  if (!nombre)        return mostrarRegError('Ingresa tu nombre');
+  if (!celular)       return mostrarRegError('Ingresa tu celular');
+  if (!email)         return mostrarRegError('Ingresa tu correo');
+  if (!pwd)           return mostrarRegError('Ingresa una contraseña');
   if (pwd !== pwd2)   return mostrarRegError('Las contraseñas no coinciden');
   if (pwd.length < 8) return mostrarRegError('Contraseña mínimo 8 caracteres');
-  if (!duiFile)  return mostrarRegError('Sube la foto del DUI');
-  if (!motoFile) return mostrarRegError('Sube la foto del vehículo');
+  if (!duiFile)       return mostrarRegError('Sube la foto del DUI');
+  if (!motoFile)      return mostrarRegError('Sube la foto del vehículo');
 
   btn.disabled = true;
-  btn.textContent = '1/3 Creando cuenta...';
+  _registrando = true; // evitar que onAuthStateChange interrumpa
 
-  // ── 1. Crear usuario Auth ───────────────────────────────────
-  const { data: signUpData, error: signUpErr } = await sb.auth.signUp({ email, password: pwd });
+  const reset = (msg) => {
+    _registrando = false;
+    btn.disabled = false;
+    btn.textContent = 'Enviar Solicitud';
+    if (msg) mostrarRegError(msg);
+  };
 
-  if (signUpErr) {
-    btn.disabled = false; btn.textContent = 'Enviar Solicitud';
-    if (signUpErr.message?.includes('already')) {
-      return mostrarRegError('Este correo ya está registrado. Inicia sesión.');
-    }
-    return mostrarRegError('Error: ' + signUpErr.message);
-  }
-
-  const uid = signUpData?.user?.id;
-  if (!uid) {
-    btn.disabled = false; btn.textContent = 'Enviar Solicitud';
-    return mostrarRegError('No se pudo crear la cuenta. Intenta de nuevo.');
-  }
-
-  // Activar sesión para poder subir fotos a Storage
-  if (signUpData?.session?.access_token) {
-    await sb.auth.setSession({
-      access_token:  signUpData.session.access_token,
-      refresh_token: signUpData.session.refresh_token,
-    });
-  }
-
-  // ── 2. Subir fotos ──────────────────────────────────────────
-  btn.textContent = '2/3 Subiendo fotos...';
-  let duiUrl  = null;
-  let motoUrl = null;
   try {
-    duiUrl  = await subirFotoConUID(duiFile,  'dui',  uid);
-    motoUrl = await subirFotoConUID(motoFile, 'moto', uid);
-  } catch(e) {
-    console.warn('[REG] Fotos no subidas:', e.message);
+
+    // ── PASO 1: Crear cuenta Auth ───────────────────────────
+    btn.textContent = '1/3 Creando cuenta...';
+    console.log('[REG] Iniciando signUp para:', email);
+
+    const { data: signUpData, error: signUpErr } = await window.supabase
+      .createClient(SUPA_URL, SUPA_ANON)
+      .auth.signUp({ email, password: pwd });
+
+    // Usamos sb para el resto (ya inicializado globalmente)
+    if (signUpErr) {
+      console.error('[REG] signUp error:', signUpErr);
+      if (signUpErr.message?.toLowerCase().includes('already') ||
+          signUpErr.message?.toLowerCase().includes('registered')) {
+        return reset('Este correo ya está registrado. Inicia sesión.');
+      }
+      return reset('Error al crear cuenta: ' + signUpErr.message);
+    }
+
+    const uid = signUpData?.user?.id;
+    console.log('[REG] uid:', uid, '| session:', !!signUpData?.session);
+
+    if (!uid) return reset('Error interno: no se obtuvo ID. Intenta de nuevo.');
+
+    // Activar sesión si viene incluida (email confirmation desactivado)
+    if (signUpData?.session?.access_token) {
+      await sb.auth.setSession({
+        access_token:  signUpData.session.access_token,
+        refresh_token: signUpData.session.refresh_token,
+      });
+      console.log('[REG] Sesión activada ✅');
+    }
+
+    // ── PASO 2: Subir fotos (Storage) ──────────────────────
+    btn.textContent = '2/3 Subiendo fotos...';
+    let duiUrl  = null;
+    let motoUrl = null;
+
+    try {
+      duiUrl  = await subirFotoConUID(duiFile,  'dui',  uid);
+      motoUrl = await subirFotoConUID(motoFile, 'moto', uid);
+      console.log('[REG] Fotos subidas:', { dui: !!duiUrl, moto: !!motoUrl });
+    } catch (fotoErr) {
+      console.warn('[REG] Fotos fallaron (no crítico):', fotoErr.message);
+    }
+
+    // ── PASO 3: Guardar solicitud ───────────────────────────
+    btn.textContent = '3/3 Enviando solicitud...';
+
+    const { error: appErr } = await sb.from('aplicaciones_delivery').insert({
+      nombre,
+      celular,
+      correo:                  email,
+      identidad_delantera_url: duiUrl  ?? null,
+      moto_propia_url:         motoUrl ?? null,
+      estatus:                 'PENDIENTE',
+      notas:                   'auth_uid:' + uid,
+    });
+
+    if (appErr) {
+      console.error('[REG] Error insert aplicacion:', appErr);
+      // Cuenta creada aunque falle el insert — mostrar pantalla de espera igual
+      // con mensaje de contacto
+      mostrarRegError(
+        'Tu cuenta fue creada pero hubo un error al enviar la solicitud (' + appErr.message + ').' +
+        ' Escríbenos tu correo: ' + email
+      );
+    }
+
+    // ── Mostrar pantalla de espera ──────────────────────────
+    _registrando = false;
+    document.getElementById('registerCard').style.display  = 'none';
+    document.getElementById('pendienteCard').style.display = 'block';
+
+  } catch (err) {
+    console.error('[REG] Excepción:', err);
+    reset('Error inesperado: ' + (err?.message ?? String(err)));
   }
-
-  // ── 3. Guardar aplicación ───────────────────────────────────
-  // Usamos aplicaciones_delivery (tabla sin FK complejo, UUID PK)
-  // Despacho revisará y aprobará → creará el registro en delivery
-  btn.textContent = '3/3 Enviando solicitud...';
-
-  const { error: appErr } = await sb.from('aplicaciones_delivery').insert({
-    nombre,
-    celular,
-    correo:                  email,
-    identidad_delantera_url: duiUrl  ?? null,
-    moto_propia_url:         motoUrl ?? null,
-    estatus:                 'PENDIENTE',
-    notas:                   `auth_uid:${uid}`,  // para que Despacho pueda vincular
-  });
-
-  btn.disabled = false; btn.textContent = 'Enviar Solicitud';
-
-  if (appErr) {
-    console.error('[REG] Error aplicacion:', appErr);
-    // Si falla insert (ej: RLS), mostrar mensaje pero cuenta ya fue creada
-    mostrarRegError('Cuenta creada pero error al enviar solicitud: ' + appErr.message + 
-      '. Contacta a soporte con tu correo: ' + email);
-    return;
-  }
-
-  // ── Mostrar pantalla de espera ──────────────────────────────
-  document.getElementById('registerCard').style.display  = 'none';
-  document.getElementById('pendienteCard').style.display = 'block';
 });
 
 
