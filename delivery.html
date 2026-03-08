@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Somar Express — Delivery</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #E85D04;
+    --brand-dark: #C44F00;
+    --bg: #0F0F0F;
+    --surface: #1A1A1A;
+    --surface2: #242424;
+    --border: #2E2E2E;
+    --text: #F5F5F5;
+    --muted: #888;
+    --green: #22C55E;
+    --red: #EF4444;
+    --yellow: #F59E0B;
+    --blue: #3B82F6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .mono { font-family: 'DM Mono', monospace; }
+
+  /* ── Auth screen ── */
+  #authScreen {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 24px;
+    background: radial-gradient(ellipse at top, #1a0a00 0%, #0F0F0F 60%);
+  }
+  .auth-card {
+    width: 100%; max-width: 400px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+  }
+  .input-field {
+    width: 100%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 15px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .input-field:focus { border-color: var(--brand); }
+  .input-field::placeholder { color: var(--muted); }
+  .btn-primary {
+    width: 100%;
+    background: var(--brand);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+  }
+  .btn-primary:hover { background: var(--brand-dark); }
+  .btn-primary:active { transform: scale(.98); }
+  .btn-primary:disabled { background: #555; cursor: not-allowed; transform: none; }
+
+  /* ── Main app ── */
+  #appScreen { display: none; min-height: 100vh; flex-direction: column; }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .status-badge {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all .2s;
+  }
+  .status-badge.disponible { border-color: var(--green); color: var(--green); }
+  .status-badge.ocupado { border-color: var(--yellow); color: var(--yellow); }
+  .status-badge.descanso { border-color: var(--muted); color: var(--muted); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .dot.pulse { animation: pulse 1.5s infinite; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .5; transform: scale(.8); }
+  }
+
+  /* ── Pedido entrante (overlay) ── */
+  #pedidoEntrante {
+    display: none;
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,.85);
+    backdrop-filter: blur(4px);
+    align-items: flex-end; justify-content: center;
+    padding: 16px;
+  }
+  #pedidoEntrante.show { display: flex; }
+  .pedido-card {
+    width: 100%; max-width: 480px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px 24px 20px 20px;
+    overflow: hidden;
+    animation: slideUp .3s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+  .pedido-header {
+    background: linear-gradient(135deg, var(--brand) 0%, #FF8C42 100%);
+    padding: 16px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .countdown-ring {
+    width: 52px; height: 52px;
+    position: relative;
+  }
+  .countdown-ring svg { transform: rotate(-90deg); }
+  .countdown-ring .track { fill: none; stroke: rgba(255,255,255,.3); stroke-width: 4; }
+  .countdown-ring .fill  { fill: none; stroke: white; stroke-width: 4;
+    stroke-dasharray: 138.2; stroke-linecap: round;
+    transition: stroke-dashoffset .9s linear; }
+  .countdown-num {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: white;
+    font-family: 'DM Mono', monospace;
+  }
+  .info-row {
+    display: flex; justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { font-size: 12px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; }
+  .info-value { font-size: 15px; font-weight: 600; color: var(--text); text-align: right; max-width: 55%; }
+  .ganancia-chip {
+    background: rgba(34,197,94,.15);
+    border: 1px solid rgba(34,197,94,.3);
+    color: var(--green);
+    border-radius: 8px;
+    padding: 2px 10px;
+    font-weight: 700;
+    font-family: 'DM Mono', monospace;
+  }
+  .btn-aceptar {
+    background: var(--green); color: white;
+    border: none; border-radius: 14px;
+    padding: 16px; font-family: inherit;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: all .2s;
+    flex: 1;
+  }
+  .btn-rechazar {
+    background: var(--surface2); color: var(--muted);
+    border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px; font-family: inherit;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all .2s;
+    flex: 0 0 auto; width: 100px;
+  }
+
+  /* ── Pedido activo (main view) ── */
+  .pedido-activo-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    margin: 12px;
+    overflow: hidden;
+  }
+  .step-bar {
+    display: flex;
+    padding: 14px 16px;
+    gap: 4px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .step-item {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; flex: 0 0 auto;
+    padding: 0 6px;
+  }
+  .step-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: all .3s;
+  }
+  .step-dot.done  { background: var(--green); }
+  .step-dot.active { background: var(--brand); box-shadow: 0 0 8px var(--brand); }
+  .step-label { font-size: 9px; color: var(--muted); white-space: nowrap; text-align: center; font-weight: 500; }
+
+  .btn-estado {
+    width: calc(100% - 24px);
+    margin: 12px;
+    background: var(--brand);
+    color: white; border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-family: inherit;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-estado:hover { background: var(--brand-dark); }
+  .btn-estado:disabled { background: #333; color: var(--muted); cursor: not-allowed; }
+
+  /* ── Historial de pedidos ── */
+  .pedido-hist-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin: 8px 12px;
+  }
+  .estatus-pill {
+    display: inline-flex; align-items: center;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .04em;
+  }
+
+  /* ── Tabs ── */
+  .bottom-tabs {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    z-index: 40;
+  }
+  .tab-btn {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; gap: 4px;
+    padding: 6px 0;
+    background: none; border: none;
+    color: var(--muted); cursor: pointer;
+    font-size: 10px; font-weight: 600;
+    font-family: inherit;
+    transition: color .2s;
+    text-transform: uppercase; letter-spacing: .04em;
+  }
+  .tab-btn.active { color: var(--brand); }
+  .tab-icon { font-size: 22px; line-height: 1; }
+
+  /* ── Registro ── */
+  .register-step {
+    padding: 4px 0 20px;
+  }
+  .section-title {
+    font-size: 11px; font-weight: 700;
+    color: var(--muted); text-transform: uppercase;
+    letter-spacing: .08em; margin-bottom: 12px;
+  }
+  .upload-box {
+    background: var(--surface2);
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+  .upload-box:hover { border-color: var(--brand); }
+  .upload-box.uploaded { border-color: var(--green); border-style: solid; }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 20px;
+    font-size: 14px; font-weight: 600;
+    z-index: 200; white-space: nowrap;
+    opacity: 0; transition: opacity .25s;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; }
+
+  /* Photo upload preview */
+  .photo-preview { width: 100%; border-radius: 10px; max-height: 120px; object-fit: cover; }
+
+  /* Scroll area */
+  .scroll-area { overflow-y: auto; padding-bottom: 80px; }
+  
+  /* Earnings card */
+  .earnings-card {
+    background: linear-gradient(135deg, rgba(232,93,4,.15) 0%, rgba(232,93,4,.05) 100%);
+    border: 1px solid rgba(232,93,4,.3);
+    border-radius: 16px;
+    padding: 16px;
+    margin: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     AUTH SCREEN
+════════════════════════════════════════════ -->
+<div id="authScreen">
+  <div style="text-align:center; margin-bottom:32px;">
+    <img src="https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png"
+      style="width:72px;height:72px;border-radius:18px;margin-bottom:16px;">
+    <div style="font-size:22px;font-weight:700;letter-spacing:-.02em;">Somar Express</div>
+    <div style="color:var(--muted);font-size:14px;margin-top:4px;">Portal Delivery</div>
+  </div>
+
+  <!-- Login -->
+  <div class="auth-card" id="loginCard">
+    <div style="font-size:20px;font-weight:700;margin-bottom:6px;">Iniciar Sesión</div>
+    <div style="color:var(--muted);font-size:14px;margin-bottom:24px;">Ingresa con tu cuenta de delivery</div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <input type="email" id="loginEmail" class="input-field" placeholder="correo@ejemplo.com">
+      <input type="password" id="loginPassword" class="input-field" placeholder="Contraseña">
+      <button class="btn-primary" id="loginBtn">Ingresar</button>
+      <button onclick="mostrarRegistro()" style="background:none;border:none;color:var(--brand);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;text-align:center;padding:8px;">
+        ¿Nuevo? Crear cuenta de delivery
+      </button>
+    </div>
+    <div id="loginError" style="color:var(--red);font-size:13px;margin-top:12px;text-align:center;display:none;"></div>
+  </div>
+
+  <!-- Registro -->
+  <div class="auth-card" id="registerCard" style="display:none; max-height:88vh; overflow-y:auto;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+      <button onclick="mostrarLogin()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;">←</button>
+      <div>
+        <div style="font-size:18px;font-weight:700;">Crear Cuenta</div>
+        <div style="color:var(--muted);font-size:13px;">Tu cuenta será revisada por Despacho</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <p class="section-title">Datos Personales</p>
+      <input type="text" id="regNombre" class="input-field" placeholder="Nombre completo">
+      <input type="tel" id="regCelular" class="input-field" placeholder="Número de celular (+504...)">
+      <input type="email" id="regEmail" class="input-field" placeholder="Correo electrónico">
+      <input type="password" id="regPassword" class="input-field" placeholder="Contraseña (mín. 8 caracteres)">
+      <input type="password" id="regPassword2" class="input-field" placeholder="Confirmar contraseña">
+
+      <p class="section-title" style="margin-top:8px;">Documentos</p>
+
+      <!-- Foto DUI -->
+      <div style="font-size:13px;color:var(--muted);margin-bottom:4px;font-weight:500;">Foto de DUI *</div>
+      <div class="upload-box" id="duiBox" onclick="document.getElementById('duiInput').click()">
+        <div style="font-size:28px;margin-bottom:6px;">🪪</div>
+        <div style="font-size:13px;font-weight:600;">Subir foto del DUI</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">Toca para seleccionar</div>
+        <img id="duiPreview" class="photo-preview" style="display:none;margin-top:10px;">
+      </div>
+      <input type="file" id="duiInput" accept="image/*" style="display:none;" onchange="previewFoto(this,'duiPreview','duiBox')">
+
+      <!-- Foto Moto -->
+      <div style="font-size:13px;color:var(--muted);margin-bottom:4px;font-weight:500;">Foto de Moto/Vehículo *</div>
+      <div class="upload-box" id="motoBox" onclick="document.getElementById('motoInput').click()">
+        <div style="font-size:28px;margin-bottom:6px;">🏍️</div>
+        <div style="font-size:13px;font-weight:600;">Subir foto del vehículo</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">Toca para seleccionar</div>
+        <img id="motoPreview" class="photo-preview" style="display:none;margin-top:10px;">
+      </div>
+      <input type="file" id="motoInput" accept="image/*" style="display:none;" onchange="previewFoto(this,'motoPreview','motoBox')">
+
+      <button class="btn-primary" id="registerBtn" style="margin-top:8px;">Enviar Solicitud</button>
+      <div id="registerError" style="color:var(--red);font-size:13px;text-align:center;display:none;"></div>
+    </div>
+  </div>
+
+  <!-- Pendiente aprobación -->
+  <div class="auth-card" id="pendienteCard" style="display:none;text-align:center;">
+    <div style="font-size:48px;margin-bottom:16px;">⏳</div>
+    <div style="font-size:20px;font-weight:700;margin-bottom:8px;">Solicitud Enviada</div>
+    <div style="color:var(--muted);font-size:14px;line-height:1.6;">
+      Tu cuenta está siendo revisada por el equipo de Despacho.<br><br>
+      Recibirás una notificación cuando sea aprobada.
+    </div>
+    <button onclick="cerrarSesion()" style="margin-top:24px;background:none;border:1px solid var(--border);border-radius:10px;padding:10px 20px;color:var(--muted);font-family:inherit;cursor:pointer;font-size:14px;">
+      Cerrar sesión
+    </button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     PEDIDO ENTRANTE (overlay)
+════════════════════════════════════════════ -->
+<div id="pedidoEntrante">
+  <div class="pedido-card">
+    <!-- Header con countdown -->
+    <div class="pedido-header">
+      <div>
+        <div style="font-size:11px;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:.06em;">Nuevo Pedido</div>
+        <div style="font-size:20px;font-weight:700;margin-top:2px;" id="peComercio">—</div>
+        <div style="font-size:13px;opacity:.85;margin-top:2px;" id="peDireccionOrigen">—</div>
+      </div>
+      <div class="countdown-ring">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle class="track" cx="26" cy="26" r="22"/>
+          <circle class="fill" id="countdownFill" cx="26" cy="26" r="22"/>
+        </svg>
+        <div class="countdown-num" id="countdownNum">30</div>
+      </div>
+    </div>
+
+    <!-- Info rows -->
+    <div class="info-row">
+      <div>
+        <div class="info-label">Destino</div>
+        <div class="info-value" style="text-align:left;" id="peSector">—</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-label">Distancia</div>
+      <div class="info-value mono" id="peDistancia">— km</div>
+    </div>
+    <div class="info-row">
+      <div class="info-label">Tiempo estimado</div>
+      <div class="info-value" id="peTiempo">— min</div>
+    </div>
+    <div class="info-row">
+      <div class="info-label">Tipo de pago</div>
+      <div class="info-value" id="pePago">—</div>
+    </div>
+    <div class="info-row">
+      <div class="info-label">Tu ganancia</div>
+      <div class="info-value"><span class="ganancia-chip" id="peGanancia">L. —</span></div>
+    </div>
+
+    <!-- Botones -->
+    <div style="display:flex;gap:10px;padding:14px 16px 18px;">
+      <button class="btn-rechazar" id="btnRechazar">✕ Rechazar</button>
+      <button class="btn-aceptar" id="btnAceptar">✓ Aceptar pedido</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     APP PRINCIPAL
+════════════════════════════════════════════ -->
+<div id="appScreen" style="display:flex;">
+  <!-- Header -->
+  <div class="header">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <img src="https://res.cloudinary.com/drkaxsziu/image/upload/v1767871213/Somar_Express_2048_x_2048_px_18_x_18_in__20250623_221102_0000_o0bv7a.png"
+        style="width:32px;height:32px;border-radius:8px;">
+      <div>
+        <div style="font-size:14px;font-weight:700;" id="headerNombre">—</div>
+        <div style="font-size:11px;color:var(--muted);" id="headerPedidosActivos">0 pedidos activos</div>
+      </div>
+    </div>
+    <div class="status-badge disponible" id="turnoBtn" onclick="toggleTurno()">
+      <div class="dot pulse" id="turnoDot"></div>
+      <span id="turnoLabel">Disponible</span>
+    </div>
+  </div>
+
+  <!-- Tabs content -->
+  <div class="scroll-area" style="flex:1;">
+
+    <!-- Tab: Pedidos activos -->
+    <div id="tabPedidos">
+      <div id="sinPedidos" style="text-align:center;padding:60px 24px;color:var(--muted);">
+        <div style="font-size:48px;margin-bottom:12px;">🛵</div>
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px;">Sin pedidos activos</div>
+        <div style="font-size:13px;">Mantente en turno para recibir pedidos</div>
+      </div>
+
+      <!-- Pedido activo -->
+      <div id="pedidoActivoContainer" style="display:none;">
+        <!-- Se genera dinámicamente -->
+      </div>
+    </div>
+
+    <!-- Tab: Historial -->
+    <div id="tabHistorial" style="display:none;">
+      <div style="padding:16px 12px 4px;font-size:16px;font-weight:700;">Mis Entregas</div>
+      <div id="historialList">
+        <div style="text-align:center;padding:40px;color:var(--muted);font-size:14px;">Cargando...</div>
+      </div>
+    </div>
+
+    <!-- Tab: Ganancias -->
+    <div id="tabGanancias" style="display:none;">
+      <div style="padding:16px 12px 4px;font-size:16px;font-weight:700;">Mis Ganancias</div>
+      <div class="earnings-card">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Esta semana</div>
+        <div style="font-size:32px;font-weight:700;font-family:'DM Mono',monospace;" id="ganSemana">L. 0.00</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px;" id="ganPedidosSemana">0 pedidos</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 12px 12px;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;">
+          <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:6px;">Hoy</div>
+          <div style="font-size:20px;font-weight:700;font-family:'DM Mono',monospace;" id="ganHoy">L. 0</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;">
+          <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:6px;">Total pedidos</div>
+          <div style="font-size:20px;font-weight:700;font-family:'DM Mono',monospace;" id="ganTotal">0</div>
+        </div>
+      </div>
+      <div style="padding:0 12px;font-size:13px;font-weight:700;margin-bottom:8px;">Últimas entregas</div>
+      <div id="gananciasList"></div>
+    </div>
+
+    <!-- Tab: Perfil -->
+    <div id="tabPerfil" style="display:none;padding:16px 12px;">
+      <div style="font-size:16px;font-weight:700;margin-bottom:16px;">Mi Perfil</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:52px;height:52px;background:var(--brand);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;" id="avatarPerfil">—</div>
+          <div>
+            <div style="font-size:16px;font-weight:700;" id="perfilNombre">—</div>
+            <div style="font-size:13px;color:var(--muted);" id="perfilEmail">—</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:12px;">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
+          <div style="font-size:12px;color:var(--muted);">Celular</div>
+          <div style="font-size:15px;font-weight:600;margin-top:2px;" id="perfilCelular">—</div>
+        </div>
+        <div style="padding:14px 16px;">
+          <div style="font-size:12px;color:var(--muted);">Estado de cuenta</div>
+          <div style="font-size:15px;font-weight:600;margin-top:2px;" id="perfilEstatus">—</div>
+        </div>
+      </div>
+      <button onclick="cerrarSesion()" style="width:100%;background:none;border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:14px;color:var(--red);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;">
+        Cerrar Sesión
+      </button>
+    </div>
+  </div>
+
+  <!-- Bottom tabs -->
+  <div class="bottom-tabs">
+    <button class="tab-btn active" id="tab1" onclick="switchTab('Pedidos')">
+      <span class="tab-icon">🛵</span>Pedidos
+    </button>
+    <button class="tab-btn" id="tab2" onclick="switchTab('Historial')">
+      <span class="tab-icon">📋</span>Historial
+    </button>
+    <button class="tab-btn" id="tab3" onclick="switchTab('Ganancias')">
+      <span class="tab-icon">💰</span>Ganancias
+    </button>
+    <button class="tab-btn" id="tab4" onclick="switchTab('Perfil')">
+      <span class="tab-icon">👤</span>Perfil
+    </button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+
+<!-- ══════════════════════════════════════════
+     CONFIG + LÓGICA
+════════════════════════════════════════════ -->
+<script>
+// ── Config ──────────────────────────────────────────────────
+const SUPA_URL  = 'https://jjrmzouigcmeztkybrvp.supabase.co';
+const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impqcm16b3VpZ2NtZXp0a3licnZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MzExNDgsImV4cCI6MjA4ODUwNzE0OH0.tNUHxGWMWh7Q6v4mH3y5gOxpczpEJHwNqwH2TehL61I';
+const CLOUDINARY_CLOUD = 'drkaxsziu';
+const CLOUDINARY_PRESET = 'PAQUETES_COMERCIOS';
+const EDGE_URL = `${SUPA_URL}/functions/v1`;
+
+const sb = supabase.createClient(SUPA_URL, SUPA_ANON);
+
+// ── State ────────────────────────────────────────────────────
+let appState = {
+  delivery: null,         // datos del delivery logueado
+  pedidosActivos: [],     // pedidos con estatus activo
+  asignacionActual: null, // asignación pendiente recibida
+  countdownInterval: null,
+  gpsInterval: null,
+  realtimeChannel: null,
+  tabActual: 'Pedidos',
+};
+
+// ── Init ────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) await iniciarApp(session.user);
+});
+
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN' && session) await iniciarApp(session.user);
+  if (event === 'SIGNED_OUT') mostrarAuthScreen();
+});
+
+// ── Auth ────────────────────────────────────────────────────
+document.getElementById('loginBtn').addEventListener('click', async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pwd   = document.getElementById('loginPassword').value;
+  const btn   = document.getElementById('loginBtn');
+  const errEl = document.getElementById('loginError');
+
+  if (!email || !pwd) { mostrarLoginError('Completa todos los campos'); return; }
+  btn.disabled = true; btn.textContent = 'Ingresando...';
+
+  const { error } = await sb.auth.signInWithPassword({ email, password: pwd });
+  if (error) {
+    mostrarLoginError('Correo o contraseña incorrectos');
+    btn.disabled = false; btn.textContent = 'Ingresar';
+  }
+});
+
+document.getElementById('registerBtn').addEventListener('click', async () => {
+  const nombre   = document.getElementById('regNombre').value.trim();
+  const celular  = document.getElementById('regCelular').value.trim();
+  const email    = document.getElementById('regEmail').value.trim();
+  const pwd      = document.getElementById('regPassword').value;
+  const pwd2     = document.getElementById('regPassword2').value;
+  const errEl    = document.getElementById('registerError');
+
+  errEl.style.display = 'none';
+  if (!nombre || !celular || !email || !pwd) { mostrarRegError('Completa todos los campos'); return; }
+  if (pwd !== pwd2) { mostrarRegError('Las contraseñas no coinciden'); return; }
+  if (pwd.length < 8) { mostrarRegError('La contraseña debe tener mínimo 8 caracteres'); return; }
+
+  const btn = document.getElementById('registerBtn');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+
+  // Subir fotos a Cloudinary
+  const duiFile  = document.getElementById('duiInput').files[0];
+  const motoFile = document.getElementById('motoInput').files[0];
+  if (!duiFile || !motoFile) { mostrarRegError('Sube la foto del DUI y del vehículo'); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
+
+  btn.textContent = 'Subiendo fotos...';
+  const duiUrl  = await subirCloudinary(duiFile);
+  const motoUrl = await subirCloudinary(motoFile);
+  if (!duiUrl || !motoUrl) { mostrarRegError('Error al subir fotos, intenta de nuevo'); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
+
+  btn.textContent = 'Creando cuenta...';
+  // Crear usuario en Supabase Auth
+  const { data, error } = await sb.auth.signUp({ email, password: pwd });
+  if (error) { mostrarRegError(error.message); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
+
+  const uid = data.user?.id;
+  if (!uid) { mostrarRegError('Error al crear cuenta'); btn.disabled=false; btn.textContent='Enviar Solicitud'; return; }
+
+  // Insertar en tabla delivery
+  const { error: delErr } = await sb.from('delivery').insert({
+    nombre, celular, email,
+    foto_dui_url: duiUrl,
+    foto_moto_url: motoUrl,
+    estatus: 'PENDIENTE_APROBACION',
+    turno: 'FUERA_TURNO',
+    pedidos_activos: 0,
+    perfil_id: uid,
+  });
+
+  if (delErr) {
+    mostrarRegError('Error al guardar datos: ' + delErr.message);
+    btn.disabled=false; btn.textContent='Enviar Solicitud';
+    return;
+  }
+
+  // Mostrar pantalla de pendiente
+  document.getElementById('registerCard').style.display = 'none';
+  document.getElementById('pendienteCard').style.display = 'block';
+});
+
+// ── Iniciar app ─────────────────────────────────────────────
+async function iniciarApp(user) {
+  // Buscar datos del delivery
+  const { data: del } = await sb.from('delivery')
+    .select('*').eq('perfil_id', user.id).single();
+
+  if (!del) {
+    // Usuario auth pero sin registro delivery
+    mostrarAuthScreen();
+    return;
+  }
+
+  if (del.estatus === 'PENDIENTE_APROBACION') {
+    document.getElementById('authScreen').style.display = 'flex';
+    document.getElementById('loginCard').style.display = 'none';
+    document.getElementById('registerCard').style.display = 'none';
+    document.getElementById('pendienteCard').style.display = 'block';
+    return;
+  }
+
+  if (del.estatus !== 'ACTIVO') {
+    mostrarLoginError('Tu cuenta está ' + del.estatus.toLowerCase().replace('_', ' '));
+    await sb.auth.signOut();
+    return;
+  }
+
+  appState.delivery = del;
+
+  // Mostrar app
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'flex';
+
+  // Header
+  document.getElementById('headerNombre').textContent = del.nombre;
+  document.getElementById('avatarPerfil').textContent = del.nombre?.charAt(0) ?? '?';
+  document.getElementById('perfilNombre').textContent = del.nombre;
+  document.getElementById('perfilEmail').textContent = del.email ?? user.email;
+  document.getElementById('perfilCelular').textContent = del.celular ?? '—';
+  document.getElementById('perfilEstatus').textContent = 'Activo ✅';
+
+  actualizarTurnoUI(del.turno);
+
+  // Cargar pedidos activos
+  await cargarPedidosActivos();
+
+  // Suscribir a asignaciones en tiempo real
+  suscribirAsignaciones(del.id);
+
+  // GPS
+  iniciarGPS(del.id);
+
+  // Cargar historial
+  cargarHistorial();
+  cargarGanancias();
+}
+
+// ── Turno ────────────────────────────────────────────────────
+async function toggleTurno() {
+  const turnoActual = appState.delivery?.turno;
+  const nuevoTurno  = turnoActual === 'DISPONIBLE' ? 'FUERA_TURNO' : 'DISPONIBLE';
+
+  const { error } = await sb.from('delivery')
+    .update({ turno: nuevoTurno })
+    .eq('id', appState.delivery.id);
+
+  if (!error) {
+    appState.delivery.turno = nuevoTurno;
+    actualizarTurnoUI(nuevoTurno);
+    showToast(nuevoTurno === 'DISPONIBLE' ? '✅ Estás en turno' : '⏸️ Turno pausado');
+
+    // Actualizar GPS en turno
+    await sb.from('ubicaciones_delivery')
+      .upsert({ delivery_id: appState.delivery.id, en_turno: nuevoTurno === 'DISPONIBLE', lat: 0, lng: 0 }, { onConflict: 'delivery_id' });
+  }
+}
+
+function actualizarTurnoUI(turno) {
+  const btn   = document.getElementById('turnoBtn');
+  const label = document.getElementById('turnoLabel');
+  const dot   = document.getElementById('turnoDot');
+  btn.className = 'status-badge';
+  dot.className = 'dot';
+
+  if (turno === 'DISPONIBLE') {
+    btn.classList.add('disponible');
+    dot.classList.add('pulse');
+    label.textContent = 'Disponible';
+  } else if (turno === 'OCUPADO') {
+    btn.classList.add('ocupado');
+    label.textContent = 'Ocupado';
+  } else {
+    btn.classList.add('descanso');
+    label.textContent = 'Fuera de turno';
+  }
+}
+
+// ── GPS ──────────────────────────────────────────────────────
+function iniciarGPS(deliveryId) {
+  if (!navigator.geolocation) return;
+
+  function enviarUbicacion(pos) {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    const precision = Math.round(pos.coords.accuracy);
+
+    sb.from('ubicaciones_delivery').upsert({
+      delivery_id: deliveryId,
+      lat, lng,
+      precision_m: precision,
+      en_turno: appState.delivery?.turno === 'DISPONIBLE',
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'delivery_id' }).then(({ error }) => {
+      if (error) console.warn('GPS error:', error.message);
+    });
+  }
+
+  // Obtener posición cada 30 segundos
+  navigator.geolocation.getCurrentPosition(enviarUbicacion);
+  appState.gpsInterval = setInterval(() => {
+    navigator.geolocation.getCurrentPosition(enviarUbicacion, console.warn, {
+      enableHighAccuracy: true, timeout: 10000,
+    });
+  }, 30000);
+}
+
+// ── Realtime: escuchar asignaciones ─────────────────────────
+function suscribirAsignaciones(deliveryId) {
+  if (appState.realtimeChannel) sb.removeChannel(appState.realtimeChannel);
+
+  appState.realtimeChannel = sb.channel(`delivery_${deliveryId}`)
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'asignaciones_pendientes',
+      filter: `delivery_id=eq.${deliveryId}`,
+    }, async (payload) => {
+      const asig = payload.new;
+      if (asig.estatus === 'ENVIADO') {
+        await mostrarPedidoEntrante(asig);
+      }
+    })
+    .on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'pedidos',
+      filter: `delivery_id=eq.${deliveryId}`,
+    }, async () => {
+      await cargarPedidosActivos();
+    })
+    .subscribe();
+}
+
+// ── Mostrar pedido entrante ───────────────────────────────────
+async function mostrarPedidoEntrante(asig) {
+  // Obtener datos del pedido
+  const { data: pedido } = await sb.from('pedidos')
+    .select('*, comercios(nombre, direccion)')
+    .eq('id', asig.pedido_id).single();
+
+  if (!pedido) return;
+
+  appState.asignacionActual = { asig, pedido };
+
+  // Calcular ganancia (70% tarifa)
+  const ganancia = (parseFloat(pedido.tarifa_envio) * 0.70).toFixed(2);
+  const distancia = parseFloat(pedido.distancia_km || 0).toFixed(1);
+  const tiempoEst = Math.ceil(parseFloat(distancia) * 3 + 5); // estimado simple
+
+  document.getElementById('peComercio').textContent = pedido.nombre_comercio ?? '—';
+  document.getElementById('peDireccionOrigen').textContent = pedido.direccion_recogida ?? pedido.comercios?.direccion ?? '—';
+  document.getElementById('peSector').textContent = (pedido.ciudad_destino ?? pedido.direccion_entrega ?? '—').substring(0, 60);
+  document.getElementById('peDistancia').textContent = `${distancia} km`;
+  document.getElementById('peTiempo').textContent = `~${tiempoEst} min`;
+  document.getElementById('pePago').textContent = pedido.metodo_pago === 'EFECTIVO' ? '💵 Efectivo' : '📲 Transferencia';
+  document.getElementById('peGanancia').textContent = `L. ${ganancia}`;
+
+  document.getElementById('pedidoEntrante').classList.add('show');
+
+  // Countdown
+  iniciarCountdown(30, asig.id, asig.pedido_id);
+}
+
+function iniciarCountdown(segundos, asigId, pedidoId) {
+  if (appState.countdownInterval) clearInterval(appState.countdownInterval);
+  const circumference = 138.2;
+  let remaining = segundos;
+
+  function tick() {
+    document.getElementById('countdownNum').textContent = remaining;
+    const offset = circumference - (remaining / segundos) * circumference;
+    document.getElementById('countdownFill').style.strokeDashoffset = offset;
+
+    if (remaining <= 0) {
+      clearInterval(appState.countdownInterval);
+      rechazarPedido(asigId, pedidoId, 'EXPIRADO');
+    }
+    remaining--;
+  }
+  tick();
+  appState.countdownInterval = setInterval(tick, 1000);
+}
+
+document.getElementById('btnAceptar').addEventListener('click', async () => {
+  if (!appState.asignacionActual) return;
+  clearInterval(appState.countdownInterval);
+  document.getElementById('pedidoEntrante').classList.remove('show');
+
+  const { asig, pedido } = appState.asignacionActual;
+  document.getElementById('btnAceptar').disabled = true;
+
+  // Llamar Edge Function aceptar-pedido
+  const res = await fetch(`${EDGE_URL}/aceptar-pedido`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPA_ANON}` },
+    body: JSON.stringify({
+      pedido_id:     pedido.id,
+      asignacion_id: asig.id,
+      delivery_id:   appState.delivery.id,
+    }),
+  });
+  const data = await res.json();
+
+  document.getElementById('btnAceptar').disabled = false;
+  appState.asignacionActual = null;
+
+  if (data.success) {
+    showToast('✅ Pedido aceptado');
+    await cargarPedidosActivos();
+  } else {
+    showToast('⚠️ ' + (data.error ?? 'Error al aceptar'));
+  }
+});
+
+document.getElementById('btnRechazar').addEventListener('click', () => {
+  if (!appState.asignacionActual) return;
+  clearInterval(appState.countdownInterval);
+  document.getElementById('pedidoEntrante').classList.remove('show');
+  const { asig, pedido } = appState.asignacionActual;
+  rechazarPedido(asig.id, pedido.id, 'RECHAZADO');
+  appState.asignacionActual = null;
+});
+
+async function rechazarPedido(asigId, pedidoId, motivo) {
+  document.getElementById('pedidoEntrante').classList.remove('show');
+  // Marcar asignación como rechazada/expirada
+  await fetch(`${EDGE_URL}/asignar-pedido`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPA_ANON}` },
+    body: JSON.stringify({ pedido_id: pedidoId, rechazado_por: appState.delivery.id, motivo }),
+  });
+  // Actualizar asignación local
+  await sb.from('asignaciones_pendientes')
+    .update({ estatus: motivo, respondido_at: new Date().toISOString() })
+    .eq('id', asigId);
+}
+
+// ── Pedidos activos ──────────────────────────────────────────
+const ESTADOS_ACTIVOS = ['ASIGNADO','EN_ESTABLECIMIENTO','FACTURA_LIQUIDADA','EN_CAMINO','ENTREGANDO'];
+
+async function cargarPedidosActivos() {
+  if (!appState.delivery) return;
+
+  const { data: pedidos } = await sb.from('pedidos')
+    .select('*')
+    .eq('delivery_id', appState.delivery.id)
+    .in('estatus', ESTADOS_ACTIVOS)
+    .order('created_at', { ascending: false });
+
+  const activos = pedidos ?? [];
+  const countEl = document.getElementById('headerPedidosActivos');
+  countEl.textContent = `${activos.length} pedido${activos.length !== 1 ? 's' : ''} activo${activos.length !== 1 ? 's' : ''}`;
+
+  const container = document.getElementById('pedidoActivoContainer');
+  const sinPedidos = document.getElementById('sinPedidos');
+
+  if (activos.length === 0) {
+    sinPedidos.style.display = 'block';
+    container.style.display = 'none';
+    return;
+  }
+
+  sinPedidos.style.display = 'none';
+  container.style.display = 'block';
+  container.innerHTML = activos.map(p => renderPedidoActivo(p)).join('');
+}
+
+const PASOS = [
+  { estatus: 'ASIGNADO',           label: 'Asignado' },
+  { estatus: 'EN_ESTABLECIMIENTO', label: 'En Establecimiento' },
+  { estatus: 'FACTURA_LIQUIDADA',  label: 'Factura Liquidada' },
+  { estatus: 'EN_CAMINO',          label: 'En Camino' },
+  { estatus: 'ENTREGANDO',         label: 'Entregando' },
+  { estatus: 'FINALIZADO',         label: 'Finalizado' },
+];
+
+const SIGUIENTE_ESTADO = {
+  'ASIGNADO':           { label: '📍 Llegué al establecimiento', siguiente: 'EN_ESTABLECIMIENTO' },
+  'EN_ESTABLECIMIENTO': { label: '🧾 Liquidar Factura',           siguiente: 'FACTURA_LIQUIDADA', esFactura: true },
+  'FACTURA_LIQUIDADA':  { label: '🛵 Saliendo hacia el cliente',  siguiente: 'EN_CAMINO' },
+  'EN_CAMINO':          { label: '📦 Llegué con el cliente',      siguiente: 'ENTREGANDO' },
+  'ENTREGANDO':         { label: '✅ Entrega Finalizada',         siguiente: 'FINALIZADO' },
+};
+
+function renderPedidoActivo(pedido) {
+  const pasoIdx  = PASOS.findIndex(p => p.estatus === pedido.estatus);
+  const siguiente = SIGUIENTE_ESTADO[pedido.estatus];
+  const ganancia  = (parseFloat(pedido.tarifa_envio) * 0.70).toFixed(2);
+
+  const stepsHtml = PASOS.map((p, i) => `
+    <div class="step-item">
+      <div class="step-dot ${i < pasoIdx ? 'done' : i === pasoIdx ? 'active' : ''}"></div>
+      <div class="step-label">${p.label}</div>
+    </div>
+  `).join('<div style="flex:1;height:2px;background:var(--border);margin-top:5px;align-self:flex-start;margin-top:9px;"></div>');
+
+  const facturaHtml = siguiente?.esFactura ? `
+    <div style="padding:0 12px 12px;">
+      <div style="font-size:12px;color:var(--muted);font-weight:500;margin-bottom:6px;">Monto pagado en establecimiento (L.)</div>
+      <input type="number" id="montoFactura_${pedido.id}" class="input-field" placeholder="0.00" step="0.01" min="0">
+      <div style="font-size:12px;color:var(--muted);font-weight:500;margin:10px 0 6px;">Foto de la factura</div>
+      <div class="upload-box" id="facturaBox_${pedido.id}" onclick="document.getElementById('facturaInput_${pedido.id}').click()">
+        <div style="font-size:22px;">📷</div>
+        <div style="font-size:12px;margin-top:4px;">Toca para tomar foto</div>
+        <img id="facturaPreview_${pedido.id}" style="display:none;width:100%;border-radius:8px;margin-top:8px;max-height:100px;object-fit:cover;">
+      </div>
+      <input type="file" id="facturaInput_${pedido.id}" accept="image/*" capture="environment" style="display:none;"
+        onchange="previewFoto(this,'facturaPreview_${pedido.id}','facturaBox_${pedido.id}')">
+    </div>
+  ` : '';
+
+  return `
+    <div class="pedido-activo-card">
+      <!-- Step bar -->
+      <div class="step-bar">${stepsHtml}</div>
+
+      <!-- Info del pedido -->
+      <div style="padding:14px 16px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div>
+            <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;">Pedido</div>
+            <div style="font-size:15px;font-weight:700;font-family:'DM Mono',monospace;">${pedido.no_orden ?? '—'}</div>
+          </div>
+          <div class="ganancia-chip">L. ${ganancia}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="background:var(--surface2);border-radius:10px;padding:10px;">
+            <div style="font-size:10px;color:var(--muted);font-weight:600;margin-bottom:3px;">ORIGEN</div>
+            <div style="font-size:13px;font-weight:600;">${(pedido.nombre_comercio ?? '—').substring(0,20)}</div>
+            <div style="font-size:11px;color:var(--muted);">${(pedido.direccion_recogida ?? '—').substring(0,30)}</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:10px;padding:10px;">
+            <div style="font-size:10px;color:var(--muted);font-weight:600;margin-bottom:3px;">DESTINO</div>
+            <div style="font-size:13px;font-weight:600;">${(pedido.ciudad_destino ?? '—').substring(0,20)}</div>
+            <div style="font-size:11px;color:var(--muted);">${(pedido.direccion_entrega ?? '—').substring(0,30)}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <div style="background:var(--surface2);border-radius:10px;padding:8px 12px;font-size:12px;">
+            📏 ${parseFloat(pedido.distancia_km ?? 0).toFixed(1)} km
+          </div>
+          <div style="background:var(--surface2);border-radius:10px;padding:8px 12px;font-size:12px;">
+            ${pedido.metodo_pago === 'EFECTIVO' ? '💵 Efectivo' : '📲 Transfer.'}
+          </div>
+          ${pedido.monto_cobrar > 0 ? `<div style="background:rgba(232,93,4,.15);border:1px solid rgba(232,93,4,.3);border-radius:10px;padding:8px 12px;font-size:12px;color:var(--brand);">
+            💰 L.${parseFloat(pedido.monto_cobrar).toFixed(2)}
+          </div>` : ''}
+        </div>
+      </div>
+
+      <!-- Liquidar factura inputs -->
+      ${facturaHtml}
+
+      <!-- Botón siguiente estado -->
+      ${siguiente ? `
+        <button class="btn-estado" onclick="avanzarEstado('${pedido.id}','${pedido.estatus}')">
+          ${siguiente.label}
+        </button>
+      ` : `
+        <div style="text-align:center;padding:16px;color:var(--green);font-weight:700;">✅ Pedido Finalizado</div>
+      `}
+    </div>
+  `;
+}
+
+async function avanzarEstado(pedidoId, estatusActual) {
+  const sig = SIGUIENTE_ESTADO[estatusActual];
+  if (!sig) return;
+
+  // Validar factura
+  if (sig.esFactura) {
+    const monto = document.getElementById(`montoFactura_${pedidoId}`)?.value;
+    const file  = document.getElementById(`facturaInput_${pedidoId}`)?.files[0];
+    if (!monto || parseFloat(monto) <= 0) { showToast('⚠️ Ingresa el monto pagado'); return; }
+    if (!file) { showToast('⚠️ Sube la foto de la factura'); return; }
+
+    showToast('📤 Subiendo factura...');
+    const fotoUrl = await subirCloudinary(file);
+    if (!fotoUrl) { showToast('❌ Error al subir foto'); return; }
+
+    const { error } = await sb.from('pedidos').update({
+      estatus:              sig.siguiente,
+      foto_factura_url:     fotoUrl,
+      monto_pagado_en_comercio: parseFloat(monto),
+    }).eq('id', pedidoId);
+    if (error) { showToast('❌ Error: ' + error.message); return; }
+
+  } else {
+    const updateData = { estatus: sig.siguiente };
+    if (sig.siguiente === 'EN_ESTABLECIMIENTO') updateData.hora_en_camino = new Date().toISOString();
+    if (sig.siguiente === 'ENTREGANDO')         updateData.hora_llegada   = new Date().toISOString();
+    if (sig.siguiente === 'FINALIZADO')         updateData.hora_finalizado = new Date().toISOString();
+
+    const { error } = await sb.from('pedidos').update(updateData).eq('id', pedidoId);
+    if (error) { showToast('❌ Error: ' + error.message); return; }
+  }
+
+  showToast('✅ Estado actualizado');
+  await cargarPedidosActivos();
+}
+
+// ── Historial ────────────────────────────────────────────────
+async function cargarHistorial() {
+  if (!appState.delivery) return;
+  const { data: pedidos } = await sb.from('pedidos')
+    .select('no_orden, estatus, nombre_comercio, ciudad_destino, tarifa_envio, created_at')
+    .eq('delivery_id', appState.delivery.id)
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  const list = document.getElementById('historialList');
+  if (!pedidos?.length) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:14px;">Sin entregas aún</div>';
+    return;
+  }
+  list.innerHTML = pedidos.map(p => {
+    const ganancia = (parseFloat(p.tarifa_envio ?? 0) * 0.70).toFixed(2);
+    const fecha = new Date(p.created_at).toLocaleDateString('es-HN', { day:'2-digit', month:'short' });
+    const colorMap = { FINALIZADO:'rgba(34,197,94,.15)', EN_CAMINO:'rgba(59,130,246,.15)', ENTREGANDO:'rgba(245,158,11,.15)' };
+    const textMap  = { FINALIZADO:'var(--green)', EN_CAMINO:'var(--blue)', ENTREGANDO:'var(--yellow)' };
+    return `
+      <div class="pedido-hist-item">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:13px;font-weight:700;font-family:'DM Mono',monospace;">${p.no_orden ?? '—'}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">${p.nombre_comercio ?? '—'} → ${p.ciudad_destino ?? '—'}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">${fecha}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:15px;font-weight:700;color:var(--green);font-family:'DM Mono',monospace;">L.${ganancia}</div>
+            <div style="font-size:10px;font-weight:700;margin-top:4px;padding:2px 8px;border-radius:20px;
+              background:${colorMap[p.estatus]??'rgba(136,136,136,.15)'};color:${textMap[p.estatus]??'var(--muted)'}">${p.estatus}</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Ganancias ────────────────────────────────────────────────
+async function cargarGanancias() {
+  if (!appState.delivery) return;
+  const { data: pedidos } = await sb.from('pedidos')
+    .select('tarifa_envio, created_at')
+    .eq('delivery_id', appState.delivery.id)
+    .eq('estatus', 'FINALIZADO');
+
+  if (!pedidos?.length) return;
+
+  const ahora   = new Date();
+  const hoy     = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+  const semLunes = new Date(hoy); semLunes.setDate(hoy.getDate() - hoy.getDay() + 1);
+
+  let totalHoy = 0, totalSemana = 0;
+  pedidos.forEach(p => {
+    const fecha = new Date(p.created_at);
+    const gan   = parseFloat(p.tarifa_envio ?? 0) * 0.70;
+    if (fecha >= hoy) totalHoy += gan;
+    if (fecha >= semLunes) totalSemana += gan;
+  });
+
+  document.getElementById('ganHoy').textContent = `L. ${totalHoy.toFixed(0)}`;
+  document.getElementById('ganSemana').textContent = `L. ${totalSemana.toFixed(2)}`;
+  document.getElementById('ganPedidosSemana').textContent = `${pedidos.filter(p => new Date(p.created_at) >= semLunes).length} pedidos`;
+  document.getElementById('ganTotal').textContent = pedidos.length;
+}
+
+// ── Tabs ────────────────────────────────────────────────────
+function switchTab(tab) {
+  ['Pedidos','Historial','Ganancias','Perfil'].forEach((t,i) => {
+    document.getElementById(`tab${i+1}`).classList.toggle('active', t === tab);
+    document.getElementById(`tab${t}`).style.display = t === tab ? 'block' : 'none';
+  });
+  appState.tabActual = tab;
+  if (tab === 'Historial') cargarHistorial();
+  if (tab === 'Ganancias') cargarGanancias();
+}
+
+// ── Auth helpers ─────────────────────────────────────────────
+function mostrarAuthScreen() {
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('appScreen').style.display = 'none';
+  mostrarLogin();
+}
+function mostrarLogin() {
+  document.getElementById('loginCard').style.display = 'block';
+  document.getElementById('registerCard').style.display = 'none';
+  document.getElementById('pendienteCard').style.display = 'none';
+}
+function mostrarRegistro() {
+  document.getElementById('loginCard').style.display = 'none';
+  document.getElementById('registerCard').style.display = 'block';
+}
+function mostrarLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg; el.style.display = 'block';
+}
+function mostrarRegError(msg) {
+  const el = document.getElementById('registerError');
+  el.textContent = msg; el.style.display = 'block';
+}
+async function cerrarSesion() {
+  if (appState.gpsInterval) clearInterval(appState.gpsInterval);
+  if (appState.realtimeChannel) sb.removeChannel(appState.realtimeChannel);
+  // Marcar fuera de turno
+  if (appState.delivery) {
+    await sb.from('delivery').update({ turno: 'FUERA_TURNO' }).eq('id', appState.delivery.id);
+    await sb.from('ubicaciones_delivery').upsert({ delivery_id: appState.delivery.id, en_turno: false, lat: 0, lng: 0 }, { onConflict: 'delivery_id' });
+  }
+  await sb.auth.signOut();
+  appState = { delivery: null, pedidosActivos: [], asignacionActual: null, countdownInterval: null, gpsInterval: null, realtimeChannel: null, tabActual: 'Pedidos' };
+  mostrarAuthScreen();
+}
+
+// ── Cloudinary ───────────────────────────────────────────────
+async function subirCloudinary(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_PRESET);
+  try {
+    const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method:'POST', body: fd });
+    const data = await res.json();
+    return data.secure_url ?? null;
+  } catch(e) { return null; }
+}
+
+function previewFoto(input, previewId, boxId) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById(previewId);
+    if (img) { img.src = e.target.result; img.style.display = 'block'; }
+    const box = document.getElementById(boxId);
+    if (box) box.classList.add('uploaded');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Toast ────────────────────────────────────────────────────
+let toastTimeout;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => el.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
