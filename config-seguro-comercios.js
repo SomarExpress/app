@@ -14,8 +14,7 @@
     k: atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SWlwcWFuSm1lbTkxYVdkallXMWxlblJyZVdKeWRuQWlMQ0p5YjJ4bElqb2lZVzV2YmlJc0ltbGhkQ0k2TVRjM01qa3pNVEUwT0N3aVpYQWlPakl3T0RnMU1EY3hORGg5LnROVUh4R1dNV2g3UTZ2NG1IMnk1Z094cGN6cEVKSHdOcXdIMlRlaEw2MUk=')
   };
 
-  // ── WhatsApp / OTP: mantener Apps Script SOLO para envío de mensajes ──
-  const _wa = atob('aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4OU0wbE5jVzZxREE1WDBaa0NvZzVLYXpoblRDSkc0MmxscmlIdVcwSXQ1YTZRVzBpS3dXMzNlTjRqSjVkNGVaQkVkUS9leGVj');
+  // Apps Script ya no se usa para OTP — todo pasa por Supabase Edge Functions
 
   // ── Cloudinary ──
   const _cl = {
@@ -80,7 +79,7 @@
   // ── Exportar configuración ──
   window.APP_CONFIG = {
     supabase: { url: _sb.u, key: _sb.k },
-    whatsappEndpoint: _wa,
+    // whatsappEndpoint eliminado — OTP va por Edge Functions
     cloudinary: { cloudName: _cl.n, uploadPreset: _cl.p },
     debug: DEBUG
   };

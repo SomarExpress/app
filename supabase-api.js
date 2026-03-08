@@ -35,12 +35,26 @@
   // ── Utilidades internas ────────────────────────────────────
   function san(v) { return window.APP_SECURITY ? window.APP_SECURITY.sanitize(v) : String(v).trim(); }
 
-  function generarOTP() {
-    // 6 dígitos criptográficamente seguros
-    const arr = new Uint32Array(1);
-    crypto.getRandomValues(arr);
-    return String(arr[0] % 900000 + 100000);
+  // Llama a una Edge Function de Supabase
+  async function callEdge(name, body) {
+    const { url, key } = window.APP_CONFIG.supabase;
+    const resp = await fetch(`${url}/functions/v1/${name}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': key,
+        'Authorization': `Bearer ${key}`,
+      },
+      body: JSON.stringify(body)
+    });
+    if (!resp.ok && resp.status !== 200) {
+      // Intentar leer el cuerpo igual para obtener el mensaje de error
+    }
+    const data = await resp.json();
+    return data;
   }
+
+  // OTP generado en Edge Function (server-side)
 
   // ── 1. OTP / AUTENTICACIÓN ─────────────────────────────────
 
@@ -54,37 +68,26 @@
     }
 
     const celular = san(numero);
-    const codigo = generarOTP();
 
-    // Eliminar códigos anteriores del mismo número
-    await getClient()
-      .from('codigos_verificacion')
-      .delete()
-      .eq('celular', celular)
-      .eq('tipo', 'COMERCIO');
+    // Todo lo maneja la Edge Function:
+    //   - genera OTP criptográfico
+    //   - guarda en codigos_verificacion (service_role, sin problemas de RLS)
+    //   - llama a BuilderBot para enviar el WhatsApp
+    //   - la API key de BuilderBot nunca toca el frontend
+    const { url } = window.APP_CONFIG.supabase;
+    const response = await fetch(`${url}/functions/v1/enviar-otp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': window.APP_CONFIG.supabase.key,
+        'Authorization': `Bearer ${window.APP_CONFIG.supabase.key}`,
+      },
+      body: JSON.stringify({ numero: celular, tipo: 'COMERCIO' })
+    });
 
-    // Guardar nuevo código en Supabase (expira en 10 min por schema)
-    const { error } = await getClient()
-      .from('codigos_verificacion')
-      .insert({ celular, codigo, tipo: 'COMERCIO' });
-
-    if (error) throw new Error('Error al generar código: ' + error.message);
-
-    // Enviar WhatsApp vía Apps Script (solo mensajería, sin almacenar datos)
-    try {
-      await fetch(window.APP_CONFIG.whatsappEndpoint, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'enviarCodigoVerificacionComercio',
-          numero: celular,
-          codigo   // Apps Script usa esto solo para armar el mensaje
-        })
-      });
-    } catch (e) {
-      // El código está en BD aunque falle el WhatsApp
-      window.secureLog('⚠️ WhatsApp error (código guardado en BD):', e);
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.error || 'Error al enviar código');
     }
 
     return { success: true };
@@ -95,101 +98,26 @@
    * Retorna { success, esNuevo, comercio? }
    */
   async function verificarOTP(numero, codigo) {
-    const celular = san(numero);
-    const codigoClean = san(codigo).trim();
-
-    // Buscar código válido (no usado, no expirado)
-    const { data: otpRows, error: otpErr } = await getClient()
-      .from('codigos_verificacion')
-      .select('*')
-      .eq('celular', celular)
-      .eq('codigo', codigoClean)
-      .eq('tipo', 'COMERCIO')
-      .eq('usado', false)
-      .gt('expira_at', new Date().toISOString())
-      .limit(1);
-
-    if (otpErr) throw new Error('Error al verificar: ' + otpErr.message);
-    if (!otpRows || otpRows.length === 0) {
-      return { success: false, error: 'Código incorrecto o expirado' };
-    }
-
-    // Marcar como usado
-    await getClient()
-      .from('codigos_verificacion')
-      .update({ usado: true })
-      .eq('id', otpRows[0].id);
-
-    // Buscar si ya existe un usuario de comercio con ese celular
-    const { data: usuarioRows } = await getClient()
-      .from('comercios_usuarios')
-      .select(`
-        id, celular, nombre, ubicacion_gps, direccion,
-        comercio_id,
-        comercios ( id, nombre, direccion, ubicacion_gps, whatsapp, abierto )
-      `)
-      .eq('celular', celular)
-      .eq('activo', true)
-      .limit(1);
-
-    if (usuarioRows && usuarioRows.length > 0) {
-      const u = usuarioRows[0];
-      const comercioData = {
-        usuarioId: u.id,
-        id: u.comercio_id || null,         // id del comercio en catálogo (puede ser null)
-        nombre: u.comercios?.nombre || u.nombre,
-        direccion: u.comercios?.direccion || u.direccion,
-        ubicacionGPS: u.comercios?.ubicacion_gps || u.ubicacion_gps,
-        celular: celular,
-        whatsapp: u.comercios?.whatsapp || celular,
-        abierto: u.comercios?.abierto ?? true
-      };
-      return { success: true, esNuevo: false, comercio: comercioData };
-    }
-
-    // No existe → registro nuevo
-    return { success: true, esNuevo: true };
+    const result = await callEdge('verificar-otp', {
+      numero: san(numero),
+      codigo: san(codigo).trim(),
+      tipo: 'COMERCIO'
+    });
+    return result; // { success, esNuevo, comercio? } o { success: false, error }
   }
 
   /**
    * Registra un comercio nuevo en Supabase.
    */
   async function registrarComercio({ celular, nombre, direccion, ubicacionGPS }) {
-    const cel = san(celular);
-    const nom = san(nombre);
-    const dir = san(direccion);
-    const gps = san(ubicacionGPS || '');
-
-    if (!nom || nom.length < 2) throw new Error('Nombre inválido');
-    if (!dir) throw new Error('Dirección requerida');
-
-    // Insertar en comercios_usuarios (perfil_id null por ahora, sin Supabase Auth)
-    const { data: nuevoUsuario, error } = await getClient()
-      .from('comercios_usuarios')
-      .insert({
-        celular: cel,
-        nombre: nom,
-        direccion: dir,
-        ubicacion_gps: gps,
-        activo: true
-      })
-      .select()
-      .single();
-
-    if (error) throw new Error('Error al registrar: ' + error.message);
-
-    return {
-      success: true,
-      comercio: {
-        usuarioId: nuevoUsuario.id,
-        id: null,
-        nombre: nom,
-        direccion: dir,
-        ubicacionGPS: gps,
-        celular: cel,
-        abierto: true
-      }
-    };
+    const result = await callEdge('registrar-comercio', {
+      celular: san(celular),
+      nombre: san(nombre),
+      direccion: san(direccion),
+      ubicacionGPS: san(ubicacionGPS || '')
+    });
+    if (!result.success) throw new Error(result.error || 'Error al registrar');
+    return result; // { success: true, comercio: {...} }
   }
 
   // ── 2. UBICACIONES FRECUENTES ──────────────────────────────
