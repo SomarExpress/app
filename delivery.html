@@ -628,11 +628,10 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 });
 
 document.getElementById('registerBtn').addEventListener('click', async () => {
-  const btn    = document.getElementById('registerBtn');
-  const errEl  = document.getElementById('registerError');
+  const btn   = document.getElementById('registerBtn');
+  const errEl = document.getElementById('registerError');
   errEl.style.display = 'none';
 
-  // ── Validaciones ──────────────────────────────────────────
   const nombre   = document.getElementById('regNombre').value.trim();
   const celular  = document.getElementById('regCelular').value.trim();
   const email    = document.getElementById('regEmail').value.trim();
@@ -641,205 +640,161 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   const duiFile  = document.getElementById('duiInput').files[0];
   const motoFile = document.getElementById('motoInput').files[0];
 
-  if (!nombre || !celular || !email || !pwd) { mostrarRegError('Completa todos los campos'); return; }
-  if (pwd !== pwd2)    { mostrarRegError('Las contraseñas no coinciden'); return; }
-  if (pwd.length < 8)  { mostrarRegError('La contraseña debe tener mínimo 8 caracteres'); return; }
-  if (!duiFile)        { mostrarRegError('Sube la foto del DUI'); return; }
-  if (!motoFile)       { mostrarRegError('Sube la foto del vehículo'); return; }
+  if (!nombre)   return mostrarRegError('Ingresa tu nombre');
+  if (!celular)  return mostrarRegError('Ingresa tu celular');
+  if (!email)    return mostrarRegError('Ingresa tu correo');
+  if (!pwd)      return mostrarRegError('Ingresa una contraseña');
+  if (pwd !== pwd2)   return mostrarRegError('Las contraseñas no coinciden');
+  if (pwd.length < 8) return mostrarRegError('Contraseña mínimo 8 caracteres');
+  if (!duiFile)  return mostrarRegError('Sube la foto del DUI');
+  if (!motoFile) return mostrarRegError('Sube la foto del vehículo');
 
   btn.disabled = true;
+  btn.textContent = '1/3 Creando cuenta...';
 
-  try {
-  btn.disabled = true;
-
-  // Helper para mostrar error y rehabilitar botón
-  const regErr = (msg) => {
-    mostrarRegError(msg);
-    btn.disabled = false;
-    btn.textContent = 'Enviar Solicitud';
-  };
-
-  // ── PASO 1: Crear usuario Auth ──────────────────────────────
-  btn.textContent = '1/4 Creando cuenta...';
-  let uid = null;
-  let sessionToken = null;
-
+  // ── 1. Crear usuario Auth ───────────────────────────────────
   const { data: signUpData, error: signUpErr } = await sb.auth.signUp({ email, password: pwd });
 
   if (signUpErr) {
-    // Correo ya registrado → intentar login directo
-    if (signUpErr.message?.toLowerCase().includes('already') ||
-        signUpErr.message?.toLowerCase().includes('registered') ||
-        signUpErr.status === 400) {
-      const { data: loginData, error: loginErr2 } = await sb.auth.signInWithPassword({ email, password: pwd });
-      if (loginErr2 || !loginData?.user) {
-        return regErr('Este correo ya existe. Intenta iniciar sesión con tu contraseña.');
-      }
-      uid = loginData.user.id;
-      sessionToken = loginData.session;
-    } else {
-      return regErr('Error al crear cuenta: ' + signUpErr.message);
+    btn.disabled = false; btn.textContent = 'Enviar Solicitud';
+    if (signUpErr.message?.includes('already')) {
+      return mostrarRegError('Este correo ya está registrado. Inicia sesión.');
     }
-  } else {
-    uid = signUpData?.user?.id ?? null;
-    sessionToken = signUpData?.session ?? null;
+    return mostrarRegError('Error: ' + signUpErr.message);
   }
 
+  const uid = signUpData?.user?.id;
   if (!uid) {
-    return regErr('No se pudo obtener el ID de usuario. Intenta de nuevo.');
+    btn.disabled = false; btn.textContent = 'Enviar Solicitud';
+    return mostrarRegError('No se pudo crear la cuenta. Intenta de nuevo.');
   }
-  console.log('[REG] uid:', uid, '| sesión:', !!sessionToken);
 
-  // ── PASO 2: Activar sesión ──────────────────────────────────
-  btn.textContent = '2/4 Autenticando...';
-
-  if (sessionToken?.access_token) {
+  // Activar sesión para poder subir fotos a Storage
+  if (signUpData?.session?.access_token) {
     await sb.auth.setSession({
-      access_token:  sessionToken.access_token,
-      refresh_token: sessionToken.refresh_token,
+      access_token:  signUpData.session.access_token,
+      refresh_token: signUpData.session.refresh_token,
     });
-    console.log('[REG] Sesión activa ✅');
-  } else {
-    // Sin sesión inmediata (email confirmation activo) → login manual
-    const { data: loginData, error: loginErr } = await sb.auth.signInWithPassword({ email, password: pwd });
-    if (!loginErr && loginData?.session) {
-      console.log('[REG] Login manual ✅');
-    } else {
-      console.warn('[REG] Sin sesión — fotos se omiten, registro continúa');
-    }
   }
 
-  // ── PASO 3: Subir fotos ─────────────────────────────────────
-  btn.textContent = '3/4 Subiendo fotos...';
+  // ── 2. Subir fotos ──────────────────────────────────────────
+  btn.textContent = '2/3 Subiendo fotos...';
   let duiUrl  = null;
   let motoUrl = null;
-
   try {
     duiUrl  = await subirFotoConUID(duiFile,  'dui',  uid);
     motoUrl = await subirFotoConUID(motoFile, 'moto', uid);
-    console.log('[REG] DUI:', !!duiUrl, '| Moto:', !!motoUrl);
-  } catch(fotoErr) {
-    console.warn('[REG] Error fotos (no crítico):', fotoErr.message);
+  } catch(e) {
+    console.warn('[REG] Fotos no subidas:', e.message);
   }
 
-  // ── PASO 4: Insertar en delivery ────────────────────────────
-  btn.textContent = '4/4 Guardando datos...';
+  // ── 3. Guardar aplicación ───────────────────────────────────
+  // Usamos aplicaciones_delivery (tabla sin FK complejo, UUID PK)
+  // Despacho revisará y aprobará → creará el registro en delivery
+  btn.textContent = '3/3 Enviando solicitud...';
 
-  // Generar ID único que no choque con AppSheet (ellos usan IDs pequeños)
-  const nuevoId = 80000000 + Math.floor(Math.random() * 19999999);
-
-  const deliveryData = {
-    id:            nuevoId,
+  const { error: appErr } = await sb.from('aplicaciones_delivery').insert({
     nombre,
     celular,
-    email,
-    foto_dui_url:  duiUrl  ?? null,
-    foto_moto_url: motoUrl ?? null,
-    estatus:       'PENDIENTE_APROBACION',
-    turno:         'FUERA_TURNO',
-    pedidos_activos: 0,
-    perfil_id:     uid,
-  };
+    correo:                  email,
+    identidad_delantera_url: duiUrl  ?? null,
+    moto_propia_url:         motoUrl ?? null,
+    estatus:                 'PENDIENTE',
+    notas:                   `auth_uid:${uid}`,  // para que Despacho pueda vincular
+  });
 
-  const { error: insertErr } = await sb.from('delivery').insert(deliveryData);
+  btn.disabled = false; btn.textContent = 'Enviar Solicitud';
 
-  if (insertErr) {
-    console.error('[REG] Insert error:', insertErr.code, insertErr.message);
-
-    if (insertErr.code === '23505') {
-      // Ya existe → actualizar perfil_id si está vacío
-      const { error: updErr } = await sb.from('delivery')
-        .update({ perfil_id: uid, foto_dui_url: duiUrl ?? null, foto_moto_url: motoUrl ?? null })
-        .eq('email', email)
-        .is('perfil_id', null);
-
-      if (updErr) {
-        // Ya tiene cuenta — mostrar pantalla de pendiente igual
-        console.warn('[REG] Ya existía registro delivery, continuando');
-      }
-    } else if (insertErr.message?.includes('perfil_id') || insertErr.code === '42703') {
-      return regErr('⚠️ Ejecuta delivery-sql.sql en Supabase primero (columna perfil_id no existe).');
-    } else {
-      return regErr('Error al guardar: ' + insertErr.message);
-    }
+  if (appErr) {
+    console.error('[REG] Error aplicacion:', appErr);
+    // Si falla insert (ej: RLS), mostrar mensaje pero cuenta ya fue creada
+    mostrarRegError('Cuenta creada pero error al enviar solicitud: ' + appErr.message + 
+      '. Contacta a soporte con tu correo: ' + email);
+    return;
   }
 
-  console.log('[REG] ✅ Registro completo');
+  // ── Mostrar pantalla de espera ──────────────────────────────
   document.getElementById('registerCard').style.display  = 'none';
   document.getElementById('pendienteCard').style.display = 'block';
-
-  } catch (e) {
-    console.error('[REGISTRO] Excepción inesperada:', e);
-    mostrarRegError('Error inesperado: ' + e.message + ' — Recarga e intenta de nuevo.');
-    btn.disabled = false; btn.textContent = 'Enviar Solicitud';
-  }
 });
+
 
 // ── Iniciar app ─────────────────────────────────────────────
 async function iniciarApp(user) {
-  // Buscar datos del delivery
-  const { data: del, error: delFetchErr } = await sb.from('delivery')
-    .select('*').eq('perfil_id', user.id).single();
+  // ── Buscar delivery por perfil_id (auth.uid) ─────────────
+  // perfil_id en delivery referencia perfiles(id) = auth.users(id)
+  const { data: del, error: delErr } = await sb
+    .from('delivery')
+    .select('id, nombre, celular, correo, foto_url, estatus, activo, saldo_billetera, ciudad')
+    .eq('perfil_id', user.id)
+    .maybeSingle();
 
-  if (delFetchErr) {
-    if (delFetchErr.code === '406' || delFetchErr.message?.includes('406') || delFetchErr.message?.includes('perfil_id')) {
-      mostrarLoginError('⚠️ Ejecuta primero delivery-sql.sql en Supabase (columna perfil_id no existe)');
-    } else if (delFetchErr.code === 'PGRST116') {
-      // No encontrado — usuario auth sin registro delivery
-      mostrarAuthScreen();
+  if (delErr) {
+    console.error('[APP] Error buscando delivery:', delErr.code, delErr.message);
+    // 406 = columna no existe, PGRST116 = no encontrado
+    if (delErr.code === 'PGRST116' || !delErr.code) {
+      // No tiene delivery record aún → puede estar pendiente de aprobación
     } else {
-      mostrarLoginError('Error: ' + delFetchErr.message);
+      mostrarLoginError('Error al cargar perfil: ' + delErr.message);
+      await sb.auth.signOut();
+      return;
     }
-    await sb.auth.signOut();
-    return;
   }
 
+  // ── Sin registro delivery → verificar si tiene aplicación pendiente ──
   if (!del) {
-    // Usuario auth pero sin registro delivery
-    mostrarAuthScreen();
-    return;
-  }
+    const { data: app } = await sb
+      .from('aplicaciones_delivery')
+      .select('estatus')
+      .like('notas', `%${user.id}%`)
+      .maybeSingle();
 
-  if (del.estatus === 'PENDIENTE_APROBACION') {
     document.getElementById('authScreen').style.display = 'flex';
-    document.getElementById('loginCard').style.display = 'none';
+    document.getElementById('loginCard').style.display    = 'none';
     document.getElementById('registerCard').style.display = 'none';
     document.getElementById('pendienteCard').style.display = 'block';
+
+    if (app?.estatus === 'RECHAZADO') {
+      document.getElementById('pendienteCard').querySelector('div').textContent = 
+        '❌ Tu solicitud fue rechazada. Contacta a soporte.';
+    }
     return;
   }
 
-  if (del.estatus !== 'ACTIVO') {
-    mostrarLoginError('Tu cuenta está ' + del.estatus.toLowerCase().replace('_', ' '));
+  // ── Verificar estatus ─────────────────────────────────────
+  if (!del.activo || del.estatus === 'INACTIVO' || del.estatus === 'SUSPENDIDO') {
+    if (del.estatus === 'PENDIENTE_APROBACION' || !del.activo) {
+      document.getElementById('authScreen').style.display = 'flex';
+      document.getElementById('loginCard').style.display    = 'none';
+      document.getElementById('registerCard').style.display = 'none';
+      document.getElementById('pendienteCard').style.display = 'block';
+      return;
+    }
+    mostrarLoginError('Tu cuenta está suspendida. Contacta a soporte.');
     await sb.auth.signOut();
     return;
   }
 
-  appState.delivery = del;
+  // ── Delivery activo — cargar app ──────────────────────────
+  appState.delivery = { ...del, email: del.correo };
 
-  // Mostrar app
   document.getElementById('authScreen').style.display = 'none';
-  document.getElementById('appScreen').style.display = 'flex';
+  document.getElementById('appScreen').style.display  = 'flex';
 
-  // Header
-  document.getElementById('headerNombre').textContent = del.nombre;
-  document.getElementById('avatarPerfil').textContent = del.nombre?.charAt(0) ?? '?';
-  document.getElementById('perfilNombre').textContent = del.nombre;
-  document.getElementById('perfilEmail').textContent = del.email ?? user.email;
-  document.getElementById('perfilCelular').textContent = del.celular ?? '—';
-  document.getElementById('perfilEstatus').textContent = 'Activo ✅';
+  document.getElementById('headerNombre').textContent    = del.nombre;
+  document.getElementById('avatarPerfil').textContent    = del.nombre?.charAt(0)?.toUpperCase() ?? '?';
+  document.getElementById('perfilNombre').textContent    = del.nombre;
+  document.getElementById('perfilEmail').textContent     = del.correo ?? user.email;
+  document.getElementById('perfilCelular').textContent   = del.celular ?? '—';
+  document.getElementById('perfilEstatus').textContent   = 'Activo ✅';
 
-  actualizarTurnoUI(del.turno);
+  // turno: en delivery original es campo 'activo', no 'turno'
+  // usamos ubicaciones_delivery para saber si está en turno
+  actualizarTurnoUI('FUERA_TURNO');
 
-  // Cargar pedidos activos
   await cargarPedidosActivos();
-
-  // Suscribir a asignaciones en tiempo real
   suscribirAsignaciones(del.id);
-
-  // GPS
   iniciarGPS(del.id);
-
-  // Cargar historial
   cargarHistorial();
   cargarGanancias();
 }
