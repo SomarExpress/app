@@ -3,7 +3,7 @@
 // Con Autocompletado y Clculo de Tarifas
 // ========================================
 
-const SCRIPT_URL = window.APP_CONFIG.apiEndpoint;
+// Supabase API inicializado vía supabase-api.js
 const CLOUDINARY_CLOUD_NAME = window.APP_CONFIG.cloudinary.cloudName;
 const CLOUDINARY_UPLOAD_PRESET = window.APP_CONFIG.cloudinary.uploadPreset;
 
@@ -31,27 +31,17 @@ let appData = {
 
 async function cargarUbicacionesFrecuentes() {
   try {
-    console.log(' === CARGANDO UBICACIONES FRECUENTES ===');
-    
-    const response = await fetch(`${SCRIPT_URL}?action=obtenerUbicacionesFrecuentes`);
-    const result = await response.json();
-    
-    console.log('Respuesta del servidor:', result);
-    
-    if (result.success) {
-      appData.ubicacionesFrecuentes = result.ubicaciones;
-      console.log(` ${result.ubicaciones.length} ubicaciones cargadas`);
-      console.log('Ubicaciones:', result.ubicaciones);
-      
-      // Configurar autocompletados si estamos en el tab de entrega
-      if (!document.getElementById('contentSolicitarEntrega').classList.contains('hidden')) {
-        configurarAutocompletadosFormularioEntrega();
-      }
-    } else {
-      console.error('ï Error cargando ubicaciones:', result.error);
+    window.secureLog('=== CARGANDO UBICACIONES FRECUENTES ===');
+    const ubicaciones = await window.SomarAPI.obtenerUbicacionesFrecuentes(
+      appData.comercio?.id || null
+    );
+    appData.ubicacionesFrecuentes = ubicaciones;
+    window.secureLog(`✅ ${ubicaciones.length} ubicaciones cargadas`);
+    if (!document.getElementById('contentSolicitarEntrega').classList.contains('hidden')) {
+      configurarAutocompletadosFormularioEntrega();
     }
   } catch (error) {
-    console.error(' Error cargando ubicaciones:', error);
+    console.error('Error cargando ubicaciones:', error);
   }
 }
 
@@ -301,20 +291,12 @@ document.getElementById('menuComercioInitial').textContent = inicial;
 }
 
 async function enviarCodigoVerificacion(numero) {
+  const submitBtn = document.querySelector('#authPhoneForm button[type="submit"]');
   try {
-    const submitBtn = document.querySelector('#authPhoneForm button[type="submit"]');
     submitBtn.textContent = 'Enviando...';
     submitBtn.disabled = true;
 
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'enviarCodigoVerificacionComercio',
-        numero: numero
-      })
-    });
+    await window.SomarAPI.enviarOTP(numero);
 
     appData.numeroTemporal = numero;
     document.getElementById('phoneDisplay').textContent = numero;
@@ -322,89 +304,81 @@ async function enviarCodigoVerificacion(numero) {
     document.getElementById('authStep2').classList.remove('hidden');
     submitBtn.textContent = 'Continuar';
     submitBtn.disabled = false;
-    alert(' Cdigo enviado por WhatsApp');
+    alert('✅ Código enviado por WhatsApp');
   } catch (error) {
-    console.error('Error:', error);
-    alert('ï Error al enviar cdigo');
+    console.error('Error enviando OTP:', error);
+    alert('❌ Error al enviar código: ' + error.message);
+    submitBtn.textContent = 'Continuar';
+    submitBtn.disabled = false;
   }
 }
 
 async function verificarCodigoIngresado(codigo) {
+  const submitBtn = document.querySelector('#authCodeForm button[type="submit"]');
   try {
-    const submitBtn = document.querySelector('#authCodeForm button[type="submit"]');
     submitBtn.textContent = 'Verificando...';
     submitBtn.disabled = true;
 
-    const url = `${SCRIPT_URL}?action=verificarCodigoComercio&numero=${encodeURIComponent(appData.numeroTemporal)}&codigo=${encodeURIComponent(codigo)}`;
-    const response = await fetch(url);
-    const result = await response.json();
+    const result = await window.SomarAPI.verificarOTP(appData.numeroTemporal, codigo);
 
     if (result.success) {
-      if (result.comercioExiste) {
-        appData.comercio = result.datosComercio;
+      if (!result.esNuevo) {
+        appData.comercio = result.comercio;
         window.APP_SECURITY.saveSecureSession('somarComercioUser', appData.comercio);
         document.getElementById('authModal').classList.add('hidden');
         document.getElementById('mainContent').classList.remove('hidden');
         document.getElementById('comercioName').textContent = appData.comercio.nombre;
         document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
         appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
-        
-        // NUEVO: Cargar ubicaciones
         await cargarUbicacionesFrecuentesCorregida();
-        
-        alert(`Bienvenido ${result.datosComercio.nombre}!`);
+        // Activar realtime para pedidos
+        window.SomarAPI.suscribirPedidos(appData.comercio.usuarioId, () => cargarMisEnvios());
+        alert(`✅ Bienvenido ${appData.comercio.nombre}!`);
       } else {
         document.getElementById('authStep2').classList.add('hidden');
         document.getElementById('authStep3').classList.remove('hidden');
       }
     } else {
-      alert(result.error || 'Cdigo incorrecto');
+      alert(result.error || 'Código incorrecto');
       submitBtn.textContent = 'Verificar';
       submitBtn.disabled = false;
     }
   } catch (error) {
-    console.error('Error:', error);
-    alert('ï Error al verificar cdigo');
+    console.error('Error verificando OTP:', error);
+    alert('❌ Error al verificar código: ' + error.message);
+    submitBtn.textContent = 'Verificar';
+    submitBtn.disabled = false;
   }
 }
 
 async function completarRegistroComercio(nombre, direccion, ubicacionGPS) {
+  const submitBtn = document.querySelector('#authRegisterForm button[type="submit"]');
   try {
-    const submitBtn = document.querySelector('#authRegisterForm button[type="submit"]');
     submitBtn.textContent = 'Registrando...';
     submitBtn.disabled = true;
 
-    const params = new URLSearchParams({
-      action: 'completarRegistroComercio',
+    const result = await window.SomarAPI.registrarComercio({
       celular: appData.numeroTemporal,
-      nombre: nombre,
-      direccion: direccion,
+      nombre,
+      direccion,
       ubicacionGPS: ubicacionGPS || ''
     });
 
-    const response = await fetch(`${SCRIPT_URL}?${params.toString()}`);
-    const result = await response.json();
-
-    if (result.success) {
-      appData.comercio = result.comercio;
-      window.APP_SECURITY.saveSecureSession('somarComercioUser', appData.comercio);
-      document.getElementById('authModal').classList.add('hidden');
-      document.getElementById('mainContent').classList.remove('hidden');
-      document.getElementById('comercioName').textContent = appData.comercio.nombre;
-      document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
-      appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
-      
-      await cargarUbicacionesFrecuentes();
-      
-      alert('Comercio registrado exitosamente!');
-    } else {
-      alert(result.error || 'Error al registrar');
-      submitBtn.textContent = 'Registrar Comercio';
-      submitBtn.disabled = false;
-    }
+    appData.comercio = result.comercio;
+    window.APP_SECURITY.saveSecureSession('somarComercioUser', appData.comercio);
+    document.getElementById('authModal').classList.add('hidden');
+    document.getElementById('mainContent').classList.remove('hidden');
+    document.getElementById('comercioName').textContent = appData.comercio.nombre;
+    document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
+    appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
+    await cargarUbicacionesFrecuentes();
+    window.SomarAPI.suscribirPedidos(appData.comercio.usuarioId, () => cargarMisEnvios());
+    alert('✅ ¡Comercio registrado exitosamente!');
   } catch (error) {
-    console.error('Error:', error);
-    alert('ï Error al registrar');
+    console.error('Error registrando comercio:', error);
+    alert('❌ Error al registrar: ' + error.message);
+    submitBtn.textContent = 'Registrar Comercio';
+    submitBtn.disabled = false;
   }
 }
 
@@ -861,16 +835,23 @@ function inicializarMapaInteractivo() {
 
 async function cargarMisEnvios() {
   try {
-    const url = `${SCRIPT_URL}?action=obtenerEnviosComercio&idComercio=${appData.comercio.id}`;
-    const response = await fetch(url);
-    const result = await response.json();
-
-    if (result.success) {
-      appData.envios = result.envios;
-      renderizarEnvios();
-    }
+    if (!appData.comercio?.usuarioId) return;
+    const pedidos = await window.SomarAPI.obtenerPedidosComercio(appData.comercio.usuarioId);
+    // Normalizar al formato que espera renderizarEnvios()
+    appData.envios = pedidos.map(p => ({
+      id: p.no_orden || p.id,
+      fecha: p.created_at,
+      estado: p.estatus,
+      tipoRegistro: p.canal === 'PANEL_COMERCIO' ? 'ENVIO_NORMAL' : 'SOLICITUD_ENTREGA',
+      tipoServicio: p.detalle_json?.tipo_servicio || 'SOLO_ENTREGA',
+      nombreDestinatario: p.nombre_destinatario || '-',
+      descripcionPaquete: p.descripcion_paquete || '-',
+      distanciaKm: p.distancia_km,
+      tarifa: p.tarifa_envio
+    }));
+    renderizarEnvios();
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error cargando envíos:', error);
   }
 }
 
@@ -1089,40 +1070,27 @@ async function procesarEnvio(e) {
   };
 
   try {
-    console.log(' Enviando datos al backend...');
-    console.log('Datos:', datos);
-    
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'registrarEnvioComercio',
-        datos: datos
-      })
-    });
+    window.secureLog('Registrando envío en Supabase...', datos);
 
-    console.log(' Envio registrado en backend');
-    
-    alert(' Envio registrado exitosamente' + (fotoUrl ? ' con foto' : ''));
-    
-    // Limpiar formulario
+    const result = await window.SomarAPI.registrarEnvio(datos, appData.comercio);
+
+    window.secureLog('✅ Envío registrado:', result.noOrden);
+    alert('✅ Envío registrado: ' + result.noOrden + (fotoUrl ? ' (con foto)' : ''));
+
     document.getElementById('nuevoEnvioForm').reset();
     document.getElementById('tarifaResumen').classList.add('hidden');
     document.getElementById('uploadPlaceholder').classList.remove('hidden');
     document.getElementById('uploadPreview').classList.add('hidden');
     document.getElementById('ubicacionDetectada').classList.add('hidden');
-    
+
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
     appData.ubicacionEntrega = null;
-
-    // Ir a "Mis Envos"
     document.getElementById('tabMisEnvios').click();
-    
+
   } catch (error) {
-    console.error(' Error al registrar envio:', error);
-    alert('ï Error al registrar envio: ' + error.message);
+    console.error('Error registrando envío:', error);
+    alert('❌ Error al registrar envío: ' + error.message);
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
   }
@@ -1291,20 +1259,13 @@ async function procesarSolicitudEntrega(e) {
   submitBtn.textContent = 'Registrando solicitud...';
 
   try {
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'registrarEnvioComercio',
-        datos: datos
-      })
-    });
+    const result = await window.SomarAPI.registrarSolicitudEntrega(datos, appData.comercio);
 
-    alert(` Solicitud de entrega registrada exitosamente${fotosUrls.length > 0 ? ` con ${fotosUrls.length} foto(s)` : ''}.\n\nUn delivery ser asignado pronto.`);
-    
+    window.secureLog('✅ Solicitud registrada:', result.noOrden);
+    alert(`✅ Solicitud ${result.noOrden} registrada${fotosUrls.length > 0 ? ` con ${fotosUrls.length} foto(s)` : ''}.\n\nUn delivery será asignado pronto.`);
+
     document.getElementById('solicitarEntregaForm').reset();
-    limpiarFotosReferencia(); // Limpiar fotos
+    limpiarFotosReferencia();
     
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
@@ -1963,23 +1924,16 @@ window.limpiarFotosReferencia = limpiarFotosReferencia;
 // CORRECCIN 1: Reemplazar la funcin cargarUbicacionesFrecuentes
 async function cargarUbicacionesFrecuentesCorregida() {
   try {
-    console.log(' Cargando ubicaciones frecuentes...');
-    
-    const response = await fetch(`${SCRIPT_URL}?action=obtenerUbicacionesFrecuentes`);
-    const result = await response.json();
-    
-    if (result.success) {
-      appData.ubicacionesFrecuentes = result.ubicaciones;
-      window.ubicacionesFrecuentes = result.ubicaciones; // Exponer globalmente para depuracin
-      console.log(` ${result.ubicaciones.length} ubicaciones cargadas`);
-      
-      // Configurar autocompletado inmediatamente
-      configurarTodosLosAutocompletados();
-    } else {
-      console.log('ï Error cargando ubicaciones:', result.error);
-    }
+    window.secureLog('Cargando ubicaciones frecuentes...');
+    const ubicaciones = await window.SomarAPI.obtenerUbicacionesFrecuentes(
+      appData.comercio?.id || null
+    );
+    appData.ubicacionesFrecuentes = ubicaciones;
+    window.ubicacionesFrecuentes = ubicaciones;
+    window.secureLog(`✅ ${ubicaciones.length} ubicaciones cargadas`);
+    configurarTodosLosAutocompletados();
   } catch (error) {
-    console.error(' Error cargando ubicaciones:', error);
+    console.error('Error cargando ubicaciones:', error);
   }
 }
 
@@ -2072,50 +2026,9 @@ function configurarTodosLosAutocompletados() {
   console.log(` Total autocompletados configurados: ${configurados}/${inputsConfig.length}`);
 }
 
-// CORRECCIN 3: Reemplazar cargarMisEnvios para agregar logs de depuracin
+// cargarMisEnviosCorregida → alias de cargarMisEnvios (ya usa Supabase)
 async function cargarMisEnviosCorregida() {
-  try {
-    console.log(' === CARGANDO MIS ENVIOS ===');
-    console.log('Comercio ID:', appData.comercio?.id);
-    console.log('URL:', `${SCRIPT_URL}?action=obtenerEnviosComercio&idComercio=${appData.comercio.id}`);
-    
-    const url = `${SCRIPT_URL}?action=obtenerEnviosComercio&idComercio=${appData.comercio.id}`;
-    const response = await fetch(url);
-    console.log('Response status:', response.status);
-    
-    const result = await response.json();
-    console.log('Response data:', result);
-
-    if (result.success) {
-      appData.envios = result.envios || [];
-      console.log(` ${appData.envios.length} envios cargados`);
-      renderizarEnvios();
-    } else {
-      console.error(' Error del servidor:', result.error);
-      const container = document.getElementById('listaEnvios');
-      container.innerHTML = `
-        <div class="text-center py-12">
-          <div class="text-red-500 font-bold mb-2">Error al cargar envios</div>
-          <div class="text-sm text-gray-600">${result.error || 'Error desconocido'}</div>
-          <button onclick="cargarMisEnviosCorregida()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-            Reintentar
-          </button>
-        </div>
-      `;
-    }
-  } catch (error) {
-    console.error(' Error cargando envios:', error);
-    const container = document.getElementById('listaEnvios');
-    container.innerHTML = `
-      <div class="text-center py-12">
-        <div class="text-red-500 font-bold mb-2">Error de conexin</div>
-        <div class="text-sm text-gray-600">${error.message}</div>
-        <button onclick="cargarMisEnviosCorregida()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-          Reintentar
-        </button>
-      </div>
-    `;
-  }
+  return cargarMisEnvios();
 }
 
 // CORRECCIN 4: Exponer funciones corregidas globalmente

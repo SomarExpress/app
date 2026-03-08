@@ -1,88 +1,94 @@
 // ========================================
 // CONFIGURACIÓN SEGURA - COMERCIOS PANEL
+// Somar Express v2.0 — Supabase Edition
 // ========================================
 
-// Este archivo debe estar en un directorio separado y NO en el repositorio público
+(function () {
+  'use strict';
 
-// PASO 1: Ofuscar las URLs sensibles
-const CONFIG = {
-  // URL del backend ofuscada (usar Base64 como mínimo)
-  apiEndpoint: atob('aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4OU0wbE5jVzZxREE1WDBaa0NvZzVLYXpoblRDSkc0MmxscmlIdVcwSXQ1YTZRVzBpS3dXMzNlTjRqSjVkNGVaQkVkUS9leGVj'),
-  
-  // Cloudinary ofuscado
-  cloudinary: {
-    cloudName: atob('ZHJrYXhzeml1'),
-    uploadPreset: atob('UEFRVUVURVNfQ09NRVJDSU9T')
-  },
-  
-  // Modo debug (cambiar a false en producción)
-  debug: true,
-  
-  // Dominio permitido (validación básica)
-  allowedDomain: window.location.hostname
-};
+  // ── Credenciales Supabase (anon key es segura en el frontend,
+  //    la protección real viene de las políticas RLS en la BD) ──
+  // Ofuscadas con atob para evitar scrapers automáticos
+  const _sb = {
+    u: atob('aHR0cHM6Ly9qanJtem91aWdjbWV6dGt5YnJ2cC5zdXBhYmFzZS5jbw=='),
+    k: atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SWlwcWFuSm1lbTkxYVdkallXMWxlblJyZVdKeWRuQWlMQ0p5YjJ4bElqb2lZVzV2YmlJc0ltbGhkQ0k2TVRjM01qa3pNVEUwT0N3aVpYQWlPakl3T0RnMU1EY3hORGg5LnROVUh4R1dNV2g3UTZ2NG1IMnk1Z094cGN6cEVKSHdOcXdIMlRlaEw2MUk=')
+  };
 
-// PASO 2: Función para logs seguros
-window.secureLog = function(...args) {
-  if (CONFIG.debug) {
-    console.log(...args);
+  // ── WhatsApp / OTP: mantener Apps Script SOLO para envío de mensajes ──
+  const _wa = atob('aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4OU0wbE5jVzZxREE1WDBaa0NvZzVLYXpoblRDSkc0MmxscmlIdVcwSXQ1YTZRVzBpS3dXMzNlTjRqSjVkNGVaQkVkUS9leGVj');
+
+  // ── Cloudinary ──
+  const _cl = {
+    n: atob('ZHJrYXhzeml1'),
+    p: atob('UEFRVUVURV9DT01FUkNJT1M=')
+  };
+
+  // ── Dominios permitidos ──
+  const ALLOWED_DOMAINS = [
+    'localhost',
+    '127.0.0.1',
+    'somarexpress.github.io',
+    'github.io',
+    'vercel.app',
+    'pages.dev'
+  ];
+
+  // ── Seguridad ──
+  const Security = {
+    validateOrigin() {
+      return ALLOWED_DOMAINS.some(d => window.location.hostname.includes(d));
+    },
+    _key: 'SomarX_2025',
+    encryptData(data) {
+      try { return btoa(unescape(encodeURIComponent(JSON.stringify(data)))); }
+      catch { return null; }
+    },
+    decryptData(data) {
+      try { return JSON.parse(decodeURIComponent(escape(atob(data)))); }
+      catch { return null; }
+    },
+    saveSecureSession(key, data) {
+      const enc = this.encryptData(data);
+      if (enc) sessionStorage.setItem(key, enc);   // sessionStorage > localStorage (expira al cerrar tab)
+    },
+    getSecureSession(key) {
+      const enc = sessionStorage.getItem(key);
+      if (!enc) return null;
+      return this.decryptData(enc);
+    },
+    clearSession(key) {
+      sessionStorage.removeItem(key);
+    },
+    // Sanitizar inputs antes de enviar a la BD
+    sanitize(str) {
+      if (typeof str !== 'string') return str;
+      return str.trim().replace(/[<>]/g, '');
+    },
+    // Validar número de teléfono hondureño
+    validatePhone(num) {
+      const clean = num.replace(/\D/g, '');
+      return clean.length >= 8 && clean.length <= 15;
+    }
+  };
+
+  // ── Logs seguros (off en producción) ──
+  const DEBUG = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  window.secureLog = function (...args) {
+    if (DEBUG) console.log(...args);
+  };
+
+  // ── Exportar configuración ──
+  window.APP_CONFIG = {
+    supabase: { url: _sb.u, key: _sb.k },
+    whatsappEndpoint: _wa,
+    cloudinary: { cloudName: _cl.n, uploadPreset: _cl.p },
+    debug: DEBUG
+  };
+  window.APP_SECURITY = Security;
+
+  if (DEBUG) {
+    console.log('✅ Config Somar Express cargada');
+    console.log('🌐 Dominio:', window.location.hostname);
+    console.log('🔒 Origen válido:', Security.validateOrigin());
   }
-};
-
-// PASO 3: Funciones de seguridad adicionales
-const Security = {
-  // Validar origen de la app
-  validateOrigin: function() {
-    const validDomains = [
-      'localhost', 
-      '127.0.0.1', 
-      'somarexpress.github.io',  // Tu dominio de GitHub Pages
-      'github.io',                // Cualquier subdominio de GitHub Pages
-      'vercel.app',               // Por si usas Vercel
-      'pages.dev'                 // Por si usas Cloudflare Pages
-    ];
-    return validDomains.some(domain => window.location.hostname.includes(domain));
-  },
-  
-  // Encriptar datos para localStorage (simple)
-  encryptData: function(data) {
-    try {
-      return btoa(JSON.stringify(data));
-    } catch (e) {
-      return null;
-    }
-  },
-  
-  // Desencriptar datos de localStorage
-  decryptData: function(data) {
-    try {
-      return JSON.parse(atob(data));
-    } catch (e) {
-      return null;
-    }
-  },
-  
-  // Guardar sesión encriptada
-  saveSecureSession: function(key, data) {
-    const encrypted = this.encryptData(data);
-    if (encrypted) {
-      localStorage.setItem(key, encrypted);
-    }
-  },
-  
-  // Recuperar sesión encriptada
-  getSecureSession: function(key) {
-    const encrypted = localStorage.getItem(key);
-    if (!encrypted) return null;
-    return this.decryptData(encrypted);
-  }
-};
-
-// Exportar configuración
-window.APP_CONFIG = CONFIG;
-window.APP_SECURITY = Security;
-
-// Confirmar carga exitosa
-console.log('✅ Configuración de seguridad cargada correctamente');
-console.log('🌐 Dominio actual:', window.location.hostname);
-console.log('🔒 Origen válido:', Security.validateOrigin());
+})();
