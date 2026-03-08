@@ -198,7 +198,7 @@
       tipo:                   'DELIVERY',
       estatus:                'PENDIENTE',
       comercio_usuario_id:    comercio.usuarioId,
-      comercio_id:            comercio.id || null,
+      // comercio_id omitido — se usa comercio_usuario_id como FK principal
       nombre_comercio:        san(comercio.nombre),
       whatsapp_comercio:      san(comercio.celular),
       ubicacion_comercio:     san(comercio.ubicacionGPS || ''),
@@ -232,7 +232,7 @@
       tipo:                   'DELIVERY',
       estatus:                'PENDIENTE',
       comercio_usuario_id:    comercio.usuarioId,
-      comercio_id:            comercio.id || null,
+      // comercio_id omitido — se usa comercio_usuario_id como FK principal
       nombre_comercio:        san(comercio.nombre),
       whatsapp_comercio:      san(comercio.celular),
       ubicacion_comercio:     san(comercio.ubicacionGPS || ''),
