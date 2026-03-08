@@ -266,17 +266,36 @@ function verificarSesion() {
   if (comercioGuardado) {
     try {
       appData.comercio = comercioGuardado;
+
+      // Refrescar esDueno desde Supabase (puede haber cambiado o ser sesión vieja)
+      if (appData.comercio.usuarioId) {
+        window.SomarAPI.client
+          .from('comercios_usuarios')
+          .select('es_dueno, activo')
+          .eq('id', appData.comercio.usuarioId)
+          .single()
+          .then(({ data }) => {
+            if (data) {
+              appData.comercio.esDueno = data.es_dueno ?? false;
+              window.APP_SECURITY.saveSecureSession('somarComercioUser', appData.comercio);
+              if (appData.comercio.esDueno) {
+                document.getElementById('menuMiEquipo')?.classList.remove('hidden');
+              }
+            }
+          })
+          .catch(() => {});
+      }
+
       document.getElementById('authModal').classList.add('hidden');
       document.getElementById('mainContent').classList.remove('hidden');
       document.getElementById('comercioName').textContent = appData.comercio.nombre;
 
-      // Actualizar info del menú lateral
       document.getElementById('menuComercioNombre').textContent = appData.comercio.nombre;
       document.getElementById('menuComercioTelefono').textContent = appData.comercio.celular || '';
       const inicial = appData.comercio.nombre ? appData.comercio.nombre.charAt(0).toUpperCase() : 'C';
       document.getElementById('menuComercioInitial').textContent = inicial;
 
-      // Mostrar Mi Equipo si es dueño
+      // Mostrar Mi Equipo si ya sabemos que es dueño
       if (appData.comercio.esDueno) {
         document.getElementById('menuMiEquipo')?.classList.remove('hidden');
       }
@@ -284,9 +303,7 @@ function verificarSesion() {
       document.getElementById('direccionRecogidaDisplay').textContent = appData.comercio.direccion;
       appData.ubicacionRecogida = appData.comercio.ubicacionGPS;
 
-      // Cargar ubicaciones (sesión ya activa)
       cargarUbicacionesFrecuentes();
-
       return true;
     } catch (error) {
       localStorage.removeItem('somarComercioUser');
