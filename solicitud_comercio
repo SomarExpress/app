@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="theme-color" content="#FF8C00">
+<title>Somar Express — Únete como Comercio</title>
+<meta name="description" content="Envía tus paquetes con Somar Express. Tarifas preferenciales, cobertura en Choloma y San Pedro Sula, seguimiento en tiempo real.">
+<meta property="og:title" content="Somar Express — Envía con nosotros">
+<meta property="og:description" content="La red de mensajería más rápida de Cortés. Regístrate en 2 minutos.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+  --or:#FF8C00;
+  --or-d:#E67D00;
+  --or-l:#FFF3E5;
+  --or-soft:#FFE4C4;
+  --ink:#1A1A1A;
+  --ink-2:#2A2A2A;
+  --gr-1:#F7F7F7;
+  --gr-2:#EDEDED;
+  --gr-3:#D4D4D4;
+  --gr-4:#8A8A8A;
+  --gr-5:#5A5A5A;
+  --green:#16A34A;
+  --red:#DC2626;
+  --blue:#2563EB;
+  --bg:#FAFAF7;
+  --card:#FFFFFF;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08);
+  --shadow-lg:0 20px 50px rgba(0,0,0,.10);
+  --radius:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+body{line-height:1.5}
+
+/* ═══ HERO ═══ */
+.hero{
+  background:linear-gradient(135deg,#1A1A1A 0%,#2A2A2A 100%);
+  color:#fff;
+  padding:32px 20px 28px;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;top:-100px;right:-80px;width:320px;height:320px;
+  background:radial-gradient(circle,rgba(255,140,0,.35) 0%,transparent 70%);
+  border-radius:50%;pointer-events:none;
+}
+.hero-wrap{max-width:560px;margin:0 auto;position:relative;z-index:1}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+.brand-logo{
+  width:38px;height:38px;background:var(--or);border-radius:10px;
+  display:grid;place-items:center;box-shadow:0 6px 18px rgba(255,140,0,.45);
+}
+.brand-logo svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2.4}
+.brand-txt{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;line-height:1}
+.brand-txt small{display:block;font-family:'DM Sans',sans-serif;font-size:9px;font-weight:500;color:var(--or);letter-spacing:3px;margin-top:2px}
+
+.hero h1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(34px,8vw,48px);
+  line-height:1;letter-spacing:1px;
+  margin-bottom:12px;
+}
+.hero h1 span{color:var(--or)}
+.hero p{font-size:15px;color:#D4D4D4;max-width:420px;margin-bottom:22px}
+
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+.hero-stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 8px;text-align:center}
+.hero-stat b{display:block;font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--or);line-height:1}
+.hero-stat span{font-size:10px;color:#BBB;letter-spacing:.5px;text-transform:uppercase}
+
+/* ═══ VALUE PROPS ═══ */
+.value-strip{
+  background:#fff;padding:18px 20px;border-bottom:1px solid var(--gr-2);
+}
+.value-wrap{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.vp{text-align:center;padding:4px}
+.vp-icon{width:34px;height:34px;margin:0 auto 6px;background:var(--or-l);border-radius:10px;display:grid;place-items:center}
+.vp-icon svg{width:18px;height:18px;stroke:var(--or);fill:none;stroke-width:2.2}
+.vp-txt{font-size:11px;font-weight:600;color:var(--ink);line-height:1.25}
+
+/* ═══ FORM CONTAINER ═══ */
+.form-wrap{max-width:560px;margin:0 auto;padding:22px 18px 100px}
+
+/* ═══ PROGRESS ═══ */
+.progress{
+  background:var(--card);border-radius:var(--radius);padding:16px;
+  box-shadow:var(--shadow-sm);border:1px solid var(--gr-2);
+  margin-bottom:18px;position:sticky;top:10px;z-index:10;
+}
+.progress-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.progress-label{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;color:var(--gr-5)}
+.progress-count{font-family:'Space Mono',monospace;font-size:12px;color:var(--or);font-weight:700}
+.progress-bar{height:6px;background:var(--gr-2);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--or) 0%,var(--or-d) 100%);border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1);width:25%}
+.progress-steps{display:flex;justify-content:space-between;margin-top:10px}
+.pstep{font-size:10px;color:var(--gr-4);text-align:center;flex:1;font-weight:500;transition:color .3s}
+.pstep.active{color:var(--or);font-weight:700}
+.pstep.done{color:var(--green)}
+
+/* ═══ CARD ═══ */
+.card{
+  background:var(--card);border-radius:var(--radius);padding:22px 20px;
+  box-shadow:var(--shadow-md);border:1px solid var(--gr-2);
+  animation:slideIn .35s ease;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.step-title{
+  font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;
+  margin-bottom:6px;line-height:1;
+}
+.step-sub{font-size:13px;color:var(--gr-5);margin-bottom:20px}
+
+/* ═══ FIELDS ═══ */
+.field{margin-bottom:16px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:420px){.field-row{grid-template-columns:1fr}}
+
+.lbl{
+  display:block;font-size:12px;font-weight:600;color:var(--ink);
+  margin-bottom:6px;letter-spacing:.3px;
+}
+.lbl .req{color:var(--or);margin-left:2px}
+.lbl .opt{color:var(--gr-4);font-weight:400;font-size:11px;margin-left:4px}
+
+.inp,.sel,.ta{
+  width:100%;font-family:'DM Sans',sans-serif;font-size:15px;
+  padding:12px 14px;border:1.5px solid var(--gr-2);border-radius:10px;
+  background:#fff;color:var(--ink);transition:all .2s;
+  -webkit-appearance:none;appearance:none;
+}
+.inp:focus,.sel:focus,.ta:focus{
+  outline:none;border-color:var(--or);box-shadow:0 0 0 3px rgba(255,140,0,.12);
+}
+.inp::placeholder,.ta::placeholder{color:var(--gr-4)}
+.inp.err,.sel.err,.ta.err{border-color:var(--red);background:#FEF2F2}
+.ta{resize:vertical;min-height:72px}
+
+.sel{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%235A5A5A' stroke-width='2' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;
+}
+
+.inp-prefix{position:relative}
+.inp-prefix .pref{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  color:var(--gr-5);font-family:'Space Mono',monospace;font-size:14px;pointer-events:none;font-weight:700;
+}
+.inp-prefix .inp{padding-left:52px}
+
+.hint{font-size:11px;color:var(--gr-4);margin-top:4px}
+.err-msg{font-size:11px;color:var(--red);margin-top:4px;font-weight:600;display:none}
+.err-msg.show{display:block}
+
+/* ═══ CHIPS (multi-select) ═══ */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  padding:8px 12px;border:1.5px solid var(--gr-2);border-radius:99px;
+  background:#fff;font-size:12px;font-weight:600;color:var(--gr-5);
+  cursor:pointer;transition:all .15s;user-select:none;
+}
+.chip:hover{border-color:var(--or);color:var(--or)}
+.chip.sel{background:var(--or);border-color:var(--or);color:#fff;box-shadow:0 3px 10px rgba(255,140,0,.3)}
+
+/* ═══ RADIO CARDS ═══ */
+.rcards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rcard{
+  padding:12px 10px;border:1.5px solid var(--gr-2);border-radius:10px;
+  background:#fff;cursor:pointer;transition:all .15s;text-align:center;
+}
+.rcard:hover{border-color:var(--or)}
+.rcard.sel{border-color:var(--or);background:var(--or-l);box-shadow:0 3px 10px rgba(255,140,0,.15)}
+.rcard-ico{font-size:22px;margin-bottom:4px}
+.rcard-txt{font-size:12px;font-weight:600}
+.rcard-sub{font-size:10px;color:var(--gr-4);margin-top:2px}
+.rcard.sel .rcard-sub{color:var(--or-d)}
+
+/* ═══ FILE UPLOAD ═══ */
+.upload{
+  display:flex;align-items:center;gap:12px;
+  padding:14px;border:1.5px dashed var(--gr-3);border-radius:10px;
+  background:var(--gr-1);cursor:pointer;transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.upload:hover{border-color:var(--or);background:var(--or-l)}
+.upload.has-file{border-style:solid;border-color:var(--green);background:#F0FDF4}
+.upload input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload-ico{width:40px;height:40px;background:#fff;border-radius:8px;display:grid;place-items:center;flex-shrink:0}
+.upload-ico svg{width:20px;height:20px;stroke:var(--gr-5);fill:none;stroke-width:2}
+.upload.has-file .upload-ico svg{stroke:var(--green)}
+.upload-txt{flex:1;min-width:0}
+.upload-t1{font-size:13px;font-weight:600;color:var(--ink)}
+.upload-t2{font-size:11px;color:var(--gr-4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.upload-prev{width:40px;height:40px;border-radius:8px;background-size:cover;background-position:center;flex-shrink:0}
+
+/* ═══ GPS BUTTON ═══ */
+.gps-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 12px;background:var(--or-l);color:var(--or-d);
+  border:1.5px solid var(--or-soft);border-radius:8px;
+  font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;
+  margin-top:6px;
+}
+.gps-btn:hover{background:var(--or-soft)}
+.gps-btn.got{background:#F0FDF4;border-color:#86EFAC;color:var(--green)}
+.gps-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ═══ CHECKBOX ═══ */
+.cbx{display:flex;align-items:flex-start;gap:10px;padding:12px;background:var(--gr-1);border-radius:10px;cursor:pointer}
+.cbx input{margin-top:2px;accent-color:var(--or);width:16px;height:16px;cursor:pointer;flex-shrink:0}
+.cbx-lbl{font-size:12px;color:var(--gr-5);line-height:1.45}
+.cbx-lbl a{color:var(--or-d);text-decoration:underline;font-weight:600}
+
+/* ═══ NAV BUTTONS ═══ */
+.nav-btns{display:flex;gap:10px;margin-top:22px}
+.btn{
+  flex:1;padding:14px 18px;border:none;border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;
+  letter-spacing:.2px;
+}
+.btn-prim{background:var(--or);color:#fff;box-shadow:0 6px 18px rgba(255,140,0,.35)}
+.btn-prim:hover:not(:disabled){background:var(--or-d);transform:translateY(-1px);box-shadow:0 8px 22px rgba(255,140,0,.45)}
+.btn-prim:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+.btn-ghost{background:var(--gr-1);color:var(--gr-5);border:1.5px solid var(--gr-2)}
+.btn-ghost:hover{background:var(--gr-2)}
+
+/* ═══ SUCCESS SCREEN ═══ */
+.success{
+  text-align:center;padding:40px 20px;background:var(--card);
+  border-radius:var(--radius);box-shadow:var(--shadow-md);animation:slideIn .4s;
+}
+.success-ico{
+  width:80px;height:80px;margin:0 auto 18px;
+  background:linear-gradient(135deg,#16A34A 0%,#22C55E 100%);
+  border-radius:50%;display:grid;place-items:center;
+  box-shadow:0 14px 34px rgba(22,163,74,.4);
+  animation:pop .5s cubic-bezier(.2,1.3,.4,1);
+}
+@keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.success-ico svg{width:42px;height:42px;stroke:#fff;fill:none;stroke-width:3.5}
+.success h2{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;margin-bottom:8px}
+.success p{font-size:14px;color:var(--gr-5);margin-bottom:20px;max-width:340px;margin-left:auto;margin-right:auto}
+.success-next{background:var(--or-l);border:1px solid var(--or-soft);border-radius:10px;padding:14px;text-align:left;margin-bottom:18px}
+.success-next b{display:block;color:var(--or-d);font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.success-next ul{list-style:none;padding:0;margin:0}
+.success-next li{font-size:13px;color:var(--ink-2);padding:4px 0;padding-left:20px;position:relative}
+.success-next li::before{content:'→';position:absolute;left:0;color:var(--or);font-weight:700}
+
+/* ═══ TOAST ═══ */
+.toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--ink);color:#fff;padding:12px 18px;border-radius:99px;
+  font-size:13px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.25);
+  z-index:200;opacity:0;transition:all .3s;max-width:90vw;text-align:center;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:var(--red)}
+.toast.ok{background:var(--green)}
+
+/* ═══ OVERLAY LOADING ═══ */
+.overlay{
+  position:fixed;inset:0;background:rgba(26,26,26,.6);backdrop-filter:blur(4px);
+  z-index:300;display:none;align-items:center;justify-content:center;
+}
+.overlay.show{display:flex}
+.spinner{
+  width:54px;height:54px;border:4px solid rgba(255,255,255,.2);
+  border-top-color:var(--or);border-radius:50%;animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.step{display:none}
+.step.active{display:block}
+
+/* ═══ FOOTER ═══ */
+.footer{text-align:center;padding:16px;font-size:11px;color:var(--gr-4);max-width:560px;margin:0 auto}
+.footer b{color:var(--or-d)}
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-wrap">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4M3 7v10l9 4 9-4V7M3 7l9 4m0 0l9-4m-9 4v10"/></svg>
+      </div>
+      <div class="brand-txt">
+        SOMAR EXPRESS
+        <small>ENTREGAS EN CORTÉS</small>
+      </div>
+    </div>
+    <h1>Envía con <span>Somar</span><br>crece sin límites</h1>
+    <p>Únete a la red de mensajería más rápida de Choloma y San Pedro Sula. Tarifas preferenciales, seguimiento en tiempo real y riders verificados.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><b>500+</b><span>Entregas/día</span></div>
+      <div class="hero-stat"><b>24/7</b><span>Operación</span></div>
+      <div class="hero-stat"><b>&lt;45min</b><span>Entrega prom.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ VALUE PROPS ═══ -->
+<section class="value-strip">
+  <div class="value-wrap">
+    <div class="vp">
+      <div class="vp-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div class="vp-txt">Recolección<br>programada</div>
+    </div>
+    <div class="vp">
+      <div class="vp-icon"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+      <div class="vp-txt">Tracking<br>en vivo</div>
+    </div>
+    <div class="vp">
+      <div class="vp-icon"><svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+      <div class="vp-txt">Tarifas<br>competitivas</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FORM ═══ -->
+<main class="form-wrap">
+
+  <!-- PROGRESS -->
+  <div class="progress" id="progress-box">
+    <div class="progress-head">
+      <div class="progress-label">TU REGISTRO</div>
+      <div class="progress-count"><span id="p-cur">1</span>/4</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="p-fill"></div></div>
+    <div class="progress-steps">
+      <div class="pstep active" data-ps="1">Negocio</div>
+      <div class="pstep" data-ps="2">Contacto</div>
+      <div class="pstep" data-ps="3">Operación</div>
+      <div class="pstep" data-ps="4">Final</div>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 1 — NEGOCIO ═══ -->
+  <div class="step active" id="step-1">
+    <div class="card">
+      <h2 class="step-title">Cuéntanos de tu negocio</h2>
+      <p class="step-sub">Empecemos con lo básico. Esto nos ayuda a conocerte.</p>
+
+      <div class="field">
+        <label class="lbl">Nombre del comercio<span class="req">*</span></label>
+        <input type="text" class="inp" id="f-nombre" placeholder="Ej: Boutique Dulce Ana" maxlength="80" autocomplete="organization">
+        <div class="err-msg" id="e-nombre">Ingresa el nombre de tu negocio</div>
+      </div>
+
+      <div class="field">
+        <label class="lbl">Categoría / giro<span class="req">*</span></label>
+        <select class="sel" id="f-categoria">
+          <option value="">Selecciona una categoría…</option>
+          <option value="TIENDA_ONLINE">Tienda online</option>
+          <option value="BOUTIQUE_ROPA">Boutique / Ropa</option>
+          <option value="EMPRENDIMIENTO">Emprendimiento</option>
+          <option value="DISTRIBUIDORA">Distribuidora / Mayorista</option>
+          <option value="FARMACIA">Farmacia</option>
+          <option value="ELECTRONICA">Electrónica / Tecnología</option>
+          <option value="BELLEZA">Belleza / Cosméticos</option>
+          <option value="COMIDA">Comida / Repostería</option>
+          <option value="LIBRERIA">Librería / Papelería</option>
+          <option value="FLORISTERIA">Floristería</option>
+          <option value="ACCESORIOS">Accesorios / Joyería</option>
+          <option value="HOGAR">Hogar / Decoración</option>
+          <option value="OTRO">Otro</option>
+        </select>
+        <div class="err-msg" id="e-categoria">Selecciona una categoría</div>
+      </div>
+
+      <div class="field">
+        <label class="lbl">¿Qué vendes? <span class="opt">(breve)</span></label>
+        <textarea class="ta" id="f-descripcion" placeholder="Ej: Ropa casual para mujer, envíos a todo el país por redes sociales" maxlength="200"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="lbl">Redes sociales<span class="req">*</span> <span class="opt">(al menos una)</span></label>
+        <div class="inp-prefix" style="margin-bottom:8px">
+          <span class="pref">IG</span>
+          <input type="text" class="inp" id="f-instagram" placeholder="@tunegocio" autocomplete="off">
+        </div>
+        <div class="inp-prefix" style="margin-bottom:8px">
+          <span class="pref">FB</span>
+          <input type="text" class="inp" id="f-facebook" placeholder="Tu página de Facebook" autocomplete="off">
+        </div>
+        <div class="inp-prefix">
+          <span class="pref">TT</span>
+          <input type="text" class="inp" id="f-tiktok" placeholder="@tunegocio (TikTok)" autocomplete="off">
+        </div>
+        <div class="err-msg" id="e-redes">Ingresa al menos una red social</div>
+      </div>
+
+      <div class="field">
+        <label class="lbl">¿Hace cuánto opera?<span class="req">*</span></label>
+        <div class="rcards">
+          <div class="rcard" data-grp="antiguedad" data-val="MENOS_6M"><div class="rcard-txt">Menos de 6 meses</div><div class="rcard-sub">Iniciando</div></div>
+          <div class="rcard" data-grp="antiguedad" data-val="6_12M"><div class="rcard-txt">6 a 12 meses</div><div class="rcard-sub">Creciendo</div></div>
+          <div class="rcard" data-grp="antiguedad" data-val="1_3A"><div class="rcard-txt">1 a 3 años</div><div class="rcard-sub">Establecido</div></div>
+          <div class="rcard" data-grp="antiguedad" data-val="MAS_3A"><div class="rcard-txt">Más de 3 años</div><div class="rcard-sub">Consolidado</div></div>
+        </div>
+        <div class="err-msg" id="e-antiguedad">Selecciona una opción</div>
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn btn-prim" onclick="siguiente(1)">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 2 — CONTACTO ═══ -->
+  <div class="step" id="step-2">
+    <div class="card">
+      <h2 class="step-title">¿Cómo te contactamos?</h2>
+      <p class="step-sub">Usaremos estos datos para coordinar tus primeras entregas.</p>
+
+      <div class="field">
+        <label class="lbl">Nombre del dueño o encargado<span class="req">*</span></label>
+        <input type="text" class="inp" id="f-encargado" placeholder="Nombre completo" maxlength="80" autocomplete="name">
+        <div class="err-msg" id="e-encargado">Ingresa el nombre</div>
+      </div>
+
+      <div class="field">
+        <label class="lbl">WhatsApp<span class="req">*</span></label>
+        <div class="inp-prefix">
+          <span class="pref">+504</span>
+          <input type="tel" class="inp" id="f-whatsapp" placeholder="9999-9999" maxlength="9" inputmode="numeric" autocomplete="tel">
+        </div>
+        <div class="hint">Te escribiremos por aquí para coordinarnos</div>
+        <div class="err-msg" id="e-whatsapp">Ingresa un número válido de 8 dígitos</div>
+      </div>
+
+      <div class="field">
+        <label class="lbl">Email<span class="opt">opcional</span></label>
+        <input type="email" class="inp" id="f-email" placeholder="tu@correo.com" maxlength="100" autocomplete="email">
+        <div class="err-msg" id="e-email">Email inválido</div>
+      </div>
+
+      <div class="field">
+        <label class="lbl">Ciudad de operación<span class="req">*</span></label>
+        <div class="rcards">
+          <div class="rcard" data-grp="ciudad" data-val="CHOLOMA"><div class="rcard-txt">Choloma</div></div>
+          <div class="rcard" data-grp="ciudad" data-val="SPS"><div class="rcard-txt">San Pedro Sula</div></div>
+          <div class="rcard" data-grp="ciudad" data-val="AMBAS"><div class="rcard-txt">Ambas</div></div>
+          <div class="rcard" data-grp="ciudad" data-val="OTRA"><div class="rcard-txt">Otra ciudad</div></div>
+        </div>
+        <div class="err-msg" id="e-ciudad">Selecciona una ciudad</div>
+      </div>
+
+      <div class="field">
+        <label class="lbl">Dirección de recolección<span class="req">*</span></label>
+        <textarea class="ta" id="f-direccion" placeholder="Colonia, calle, # de casa, referencias…" maxlength="300"></textarea>
+        <button class="gps-btn" id="gps-btn" onclick="capturarGPS()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="22"/><path d="M20 12H4"/></svg>
+          <span id="gps-txt">Usar mi ubicación actual</span>
+        </button>
+        <div class="err-msg" id="e-direccion">Ingresa la dirección</div>
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn btn-ghost" onclick="anterior(2)">← Atrás</button>
+      <button class="btn btn-prim" onclick="siguiente(2)">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 3 — OPERACIÓN ═══ -->
+  <div class="step" id="step-3">
+    <div class="card">
+      <h2 class="step-title">Tu operación</h2>
+      <p class="step-sub">Nos ayuda a preparar el mejor plan para ti.</p>
+
+      <div class="field">
+        <label class="lbl">¿Cuántos envíos haces al día?<span class="req">*</span></label>
+        <div class="rcards" style="grid-template-columns:1fr 1fr">
+          <div class="rcard" data-grp="volumen" data-val="1_5"><div class="rcard-ico">📦</div><div class="rcard-txt">1 a 5</div><div class="rcard-sub">Inicial</div></div>
+          <div class="rcard" data-grp="volumen" data-val="6_15"><div class="rcard-ico">📦📦</div><div class="rcard-txt">6 a 15</div><div class="rcard-sub">Activo</div></div>
+          <div class="rcard" data-grp="volumen" data-val="16_30"><div class="rcard-ico">📦📦📦</div><div class="rcard-txt">16 a 30</div><div class="rcard-sub">Alto</div></div>
+          <div class="rcard" data-grp="volumen" data-val="MAS_30"><div class="rcard-ico">🚚</div><div class="rcard-txt">Más de 30</div><div class="rcard-sub">Intensivo</div></div>
+        </div>
+        <div class="err-msg" id="e-volumen">Selecciona tu volumen</div>
+      </div>
+
+      <div class="field">
+        <label class="lbl">Días de mayor movimiento<span class="req">*</span></label>
+        <div class="chips" id="chips-dias">
+          <div class="chip" data-val="LUN">Lun</div>
+          <div class="chip" data-val="MAR">Mar</div>
+          <div class="chip" data-val="MIE">Mié</div>
+          <div class="chip" data-val="JUE">Jue</div>
+          <div class="chip" data-val="VIE">Vie</div>
+          <div class="chip" data-val="SAB">Sáb</div>
+          <div class="chip" data-val="DOM">Dom</div>
+        </div>
+        <div class="err-msg" id="e-dias">Selecciona al menos un día</div>
+      </div>
+
+      <div class="field">
+        <label class="lbl">Horario preferido de recolección<span class="req">*</span></label>
+        <select class="sel" id="f-horario">
+          <option value="">Selecciona…</option>
+          <option value="MANANA">Mañana (7am – 12pm)</option>
+          <option value="TARDE">Tarde (12pm – 5pm)</option>
+          <option value="NOCHE">Noche (5pm – 9pm)</option>
+          <option value="FLEXIBLE">Flexible / Varía</option>
+        </select>
+        <div class="err-msg" id="e-horario">Selecciona un horario</div>
+      </div>
+
+      <div class="field">
+        <label class="lbl">Radio de entrega habitual<span class="req">*</span></label>
+        <select class="sel" id="f-radio">
+          <option value="">Selecciona…</option>
+          <option value="SOLO_CHOLOMA">Solo dentro de Choloma</option>
+          <option value="SOLO_SPS">Solo dentro de San Pedro Sula</option>
+          <option value="CHOLOMA_SPS">Choloma y San Pedro Sula</option>
+          <option value="CORTES">Todo el departamento de Cortés</option>
+          <option value="NACIONAL">A nivel nacional</option>
+        </select>
+        <div class="err-msg" id="e-radio">Selecciona un radio</div>
+      </div>
+
+      <div class="field">
+        <label class="lbl">¿Usas actualmente otro servicio de mensajería?</label>
+        <div class="rcards">
+          <div class="rcard sel" data-grp="usa_otro" data-val="NO"><div class="rcard-txt">No</div><div class="rcard-sub">Solo yo entrego</div></div>
+          <div class="rcard" data-grp="usa_otro" data-val="SI"><div class="rcard-txt">Sí</div><div class="rcard-sub">Uso otra empresa</div></div>
+        </div>
+        <input type="text" class="inp" id="f-cual-otro" placeholder="¿Cuál servicio usas actualmente?" style="margin-top:8px;display:none" maxlength="80">
+      </div>
+
+      <div class="field">
+        <label class="lbl">¿Quién paga el envío normalmente?<span class="req">*</span></label>
+        <select class="sel" id="f-quien-paga">
+          <option value="">Selecciona…</option>
+          <option value="COMERCIO">Yo (el comercio)</option>
+          <option value="CLIENTE">El cliente final</option>
+          <option value="VARIA">Varía según el pedido</option>
+        </select>
+        <div class="err-msg" id="e-quien-paga">Selecciona una opción</div>
+      </div>
+
+      <div class="field">
+        <label class="lbl">Métodos de pago que acepta tu cliente<span class="req">*</span></label>
+        <div class="chips" id="chips-pago">
+          <div class="chip" data-val="EFECTIVO">Efectivo</div>
+          <div class="chip" data-val="TRANSFERENCIA">Transferencia</div>
+          <div class="chip" data-val="TARJETA">Tarjeta</div>
+        </div>
+        <div class="err-msg" id="e-pago">Selecciona al menos uno</div>
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn btn-ghost" onclick="anterior(3)">← Atrás</button>
+      <button class="btn btn-prim" onclick="siguiente(3)">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 4 — FINAL ═══ -->
+  <div class="step" id="step-4">
+    <div class="card">
+      <h2 class="step-title">Último paso 🎉</h2>
+      <p class="step-sub">Unos detalles finales y listo.</p>
+
+      <div class="field">
+        <label class="lbl">Logo de tu comercio <span class="opt">opcional — mejora tu perfil</span></label>
+        <label class="upload" id="up-logo">
+          <input type="file" accept="image/*" id="file-logo">
+          <div class="upload-ico">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div class="upload-txt">
+            <div class="upload-t1" id="up-logo-t1">Subir logo</div>
+            <div class="upload-t2" id="up-logo-t2">PNG, JPG — máx 5MB</div>
+          </div>
+        </label>
+      </div>
+
+      <div class="field">
+        <label class="lbl">Foto del local o punto de recolección <span class="opt">opcional</span></label>
+        <label class="upload" id="up-fachada">
+          <input type="file" accept="image/*" id="file-fachada">
+          <div class="upload-ico">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <div class="upload-txt">
+            <div class="upload-t1" id="up-fachada-t1">Subir foto</div>
+            <div class="upload-t2" id="up-fachada-t2">Nos ayuda a reconocer el punto</div>
+          </div>
+        </label>
+      </div>
+
+      <div class="field">
+        <label class="lbl">RTN <span class="opt">opcional — para facturación</span></label>
+        <input type="text" class="inp" id="f-rtn" placeholder="0000-0000-000000" maxlength="18">
+      </div>
+
+      <div class="field">
+        <label class="lbl">¿Cómo te enteraste de Somar?<span class="req">*</span></label>
+        <select class="sel" id="f-fuente">
+          <option value="">Selecciona…</option>
+          <option value="INSTAGRAM">Instagram</option>
+          <option value="FACEBOOK">Facebook</option>
+          <option value="TIKTOK">TikTok</option>
+          <option value="WHATSAPP">WhatsApp</option>
+          <option value="REFERIDO">Me recomendó alguien</option>
+          <option value="GOOGLE">Búsqueda en Google</option>
+          <option value="OTRO">Otro</option>
+        </select>
+        <div class="err-msg" id="e-fuente">Selecciona una opción</div>
+      </div>
+
+      <div class="field">
+        <label class="lbl">¿Qué esperas de Somar Express? <span class="opt">opcional</span></label>
+        <textarea class="ta" id="f-comentario" placeholder="Cualquier comentario o expectativa que quieras compartir…" maxlength="400"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="cbx">
+          <input type="checkbox" id="f-terminos">
+          <span class="cbx-lbl">Acepto que Somar Express me contacte por WhatsApp o correo para coordinar la activación de mi cuenta. Entiendo que mis datos serán tratados de forma confidencial.</span>
+        </label>
+        <div class="err-msg" id="e-terminos">Debes aceptar para continuar</div>
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn btn-ghost" onclick="anterior(4)">← Atrás</button>
+      <button class="btn btn-prim" id="btn-enviar" onclick="enviar()">Enviar solicitud ✓</button>
+    </div>
+  </div>
+
+  <!-- ═══ SUCCESS ═══ -->
+  <div class="step" id="step-success">
+    <div class="success">
+      <div class="success-ico">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2>¡Solicitud recibida!</h2>
+      <p>Gracias por tu interés en <b>Somar Express</b>. Estamos revisando tu información.</p>
+      <div class="success-next">
+        <b>¿Qué sigue?</b>
+        <ul>
+          <li>Revisamos tu solicitud</li>
+          <li>Te contactamos por WhatsApp en menos de 24 horas</li>
+          <li>Coordinamos tu primera recolección</li>
+          <li>¡Empiezas a enviar con Somar!</li>
+        </ul>
+      </div>
+      <button class="btn btn-prim" onclick="location.reload()" style="max-width:260px;margin:0 auto">Enviar otra solicitud</button>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <b>Somar Express</b> · Entregas en Choloma y San Pedro Sula · © 2026
+</footer>
+
+<div class="toast" id="toast"></div>
+<div class="overlay" id="overlay"><div class="spinner"></div></div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// SUPABASE
+// ════════════════════════════════════════════════════════════
+const SUPA_URL  = 'https://jjrmzouigcmeztkybrvp.supabase.co';
+const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impqcm16b3VpZ2NtZXp0a3licnZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MzExNDgsImV4cCI6MjA4ODUwNzE0OH0.tNUHxGWMWh7Q6v4mH3y5gOxpczpEJHwNqwH2TehL61I';
+const sb = supabase.createClient(SUPA_URL, SUPA_ANON);
+const STORAGE_BUCKET = 'comercios-solicitudes';
+
+// ════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════
+const STATE = {
+  paso: 1,
+  antiguedad: null,
+  ciudad: null,
+  volumen: null,
+  usa_otro: 'NO',
+  dias: new Set(),
+  pago: new Set(),
+  lat: null,
+  lng: null,
+  logo: null,
+  fachada: null,
+};
+
+// Autoguardado
+const LS_KEY = 'somar_comercio_draft_v1';
+function saveDraft(){
+  try{
+    const snap = {
+      p: STATE.paso,
+      ant: STATE.antiguedad, ciu: STATE.ciudad, vol: STATE.volumen, uo: STATE.usa_otro,
+      dias:[...STATE.dias], pago:[...STATE.pago],
+      lat: STATE.lat, lng: STATE.lng,
+      txt: {
+        nombre: $('f-nombre').value, cat: $('f-categoria').value, desc: $('f-descripcion').value,
+        ig: $('f-instagram').value, fb: $('f-facebook').value, tt: $('f-tiktok').value,
+        enc: $('f-encargado').value, wa: $('f-whatsapp').value, em: $('f-email').value,
+        dir: $('f-direccion').value, cual: $('f-cual-otro').value, hor: $('f-horario').value,
+        rad: $('f-radio').value, qp: $('f-quien-paga').value, rtn: $('f-rtn').value,
+        fte: $('f-fuente').value, com: $('f-comentario').value,
+      }
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(snap));
+  }catch(e){}
+}
+function loadDraft(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return;
+    const s = JSON.parse(raw);
+    if(s.ant) selectRcard('antiguedad', s.ant);
+    if(s.ciu) selectRcard('ciudad', s.ciu);
+    if(s.vol) selectRcard('volumen', s.vol);
+    if(s.uo) selectRcard('usa_otro', s.uo);
+    (s.dias||[]).forEach(d => toggleChip('chips-dias', d, STATE.dias));
+    (s.pago||[]).forEach(d => toggleChip('chips-pago', d, STATE.pago));
+    if(s.lat && s.lng){ STATE.lat = s.lat; STATE.lng = s.lng; $('gps-txt').textContent = 'Ubicación guardada ✓'; $('gps-btn').classList.add('got'); }
+    if(s.txt){
+      Object.entries({
+        'f-nombre':s.txt.nombre,'f-categoria':s.txt.cat,'f-descripcion':s.txt.desc,
+        'f-instagram':s.txt.ig,'f-facebook':s.txt.fb,'f-tiktok':s.txt.tt,
+        'f-encargado':s.txt.enc,'f-whatsapp':s.txt.wa,'f-email':s.txt.em,
+        'f-direccion':s.txt.dir,'f-cual-otro':s.txt.cual,'f-horario':s.txt.hor,
+        'f-radio':s.txt.rad,'f-quien-paga':s.txt.qp,'f-rtn':s.txt.rtn,
+        'f-fuente':s.txt.fte,'f-comentario':s.txt.com
+      }).forEach(([k,v])=>{ if(v!=null) $(k).value = v; });
+      if(s.txt.cual) $('f-cual-otro').style.display = 'block';
+    }
+  }catch(e){ console.warn('Draft load fail', e); }
+}
+
+// ════════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+function toast(msg, type=''){
+  const t = $('toast');
+  t.className = 'toast show ' + type;
+  t.textContent = msg;
+  setTimeout(()=>t.classList.remove('show'), 3500);
+}
+function overlay(show){ $('overlay').classList.toggle('show', show); }
+function showErr(id, show=true){ $('e-'+id)?.classList.toggle('show', show); $('f-'+id)?.classList.toggle('err', show); }
+function clearErr(id){ $('e-'+id)?.classList.remove('show'); $('f-'+id)?.classList.remove('err'); }
+function val(id){ return $('f-'+id).value.trim(); }
+
+// ════════════════════════════════════════════════════════════
+// NAVEGACIÓN
+// ════════════════════════════════════════════════════════════
+function gotoStep(n){
+  document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+  $('step-' + n).classList.add('active');
+  STATE.paso = n;
+  if(typeof n === 'number'){
+    $('p-cur').textContent = n;
+    $('p-fill').style.width = (n*25) + '%';
+    document.querySelectorAll('.pstep').forEach(el => {
+      const i = parseInt(el.dataset.ps);
+      el.classList.toggle('active', i === n);
+      el.classList.toggle('done', i < n);
+    });
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  saveDraft();
+}
+
+function siguiente(desde){
+  if(!validar(desde)) return;
+  gotoStep(desde + 1);
+}
+function anterior(desde){ gotoStep(desde - 1); }
+
+// ════════════════════════════════════════════════════════════
+// VALIDACIÓN POR PASO
+// ════════════════════════════════════════════════════════════
+function validar(paso){
+  let ok = true;
+  const fail = id => { showErr(id); ok = false; };
+
+  if(paso === 1){
+    if(!val('nombre')) fail('nombre'); else clearErr('nombre');
+    if(!val('categoria')) fail('categoria'); else clearErr('categoria');
+    const redes = val('instagram') || val('facebook') || val('tiktok');
+    if(!redes){ $('e-redes').classList.add('show'); ok = false; } else $('e-redes').classList.remove('show');
+    if(!STATE.antiguedad){ $('e-antiguedad').classList.add('show'); ok = false; } else $('e-antiguedad').classList.remove('show');
+  }
+  if(paso === 2){
+    if(!val('encargado')) fail('encargado'); else clearErr('encargado');
+    const wa = val('whatsapp').replace(/\D/g,'');
+    if(wa.length !== 8) fail('whatsapp'); else clearErr('whatsapp');
+    const em = val('email');
+    if(em && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) fail('email'); else clearErr('email');
+    if(!STATE.ciudad){ $('e-ciudad').classList.add('show'); ok = false; } else $('e-ciudad').classList.remove('show');
+    if(!val('direccion')) fail('direccion'); else clearErr('direccion');
+  }
+  if(paso === 3){
+    if(!STATE.volumen){ $('e-volumen').classList.add('show'); ok = false; } else $('e-volumen').classList.remove('show');
+    if(STATE.dias.size === 0){ $('e-dias').classList.add('show'); ok = false; } else $('e-dias').classList.remove('show');
+    if(!val('horario')) fail('horario'); else clearErr('horario');
+    if(!val('radio')) fail('radio'); else clearErr('radio');
+    if(!val('quien-paga')) fail('quien-paga'); else clearErr('quien-paga');
+    if(STATE.pago.size === 0){ $('e-pago').classList.add('show'); ok = false; } else $('e-pago').classList.remove('show');
+  }
+  if(paso === 4){
+    if(!val('fuente')) fail('fuente'); else clearErr('fuente');
+    if(!$('f-terminos').checked){ $('e-terminos').classList.add('show'); ok = false; } else $('e-terminos').classList.remove('show');
+  }
+  if(!ok) toast('Revisa los campos marcados', 'err');
+  return ok;
+}
+
+// ════════════════════════════════════════════════════════════
+// RCARDS & CHIPS
+// ════════════════════════════════════════════════════════════
+function selectRcard(grp, valv){
+  document.querySelectorAll(`.rcard[data-grp="${grp}"]`).forEach(el => {
+    el.classList.toggle('sel', el.dataset.val === valv);
+  });
+  STATE[grp] = valv;
+  if(grp === 'usa_otro'){
+    $('f-cual-otro').style.display = valv === 'SI' ? 'block' : 'none';
+    if(valv === 'NO') $('f-cual-otro').value = '';
+  }
+  saveDraft();
+}
+
+function toggleChip(cont, v, setRef){
+  const el = document.querySelector(`#${cont} .chip[data-val="${v}"]`);
+  if(!el) return;
+  if(setRef.has(v)){ setRef.delete(v); el.classList.remove('sel'); }
+  else { setRef.add(v); el.classList.add('sel'); }
+  saveDraft();
+}
+
+document.querySelectorAll('.rcard').forEach(el => {
+  el.addEventListener('click', () => selectRcard(el.dataset.grp, el.dataset.val));
+});
+document.querySelectorAll('#chips-dias .chip').forEach(el => {
+  el.addEventListener('click', () => toggleChip('chips-dias', el.dataset.val, STATE.dias));
+});
+document.querySelectorAll('#chips-pago .chip').forEach(el => {
+  el.addEventListener('click', () => toggleChip('chips-pago', el.dataset.val, STATE.pago));
+});
+
+// ════════════════════════════════════════════════════════════
+// INPUTS — formato teléfono
+// ════════════════════════════════════════════════════════════
+$('f-whatsapp').addEventListener('input', e => {
+  let v = e.target.value.replace(/\D/g,'').slice(0,8);
+  if(v.length > 4) v = v.slice(0,4) + '-' + v.slice(4);
+  e.target.value = v;
+  saveDraft();
+});
+$('f-rtn').addEventListener('input', e => {
+  let v = e.target.value.replace(/\D/g,'').slice(0,14);
+  if(v.length > 4) v = v.slice(0,4) + '-' + v.slice(4);
+  if(v.length > 9) v = v.slice(0,9) + '-' + v.slice(9);
+  e.target.value = v;
+});
+['f-nombre','f-categoria','f-descripcion','f-instagram','f-facebook','f-tiktok',
+ 'f-encargado','f-email','f-direccion','f-cual-otro','f-horario','f-radio',
+ 'f-quien-paga','f-fuente','f-comentario'].forEach(id => {
+  $(id).addEventListener('input', saveDraft);
+  $(id).addEventListener('change', saveDraft);
+});
+
+// ════════════════════════════════════════════════════════════
+// GPS
+// ════════════════════════════════════════════════════════════
+function capturarGPS(){
+  if(!navigator.geolocation){ toast('GPS no disponible', 'err'); return; }
+  $('gps-txt').textContent = 'Obteniendo ubicación…';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      STATE.lat = pos.coords.latitude;
+      STATE.lng = pos.coords.longitude;
+      $('gps-txt').textContent = 'Ubicación guardada ✓';
+      $('gps-btn').classList.add('got');
+      toast('Ubicación capturada', 'ok');
+      saveDraft();
+    },
+    err => {
+      $('gps-txt').textContent = 'Usar mi ubicación actual';
+      toast('No se pudo obtener GPS: ' + err.message, 'err');
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+// ════════════════════════════════════════════════════════════
+// FILE UPLOADS — previsualización
+// ════════════════════════════════════════════════════════════
+function bindUpload(inputId, contId, stateKey){
+  const inp = $(inputId);
+  const cont = $(contId);
+  inp.addEventListener('change', () => {
+    const f = inp.files?.[0];
+    if(!f) return;
+    if(f.size > 5 * 1024 * 1024){ toast('Imagen muy grande (máx 5MB)', 'err'); inp.value=''; return; }
+    STATE[stateKey] = f;
+    cont.classList.add('has-file');
+    // Preview
+    const reader = new FileReader();
+    reader.onload = e => {
+      let prev = cont.querySelector('.upload-prev');
+      if(!prev){
+        prev = document.createElement('div');
+        prev.className = 'upload-prev';
+        cont.querySelector('.upload-ico').replaceWith(prev);
+      }
+      prev.style.backgroundImage = `url(${e.target.result})`;
+    };
+    reader.readAsDataURL(f);
+    const t1 = cont.querySelector('.upload-t1');
+    const t2 = cont.querySelector('.upload-t2');
+    t1.textContent = '✓ Imagen cargada';
+    t2.textContent = f.name;
+  });
+}
+bindUpload('file-logo', 'up-logo', 'logo');
+bindUpload('file-fachada', 'up-fachada', 'fachada');
+
+// ════════════════════════════════════════════════════════════
+// UPLOAD A SUPABASE STORAGE
+// ════════════════════════════════════════════════════════════
+async function subirArchivo(file, prefix){
+  if(!file) return null;
+  const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+  const path = `${prefix}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+  const { data, error } = await sb.storage.from(STORAGE_BUCKET).upload(path, file, {
+    cacheControl: '3600', upsert: false, contentType: file.type
+  });
+  if(error){ console.error('Upload error', error); throw error; }
+  const { data: pub } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(data.path);
+  return pub.publicUrl;
+}
+
+// ════════════════════════════════════════════════════════════
+// ENVIAR
+// ════════════════════════════════════════════════════════════
+async function enviar(){
+  if(!validar(4)) return;
+  $('btn-enviar').disabled = true;
+  overlay(true);
+
+  try{
+    // 1) Subir imágenes (si hay)
+    let logoUrl = null, fachadaUrl = null;
+    if(STATE.logo){
+      try { logoUrl = await subirArchivo(STATE.logo, 'logos'); }
+      catch(e){ console.warn('Logo upload falló, continuando sin él', e); }
+    }
+    if(STATE.fachada){
+      try { fachadaUrl = await subirArchivo(STATE.fachada, 'fachadas'); }
+      catch(e){ console.warn('Fachada upload falló, continuando sin ella', e); }
+    }
+
+    // 2) Insertar solicitud
+    const payload = {
+      nombre_comercial: val('nombre'),
+      categoria: val('categoria'),
+      descripcion: val('descripcion') || null,
+      instagram: val('instagram') || null,
+      facebook: val('facebook') || null,
+      tiktok: val('tiktok') || null,
+      antiguedad: STATE.antiguedad,
+      nombre_encargado: val('encargado'),
+      telefono_whatsapp: '+504' + val('whatsapp').replace(/\D/g,''),
+      email: val('email') || null,
+      ciudad: STATE.ciudad,
+      direccion_recoleccion: val('direccion'),
+      lat: STATE.lat,
+      lng: STATE.lng,
+      envios_dia_rango: STATE.volumen,
+      dias_movimiento: [...STATE.dias],
+      horario_recoleccion: val('horario'),
+      radio_entrega: val('radio'),
+      usa_otro_servicio: STATE.usa_otro === 'SI',
+      cual_otro_servicio: STATE.usa_otro === 'SI' ? (val('cual-otro') || null) : null,
+      quien_paga_envio: val('quien-paga'),
+      metodos_pago: [...STATE.pago],
+      logo_url: logoUrl,
+      foto_fachada_url: fachadaUrl,
+      rtn: val('rtn') || null,
+      comentario: val('comentario') || null,
+      fuente_referencia: val('fuente'),
+      estatus: 'PENDIENTE',
+    };
+
+    const { error } = await sb.from('solicitudes_comercios').insert(payload);
+    if(error) throw error;
+
+    // 3) Limpiar draft y mostrar éxito
+    localStorage.removeItem(LS_KEY);
+    overlay(false);
+    document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+    $('progress-box').style.display = 'none';
+    $('step-success').classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  }catch(e){
+    overlay(false);
+    $('btn-enviar').disabled = false;
+    console.error('[enviar]', e);
+    toast('Error al enviar: ' + (e.message || 'intenta de nuevo'), 'err');
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════
+loadDraft();
+if(STATE.paso > 1 && STATE.paso <= 4){
+  // no saltamos de paso automáticamente, siempre iniciamos en 1
+  // pero los datos quedan cargados
+  STATE.paso = 1;
+}
+</script>
+</body>
+</html>
