@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<title>GitHub Deployer</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0d1117; color: #e6edf3; min-height: 100vh; padding: 16px;
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+  .sub { color: #7d8590; font-size: 13px; margin-bottom: 16px; }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+  .card h2 { font-size: 14px; margin: 0 0 10px; color: #7d8590; text-transform: uppercase; letter-spacing: .5px; }
+  label { display: block; font-size: 13px; color: #7d8590; margin: 8px 0 4px; }
+  input, select, textarea, button {
+    width: 100%; font-size: 15px; font-family: inherit;
+    background: #0d1117; color: #e6edf3; border: 1px solid #30363d;
+    border-radius: 8px; padding: 10px 12px;
+  }
+  textarea { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 13px; min-height: 200px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: #2f81f7; }
+  button { background: #238636; border-color: #238636; color: white; font-weight: 600; cursor: pointer; margin-top: 12px; }
+  button:active { background: #1f7a2f; }
+  button:disabled { opacity: .5; }
+  button.secondary { background: #21262d; border-color: #30363d; color: #e6edf3; }
+  button.danger { background: #da3633; border-color: #da3633; }
+  .tabs { display: flex; gap: 4px; background: #161b22; padding: 4px; border-radius: 10px; margin-bottom: 12px; }
+  .tabs button { flex: 1; margin: 0; padding: 10px; font-size: 13px; background: transparent; border: none; color: #7d8590; }
+  .tabs button.active { background: #21262d; color: #e6edf3; }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+  .log { background: #010409; border: 1px solid #30363d; border-radius: 8px; padding: 10px; font-family: ui-monospace, monospace; font-size: 12px; max-height: 220px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+  .log .ok { color: #3fb950; } .log .err { color: #f85149; } .log .info { color: #58a6ff; }
+  .file-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #0d1117; border-radius: 6px; margin-bottom: 4px; font-size: 13px; }
+  .file-item button { width: auto; margin: 0; padding: 4px 10px; font-size: 12px; }
+  .pill { display: inline-block; background: #1f6feb33; color: #58a6ff; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 6px; }
+  details { margin-top: 8px; }
+  summary { color: #7d8590; font-size: 13px; cursor: pointer; padding: 4px 0; }
+  a { color: #58a6ff; }
+</style>
+</head>
+<body>
+
+<h1>🚀 GitHub Deployer</h1>
+<div class="sub">Sube código a GitHub desde el celular</div>
+
+<!-- CONFIG -->
+<div class="card">
+  <h2>⚙️ Configuración</h2>
+  <label>Personal Access Token (PAT)</label>
+  <input type="password" id="token" placeholder="ghp_...">
+  <label>Usuario u organización de GitHub</label>
+  <input type="text" id="owner" placeholder="tu-usuario">
+  <div class="row">
+    <button class="secondary" onclick="saveConfig()">Guardar</button>
+    <button class="secondary" onclick="testToken()">Probar token</button>
+  </div>
+  <details>
+    <summary>¿Cómo obtener el token?</summary>
+    <div style="font-size:13px; color:#7d8590; padding:8px 0; line-height:1.5">
+      1. Ve a <a href="https://github.com/settings/tokens?type=beta" target="_blank">github.com/settings/tokens</a><br>
+      2. Generate new token (Fine-grained)<br>
+      3. Repository access: All repositories (o solo las que uses)<br>
+      4. Permissions: <b>Contents: Read & Write</b>, <b>Pages: Read & Write</b>, <b>Administration: Read & Write</b> (para crear repos)<br>
+      5. Copia el token y pégalo arriba
+    </div>
+  </details>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="active" onclick="showTab('create')">📦 Crear repo</button>
+  <button onclick="showTab('single')">📄 Single-file</button>
+  <button onclick="showTab('files')">📁 Archivos</button>
+</div>
+
+<!-- CREATE REPO -->
+<div class="card tab" id="tab-create">
+  <h2>Nuevo repositorio + GitHub Pages</h2>
+  <label>Nombre del repo</label>
+  <input type="text" id="newRepoName" placeholder="mi-proyecto">
+  <label>Descripción (opcional)</label>  <input type="text" id="newRepoDesc" placeholder="Descripción breve">
+  <label>Visibilidad</label>
+  <select id="newRepoVis">
+    <option value="false">Público (necesario para Pages gratis)</option>
+    <option value="true">Privado</option>
+  </select>
+  <label style="display:flex;align-items:center;gap:8px;margin-top:12px">
+    <input type="checkbox" id="autoPages" checked style="width:auto"> Activar GitHub Pages automáticamente
+  </label>
+  <label style="display:flex;align-items:center;gap:8px">
+    <input type="checkbox" id="autoIndex" checked style="width:auto"> Crear index.html inicial
+  </label>
+  <button onclick="createRepo()">🚀 Crear repositorio</button>
+</div>
+
+<!-- SINGLE FILE -->
+<div class="card tab" id="tab-single" style="display:none">
+  <h2>Desplegar HTML completo</h2>
+  <label>Repositorio destino</label>
+  <div class="row">
+    <select id="singleRepo"><option value="">-- Cargar repos --</option></select>
+    <button class="secondary" onclick="loadRepos('singleRepo')" style="margin:0;flex:0 0 auto;width:auto;padding:10px 14px">↻</button>
+  </div>
+  <label>Branch</label>
+  <input type="text" id="singleBranch" value="main">
+  <label>Nombre del archivo</label>
+  <input type="text" id="singleFilename" value="index.html">
+  <label>Mensaje de commit</label>
+  <input type="text" id="singleCommit" value="Update index.html">
+  <label>Contenido HTML</label>
+  <textarea id="singleContent" placeholder="<!DOCTYPE html>..."></textarea>
+  <button onclick="deploySingle()">📤 Desplegar</button>
+</div>
+
+<!-- FILES -->
+<div class="card tab" id="tab-files" style="display:none">
+  <h2>Subir archivos sueltos</h2>
+  <label>Repositorio destino</label>
+  <div class="row">
+    <select id="filesRepo"><option value="">-- Cargar repos --</option></select>
+    <button class="secondary" onclick="loadRepos('filesRepo')" style="margin:0;flex:0 0 auto;width:auto;padding:10px 14px">↻</button>
+  </div>
+  <label>Branch</label>
+  <input type="text" id="filesBranch" value="main">
+  <label>Carpeta destino (vacío = raíz)</label>
+  <input type="text" id="filesPath" placeholder="ej: assets/img">
+  <label>Seleccionar archivos</label>
+  <input type="file" id="filesInput" multiple onchange="handleFiles()">
+  <div id="filesList"></div>
+  <label>Mensaje de commit</label>
+  <input type="text" id="filesCommit" value="Add files">
+  <button onclick="deployFiles()" id="deployFilesBtn" disabled>📤 Subir archivos</button>
+</div>
+
+<!-- LOG -->
+<div class="card">
+  <h2>📋 Log</h2>
+  <div class="log" id="log">Listo. Configura tu token y empieza.</div>
+  <button class="secondary" onclick="document.getElementById('log').textContent='Log limpio.'">Limpiar log</button>
+</div>
+
+<script>
+const API = 'https://api.github.com';
+let pendingFiles = [];
+
+// ========== UTILS ==========
+function $(id) { return document.getElementById(id); }
+function log(msg, type='') {
+  const l = $('log');
+  const time = new Date().toLocaleTimeString();
+  const span = document.createElement('div');
+  span.className = type;
+  span.textContent = `[${time}] ${msg}`;
+  l.appendChild(span);
+  l.scrollTop = l.scrollHeight;
+}
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.style.display='none');
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+  $('tab-'+name).style.display = 'block';
+  event.target.classList.add('active');
+}
+
+// ========== CONFIG ==========
+function saveConfig() {
+  localStorage.setItem('gh_token', $('token').value);
+  localStorage.setItem('gh_owner', $('owner').value);
+  log('Configuración guardada', 'ok');
+}
+function loadConfig() {
+  $('token').value = localStorage.getItem('gh_token') || '';
+  $('owner').value = localStorage.getItem('gh_owner') || '';
+}
+function getAuth() {
+  const token = $('token').value || localStorage.getItem('gh_token');
+  if (!token) { log('Falta el token', 'err'); throw new Error('No token'); }
+  return { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
+}
+
+// ========== API HELPERS ==========
+async function gh(path, options={}) {
+  const res = await fetch(API + path, { ...options, headers: { ...getAuth(), ...(options.headers||{}) } });
+  const data = res.status === 204 ? {} : await res.json();
+  if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
+  return data;
+}
+
+async function testToken() {
+  try {
+    const user = await gh('/user');
+    log(`✓ Token válido. Usuario: ${user.login}`, 'ok');
+    if (!$('owner').value) { $('owner').value = user.login; saveConfig(); }
+  } catch(e) { log('✗ Token inválido: ' + e.message, 'err'); }
+}
+
+// ========== REPO LIST ==========
+async function loadRepos(selectId) {
+  try {
+    log('Cargando repos...', 'info');
+    const repos = await gh('/user/repos?per_page=100&sort=updated');
+    const sel = $(selectId);
+    sel.innerHTML = '<option value="">-- Selecciona repo --</option>';
+    repos.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.name;
+      opt.textContent = r.name + (r.private ? ' 🔒' : '');
+      sel.appendChild(opt);
+    });
+    log(`✓ ${repos.length} repos cargados`, 'ok');
+  } catch(e) { log('✗ ' + e.message, 'err'); }
+}
+
+// ========== CREATE REPO ==========
+async function createRepo() {
+  const name = $('newRepoName').value.trim();
+  if (!name) return log('Falta el nombre', 'err');
+  try {
+    log(`Creando repo ${name}...`, 'info');
+    const repo = await gh('/user/repos', {
+      method: 'POST',
+      body: JSON.stringify({
+        name, description: $('newRepoDesc').value,
+        private: $('newRepoVis').value === 'true',
+        auto_init: true
+      })
+    });
+    log(`✓ Repo creado: ${repo.html_url}`, 'ok');
+    const owner = $('owner').value || repo.owner.login;
+
+    if ($('autoIndex').checked) {
+      const html = `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><title>${name}</title></head>
+<body><h1>${name}</h1><p>Sitio creado con GitHub Deployer.</p></body></html>`;
+      await putFile(owner, name, 'index.html', html, 'main', 'Initial index.html');
+      log('✓ index.html creado', 'ok');
+    }
+
+    if ($('autoPages').checked) {
+      try {
+        await gh(`/repos/${owner}/${name}/pages`, {
+          method: 'POST',
+          body: JSON.stringify({ source: { branch: 'main', path: '/' } })
+        });
+        log(`✓ GitHub Pages activado: https://${owner}.github.io/${name}/`, 'ok');
+      } catch(e) { log('⚠ Pages: ' + e.message, 'err'); }
+    }
+  } catch(e) { log('✗ ' + e.message, 'err'); }
+}
+
+// ========== PUT FILE ==========
+async function putFile(owner, repo, path, content, branch, message, isBase64=false) {
+  let sha = null;
+  try {
+    const existing = await gh(`/repos/${owner}/${repo}/contents/${path}?ref=${branch}`);
+    sha = existing.sha;
+  } catch(e) { /* no existe */ }
+
+  const b64 = isBase64 ? content : btoa(unescape(encodeURIComponent(content)));
+  return gh(`/repos/${owner}/${repo}/contents/${path}`, {
+    method: 'PUT',
+    body: JSON.stringify({ message, content: b64, branch, ...(sha ? {sha} : {}) })
+  });
+}
+
+// ========== SINGLE FILE DEPLOY ==========
+async function deploySingle() {
+  const repo = $('singleRepo').value;
+  const filename = $('singleFilename').value.trim();
+  const content = $('singleContent').value;
+  if (!repo || !filename || !content) return log('Faltan campos', 'err');
+  const owner = $('owner').value;
+  try {
+    log(`Subiendo ${filename} a ${repo}...`, 'info');
+    await putFile(owner, repo, filename, content, $('singleBranch').value, $('singleCommit').value);
+    log(`✓ Desplegado: https://${owner}.github.io/${repo}/`, 'ok');
+  } catch(e) { log('✗ ' + e.message, 'err'); }
+}
+
+// ========== FILES UPLOAD ==========
+function handleFiles() {
+  pendingFiles = Array.from($('filesInput').files);
+  const list = $('filesList');
+  list.innerHTML = '';
+  pendingFiles.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'file-item';
+    div.innerHTML = `<span>${f.name} <span class="pill">${(f.size/1024).toFixed(1)}KB</span></span><button class="danger" onclick="removeFile(${i})">×</button>`;
+    list.appendChild(div);
+  });
+  $('deployFilesBtn').disabled = pendingFiles.length === 0;
+}
+function removeFile(i) { pendingFiles.splice(i,1); renderFiles(); }
+function renderFiles() {
+  const list = $('filesList'); list.innerHTML = '';
+  pendingFiles.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'file-item';
+    div.innerHTML = `<span>${f.name} <span class="pill">${(f.size/1024).toFixed(1)}KB</span></span><button class="danger" onclick="removeFile(${i})">×</button>`;
+    list.appendChild(div);
+  });
+  $('deployFilesBtn').disabled = pendingFiles.length === 0;
+}
+
+function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+async function deployFiles() {
+  const repo = $('filesRepo').value;
+  if (!repo || pendingFiles.length === 0) return log('Faltan datos', 'err');
+  const owner = $('owner').value;
+  const folder = $('filesPath').value.trim().replace(/^\/|\/$/g,'');
+  const branch = $('filesBranch').value;
+  const msg = $('filesCommit').value;
+  $('deployFilesBtn').disabled = true;
+  let ok = 0, fail = 0;
+  for (const f of pendingFiles) {
+    const path = folder ? `${folder}/${f.name}` : f.name;
+    try {
+      log(`↑ ${path}...`, 'info');
+      const b64 = await fileToBase64(f);
+      await putFile(owner, repo, path, b64, branch, `${msg}: ${f.name}`, true);
+      log(`✓ ${path}`, 'ok');
+      ok++;
+    } catch(e) { log(`✗ ${path}: ${e.message}`, 'err'); fail++; }
+  }
+  log(`Listo. ${ok} ok, ${fail} fallidos`, fail ? 'err' : 'ok');
+  $('deployFilesBtn').disabled = false;
+}
+
+// INIT
+loadConfig();
+</script>
+</body>
+</html>
