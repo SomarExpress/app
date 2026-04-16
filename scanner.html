@@ -32,17 +32,20 @@
 
     .container { max-width: 600px; margin: 20px auto; padding: 0 16px; }
 
-    /* Estilos del Scanner */
+    /* Estilos del Area del Scanner */
     #reader {
       background: var(--surface); border: 1px solid var(--border) !important;
       border-radius: 12px; overflow: hidden;
+      min-height: 250px; display: flex; align-items: center; justify-content: center;
     }
-    #reader__dashboard_section_csr button {
-      background: var(--accent) !important; color: #000 !important;
-      border: none !important; padding: 8px 16px !important;
-      border-radius: 6px !important; font-weight: 600 !important;
-      cursor: pointer; margin: 10px 0 !important;
+    
+    /* Botón de activación manual */
+    .btn-start-camera {
+      background: var(--accent); color: #000; border: none; 
+      padding: 15px 30px; border-radius: 8px; font-weight: 700; 
+      cursor: pointer; transition: 0.2s; font-family: 'DM Sans', sans-serif;
     }
+    .btn-start-camera:hover { transform: scale(1.05); }
 
     .stats-bar {
       display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0;
@@ -55,7 +58,7 @@
       display: block; font-size: 24px; font-weight: bold; 
       font-family: 'IBM Plex Mono', monospace; color: var(--accent);
     }
-    .stat-label { font-size: 12px; color: var(--text2); text-transform: uppercase; }
+    .stat-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
 
     /* Tabla de Resultados */
     .results-panel {
@@ -63,15 +66,16 @@
       border-radius: 12px; overflow: hidden;
     }
     .panel-header {
-      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      padding: 14px 16px; border-bottom: 1px solid var(--border);
       display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255,255,255,0.02);
     }
-    .btn-action {
+    .btn-clear {
       background: transparent; border: 1px solid var(--border);
       color: var(--text2); padding: 6px 12px; border-radius: 6px;
-      font-size: 12px; cursor: pointer; transition: 0.2s;
+      font-size: 11px; cursor: pointer; font-weight: 600;
     }
-    .btn-action:hover { border-color: var(--danger); color: var(--danger); }
+    .btn-clear:hover { border-color: var(--danger); color: var(--danger); }
 
     table { width: 100%; border-collapse: collapse; }
     th { 
@@ -84,101 +88,134 @@
     }
     .count-badge {
       background: var(--surface2); color: var(--accent);
-      padding: 2px 8px; border-radius: 4px; font-weight: bold;
+      padding: 2px 8px; border-radius: 4px; font-weight: bold; border: 1px solid var(--border);
     }
 
-    .last-scan {
-      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-      background: var(--accent); color: #000; padding: 10px 20px;
-      border-radius: 30px; font-weight: bold; box-shadow: 0 4px 20px rgba(0,217,163,0.4);
-      display: none; z-index: 1000;
+    /* Notificación flotante */
+    .last-scan-toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: #000; padding: 12px 24px;
+      border-radius: 30px; font-weight: bold; box-shadow: 0 8px 30px rgba(0,217,163,0.4);
+      display: none; z-index: 1000; font-size: 14px;
     }
+
+    video { border-radius: 8px; }
   </style>
 </head>
 <body>
 
 <div class="header">
   <div class="logo">QR</div>
-  <h1 style="font-size: 18px;">Scanner Pro</h1>
+  <h1 style="font-size: 18px; letter-spacing: -0.5px;">Scanner Pro</h1>
 </div>
 
 <div class="container">
-  <div id="reader"></div>
+  <div id="reader">
+    <div id="cameraPrompt" style="text-align: center; padding: 40px;">
+      <p style="color: var(--text2); margin-bottom: 20px; font-size: 14px;">La cámara requiere permiso para iniciar</p>
+      <button class="btn-start-camera" onclick="iniciarCamara()">📷 ACTIVAR CÁMARA</button>
+    </div>
+  </div>
 
   <div class="stats-bar">
     <div class="stat-card">
       <span class="stat-num" id="totalUnicos">0</span>
-      <span class="stat-label">Únicos</span>
+      <span class="stat-label">Códigos Únicos</span>
     </div>
     <div class="stat-card">
       <span class="stat-num" id="totalEscaneos">0</span>
-      <span class="stat-label">Total Escaneos</span>
+      <span class="stat-label">Total Conteo</span>
     </div>
   </div>
 
   <div class="results-panel">
     <div class="panel-header">
-      <span style="font-size: 13px; font-weight: 600;">LISTA DE CONTEO</span>
-      <button class="btn-action" onclick="limpiar()">Limpiar Todo</button>
+      <span style="font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase;">Resultados del Escaneo</span>
+      <button class="btn-clear" onclick="limpiar()">Limpiar Todo</button>
     </div>
-    <div style="max-height: 400px; overflow-y: auto;">
+    <div style="max-height: 450px; overflow-y: auto;">
       <table id="tablaResultados">
         <thead>
           <tr>
-            <th>Código</th>
-            <th style="text-align: right;">Cant.</th>
+            <th>Código Detectado</th>
+            <th style="text-align: right;">Cantidad</th>
           </tr>
         </thead>
         <tbody id="listaCuerpo">
-          </tbody>
+          <tr>
+            <td colspan="2" style="text-align: center; color: var(--text3); padding: 40px;">No hay datos escaneados</td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </div>
 </div>
 
-<div id="toast" class="last-scan">¡Código detectado!</div>
+<div id="toast" class="last-scan-toast">¡Código detectado!</div>
 
 <script>
   let inventario = {};
   let escaneosTotales = 0;
-
-  // Configuración del Scanner
   const html5QrCode = new Html5Qrcode("reader");
-  const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+
+  async function iniciarCamara() {
+    const config = { 
+      fps: 15, 
+      qrbox: { width: 250, height: 180 },
+      aspectRatio: 1.0 
+    };
+
+    try {
+      // Ocultar el prompt de inicio
+      document.getElementById('cameraPrompt').style.display = 'none';
+      
+      await html5QrCode.start(
+        { facingMode: "environment" }, 
+        config, 
+        onScanSuccess
+      );
+    } catch (err) {
+      console.error("Error de cámara:", err);
+      alert("Error: Asegúrate de dar permisos de cámara y que ningún otro app la esté usando.");
+      document.getElementById('cameraPrompt').style.display = 'block';
+    }
+  }
 
   function onScanSuccess(decodedText, decodedResult) {
-    // Evitar escaneos duplicados en milisegundos
+    // Evitar lecturas múltiples del mismo código en ráfaga (pausa de 1.5s)
     if (this.lastResult === decodedText) return;
     this.lastResult = decodedText;
     setTimeout(() => { this.lastResult = null; }, 1500);
 
-    // Feedback visual y auditivo (vibración)
-    if (navigator.vibrate) navigator.vibrate(100);
+    // Vibración (solo funciona en Android)
+    if (navigator.vibrate) navigator.vibrate(80);
+    
     mostrarToast(decodedText);
 
     // Lógica de conteo
-    if (inventario[decodedText]) {
-      inventario[decodedText]++;
-    } else {
-      inventario[decodedText] = 1;
-    }
-    
+    inventario[decodedText] = (inventario[decodedText] || 0) + 1;
     escaneosTotales++;
+    
     actualizarInterfaz();
   }
 
   function actualizarInterfaz() {
     const cuerpo = document.getElementById('listaCuerpo');
-    const unicos = Object.keys(inventario).length;
+    const keys = Object.keys(inventario);
     
-    document.getElementById('totalUnicos').textContent = unicos;
+    document.getElementById('totalUnicos').textContent = keys.length;
     document.getElementById('totalEscaneos').textContent = escaneosTotales;
 
+    if (keys.length === 0) {
+      cuerpo.innerHTML = `<tr><td colspan="2" style="text-align: center; color: var(--text3); padding: 40px;">No hay datos escaneados</td></tr>`;
+      return;
+    }
+
     cuerpo.innerHTML = "";
-    // Mostrar los códigos (los más recientes arriba)
-    Object.keys(inventario).reverse().forEach(codigo => {
+    // Mostrar los códigos, los últimos escaneados primero
+    keys.reverse().forEach(codigo => {
       const row = `<tr>
-        <td style="word-break: break-all;">${codigo}</td>
+        <td style="word-break: break-all; font-size: 13px;">${codigo}</td>
         <td style="text-align: right;"><span class="count-badge">${inventario[codigo]}</span></td>
       </tr>`;
       cuerpo.innerHTML += row;
@@ -187,22 +224,19 @@
 
   function mostrarToast(txt) {
     const toast = document.getElementById('toast');
-    toast.textContent = "Detectado: " + (txt.length > 15 ? txt.substring(0,15) + "..." : txt);
+    const corta = txt.length > 20 ? txt.substring(0,20) + "..." : txt;
+    toast.textContent = "Leído: " + corta;
     toast.style.display = "block";
     setTimeout(() => { toast.style.display = "none"; }, 2000);
   }
 
   function limpiar() {
-    if (confirm("¿Vaciar todo el conteo actual?")) {
+    if (confirm("¿Seguro que quieres borrar todo el conteo actual?")) {
       inventario = {};
       escaneosTotales = 0;
       actualizarInterfaz();
     }
   }
-
-  // Iniciar Cámara
-  html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
-
 </script>
 </body>
 </html>
