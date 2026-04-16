@@ -122,4 +122,87 @@
       <button class="btn-action" onclick="limpiar()">Limpiar Todo</button>
     </div>
     <div style="max-height: 400px; overflow-y: auto;">
-      <table id
+      <table id="tablaResultados">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th style="text-align: right;">Cant.</th>
+          </tr>
+        </thead>
+        <tbody id="listaCuerpo">
+          </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="last-scan">¡Código detectado!</div>
+
+<script>
+  let inventario = {};
+  let escaneosTotales = 0;
+
+  // Configuración del Scanner
+  const html5QrCode = new Html5Qrcode("reader");
+  const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+
+  function onScanSuccess(decodedText, decodedResult) {
+    // Evitar escaneos duplicados en milisegundos
+    if (this.lastResult === decodedText) return;
+    this.lastResult = decodedText;
+    setTimeout(() => { this.lastResult = null; }, 1500);
+
+    // Feedback visual y auditivo (vibración)
+    if (navigator.vibrate) navigator.vibrate(100);
+    mostrarToast(decodedText);
+
+    // Lógica de conteo
+    if (inventario[decodedText]) {
+      inventario[decodedText]++;
+    } else {
+      inventario[decodedText] = 1;
+    }
+    
+    escaneosTotales++;
+    actualizarInterfaz();
+  }
+
+  function actualizarInterfaz() {
+    const cuerpo = document.getElementById('listaCuerpo');
+    const unicos = Object.keys(inventario).length;
+    
+    document.getElementById('totalUnicos').textContent = unicos;
+    document.getElementById('totalEscaneos').textContent = escaneosTotales;
+
+    cuerpo.innerHTML = "";
+    // Mostrar los códigos (los más recientes arriba)
+    Object.keys(inventario).reverse().forEach(codigo => {
+      const row = `<tr>
+        <td style="word-break: break-all;">${codigo}</td>
+        <td style="text-align: right;"><span class="count-badge">${inventario[codigo]}</span></td>
+      </tr>`;
+      cuerpo.innerHTML += row;
+    });
+  }
+
+  function mostrarToast(txt) {
+    const toast = document.getElementById('toast');
+    toast.textContent = "Detectado: " + (txt.length > 15 ? txt.substring(0,15) + "..." : txt);
+    toast.style.display = "block";
+    setTimeout(() => { toast.style.display = "none"; }, 2000);
+  }
+
+  function limpiar() {
+    if (confirm("¿Vaciar todo el conteo actual?")) {
+      inventario = {};
+      escaneosTotales = 0;
+      actualizarInterfaz();
+    }
+  }
+
+  // Iniciar Cámara
+  html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
+
+</script>
+</body>
+</html>
