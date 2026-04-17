@@ -2,301 +2,129 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Carnet de Gimnasio Pro</title>
+    <title>Generador de Documento Oficial</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        h2 {
-            margin-bottom: 25px;
-            color: #333;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            box-sizing: border-box; /* Importante para el padding */
-        }
-
-        .custom-file-upload {
-            border: 1px solid #ccc;
-            display: inline-block;
-            padding: 10px 15px;
-            cursor: pointer;
-            border-radius: 6px;
-            background-color: #fff;
-            color: #333;
-            width: 100%;
-            box-sizing: border-box;
-            margin-top: 5px;
-        }
-        .custom-file-upload:hover {
-            background-color: #eee;
-        }
+        /* Estilos de la interfaz de usuario */
+        body { font-family: sans-serif; background: #e0e0e0; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .controls { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; width: 400px; no-print { display: block; } }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #003366; color: white; border: none; padding: 12px; width: 100%; cursor: pointer; border-radius: 4px; font-weight: bold; }
         
-        #file-chosen {
-            margin-left: 10px;
-            color: #777;
-            font-size: 0.9em;
-        }
-
-        button.generate-btn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            width: 100%;
-            margin-top: 15px;
-            transition: background-color 0.2s;
-        }
-
-        button.generate-btn:hover {
-            background-color: #0056b3;
-        }
-
-        /* --- Estilos del Carnet --- */
-        #carnet-result {
-            margin-top: 30px;
-            display: none; /* Oculto hasta que se genere */
-        }
-
-        #carnet-canvas {
-            width: 320px;
-            height: 190px;
-            background-color: #222; /* Fondo oscuro */
-            color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        /* Estilos del Documento (Hoja Carta) */
+        #documento-final {
+            width: 210mm; /* Ancho A4/Carta aprox */
+            height: 297mm;
+            background: white;
+            padding: 2cm;
+            box-sizing: border-box;
             position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            box-sizing: border-box;
-            border: 2px solid #ffcc00; /* Borde amarillo/oro */
-            margin: 0 auto;
+            display: none; /* Se muestra al generar */
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
         }
 
-        /* Encabezado */
-        .card-header {
-            position: absolute;
-            top: 10px;
-            left: 15px;
-            font-size: 0.8em;
-            font-weight: bold;
-            color: #ffcc00; /* Color amarillo */
-            letter-spacing: 1px;
-        }
+        /* Cabecera */
+        .header { display: flex; align-items: center; border-bottom: 2px solid #003366; padding-bottom: 10px; margin-bottom: 30px; }
+        .logo-placeholder { width: 80px; height: 80px; background: #003366; color: white; display: flex; align-items: center; text-align: center; font-size: 10px; font-weight: bold; margin-right: 20px; }
+        .header-text { color: #003366; }
+        .header-text h1 { margin: 0; font-size: 24px; text-transform: uppercase; }
+        .header-text p { margin: 2px 0; font-size: 14px; }
 
-        /* Contenedor Foto */
-        .card-photo {
-            width: 100px;
-            height: 100px;
-            border-radius: 5px;
-            overflow: hidden;
-            border: 2px solid #fff;
-            margin-right: 15px;
-        }
-
-        .card-photo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Recorta para llenar */
-        }
-
-        /* Contenedor Datos */
-        .card-details {
-            flex-grow: 1;
-            text-align: left;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .card-label {
-            font-size: 0.65em;
-            color: #ccc;
-            text-transform: uppercase;
-            margin-bottom: 2px;
-        }
-
-        .card-value-name {
-            font-size: 1.1em;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #fff;
-        }
+        /* Contenido Principal */
+        .content { margin-top: 50px; color: #333; line-height: 1.6; }
+        .photo-area { float: right; width: 150px; height: 180px; border: 1px solid #003366; margin-left: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f9f9f9; }
+        .photo-area img { width: 100%; height: 100%; object-fit: cover; }
         
-        .card-value-id {
-            font-size: 0.85em;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #eee;
-        }
-
-        .card-sub-details {
-             font-size: 0.7em;
-             color: #bbb;
-        }
-
-        .print-btn {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        .print-btn:hover {
-            background-color: #1e7e34;
-        }
+        .main-title { color: #003366; font-size: 20px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 20px; text-transform: uppercase; }
+        .data-row { margin-bottom: 15px; font-size: 18px; }
+        .label { font-weight: bold; color: #003366; }
+        
+        /* Pie de página / Firma */
+        .footer-signature { position: absolute; bottom: 3cm; left: 2cm; right: 2cm; text-align: center; }
+        .signature-line { border-top: 1px solid #003366; width: 250px; margin: 0 auto 10px; }
+        .signature-text { color: #003366; font-weight: bold; font-size: 14px; }
 
         @media print {
-            body * {
-                visibility: hidden;
-            }
-            #carnet-canvas, #carnet-canvas * {
-                visibility: visible;
-            }
-            #carnet-canvas {
-                position: absolute;
-                left: 0;
-                top: 0;
-            }
+            .controls { display: none; }
+            body { background: white; padding: 0; }
+            #documento-final { display: block !important; box-shadow: none; margin: 0; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Generador de Carnet</h2>
+<div class="controls">
+    <h3>Generador de Documento</h3>
+    <label>Nombre Completo:</label>
+    <input type="text" id="inputNombre" placeholder="Escriba el nombre aquí...">
+    <label>Subir Fotografía:</label>
+    <input type="file" id="inputFoto" accept="image/*">
+    <button onclick="generar()">GENERAR DOCUMENTO</button>
+</div>
 
-    <div class="input-group">
-        <label>Paso 1: Sube tu Foto</label>
-        <label for="upload-photo" class="custom-file-upload">
-             Seleccionar Foto
-        </label>
-        <input id="upload-photo" type="file" accept="image/jpeg, image/png" style="display:none;" />
-        <span id="file-chosen">No hay foto</span>
+<div id="documento-final">
+    <div class="header">
+        <div class="logo-placeholder">LOGO<br>EMPRESA</div>
+        <div class="header-text">
+            <h1>Registro Oficial de Membresía</h1>
+            <p>Departamento de Control y Registro</p>
+        </div>
     </div>
 
-    <div class="input-group">
-        <label for="user-name">Paso 2: Escribe tu Nombre Completo</label>
-        <input type="text" id="user-name" placeholder="Ej. Juan Pérez">
-    </div>
-
-    <button class="generate-btn" onclick="generarCarnet()">Generar Carnet</button>
-
-    <div id="carnet-result">
-        <h3>Tu Carnet:</h3>
-        
-        <div id="carnet-canvas">
-            <div class="card-header">MEMBRESÍA DE GIMNASIO</div>
-            <div class="card-photo">
-                <img id="card-image-placeholder" src="" alt="Tu Foto">
-            </div>
-            <div class="card-details">
-                <div class="card-label">Socio:</div>
-                <div class="card-value-name" id="card-name-placeholder">NOMBRE SOCIO</div>
-                
-                <div class="card-label">ID Socio:</div>
-                <div class="card-value-id" id="card-id-placeholder">#######</div>
-
-                <div class="card-sub-details">Vence: 12/2024 | Tipo: Premium</div>
-            </div>
+    <div class="content">
+        <div class="photo-area">
+            <img id="docFoto" src="" alt="">
         </div>
         
-        <button class="print-btn" onclick="window.print()">Imprimir Carnet</button>
+        <div class="main-title">Datos del Titular</div>
+        
+        <div class="data-row">
+            <span class="label">Nombre del Usuario:</span> 
+            <span id="docNombre">___________________________</span>
+        </div>
+        
+        <div class="data-row">
+            <span class="label">Fecha de Emisión:</span> 
+            <span id="docFecha">17 de Abril de 2024</span>
+        </div>
+
+        <div class="data-row" style="margin-top: 40px;">
+            <p>Por medio de la presente se certifica que el titular de este documento se encuentra debidamente registrado en nuestro sistema, cumpliendo con todos los requisitos establecidos por la normativa vigente de la institución.</p>
+        </div>
     </div>
 
+    <div class="footer-signature">
+        <div class="signature-line"></div>
+        <div class="signature-text">FIRMA AUTORIZADA</div>
+        <p style="font-size: 10px; color: #666; margin-top: 20px;">Este documento es intransferible y debe presentarse al momento de ingresar.</p>
+    </div>
 </div>
 
 <script>
-    const fileInput = document.getElementById('upload-photo');
-    const nameInput = document.getElementById('user-name');
-    const fileChosenText = document.getElementById('file-chosen');
-
-    const carnetResult = document.getElementById('carnet-result');
-    const cardImage = document.getElementById('card-image-placeholder');
-    const cardName = document.getElementById('card-name-placeholder');
-    const cardId = document.getElementById('card-id-placeholder');
-
-    // Mostrar el nombre del archivo seleccionado
-    fileInput.addEventListener('change', function() {
-        if (this.files && this.files[0]) {
-            fileChosenText.textContent = this.files[0].name;
-        } else {
-            fileChosenText.textContent = "No hay foto";
-        }
-    });
-
-    function generarCarnet() {
-        // 1. Validar que el usuario subió una foto
-        if (!fileInput.files || !fileInput.files[0]) {
-            alert("Por favor, sube una foto primero.");
+    function generar() {
+        const nombre = document.getElementById('inputNombre').value;
+        const fotoFile = document.getElementById('inputFoto').files[0];
+        
+        if (!nombre || !fotoFile) {
+            alert("Por favor rellena el nombre y sube una foto.");
             return;
         }
 
-        // 2. Validar que el usuario puso un nombre
-        const nombre = nameInput.value.trim();
-        if (nombre === "") {
-            alert("Por favor, escribe un nombre.");
-            nameInput.focus();
-            return;
-        }
+        // Poner el nombre
+        document.getElementById('docNombre').innerText = nombre.toUpperCase();
+        
+        // Poner la fecha actual
+        const hoy = new Date();
+        const opciones = { day: 'numeric', month: 'long', year: 'numeric' };
+        document.getElementById('docFecha').innerText = hoy.toLocaleDateString('es-ES', opciones);
 
-        // 3. Procesar la Imagen (convertirla a formato base64 para mostrarla)
+        // Cargar la imagen
         const reader = new FileReader();
         reader.onload = function(e) {
-            cardImage.src = e.target.result; // Asignar la imagen cargada al carnet
-
-            // 4. Actualizar el nombre en el carnet
-            cardName.textContent = nombre;
-
-            // 5. Generar un ID de socio aleatorio (para el ejemplo)
-            cardId.textContent = 'A' + Math.floor(100000000 + Math.random() * 900000000);
-
-            // 6. Mostrar el carnet
-            carnetResult.style.display = 'block';
+            document.getElementById('docFoto').src = e.target.result;
+            document.getElementById('documento-final').style.display = 'block';
+            window.scrollTo(0, document.body.scrollHeight);
         }
-        reader.readAsDataURL(fileInput.files[0]);
+        reader.readAsDataURL(fotoFile);
     }
 </script>
 
