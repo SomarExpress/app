@@ -2,190 +2,303 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LendFlow | Finanzas de Élite</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Carnet de Gimnasio Pro</title>
     <style>
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #050505;
-            color: #ffffff;
-            -webkit-tap-highlight-color: transparent;
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.07);
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
         }
 
-        .bento-card {
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        h2 {
+            margin-bottom: 25px;
+            color: #333;
         }
 
-        .bento-card:active {
-            transform: scale(0.97);
-            background: rgba(255, 255, 255, 0.08);
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
         }
 
-        .neon-border-blue { border-left: 4px solid #3b82f6; }
-        .neon-border-purple { border-left: 4px solid #a855f7; }
-
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-
-        @keyframes drift {
-            0% { transform: translate(0, 0); }
-            50% { transform: translate(10px, 10px); }
-            100% { transform: translate(0, 0); }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
         }
-        .bg-glow {
-            position: fixed;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, rgba(0,0,0,0) 70%);
-            z-index: -1;
-            animation: drift 10s infinite alternate;
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box; /* Importante para el padding */
+        }
+
+        .custom-file-upload {
+            border: 1px solid #ccc;
+            display: inline-block;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            background-color: #fff;
+            color: #333;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 5px;
+        }
+        .custom-file-upload:hover {
+            background-color: #eee;
+        }
+        
+        #file-chosen {
+            margin-left: 10px;
+            color: #777;
+            font-size: 0.9em;
+        }
+
+        button.generate-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            width: 100%;
+            margin-top: 15px;
+            transition: background-color 0.2s;
+        }
+
+        button.generate-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* --- Estilos del Carnet --- */
+        #carnet-result {
+            margin-top: 30px;
+            display: none; /* Oculto hasta que se genere */
+        }
+
+        #carnet-canvas {
+            width: 320px;
+            height: 190px;
+            background-color: #222; /* Fondo oscuro */
+            color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            box-sizing: border-box;
+            border: 2px solid #ffcc00; /* Borde amarillo/oro */
+            margin: 0 auto;
+        }
+
+        /* Encabezado */
+        .card-header {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #ffcc00; /* Color amarillo */
+            letter-spacing: 1px;
+        }
+
+        /* Contenedor Foto */
+        .card-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 5px;
+            overflow: hidden;
+            border: 2px solid #fff;
+            margin-right: 15px;
+        }
+
+        .card-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Recorta para llenar */
+        }
+
+        /* Contenedor Datos */
+        .card-details {
+            flex-grow: 1;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-label {
+            font-size: 0.65em;
+            color: #ccc;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .card-value-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .card-value-id {
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #eee;
+        }
+
+        .card-sub-details {
+             font-size: 0.7em;
+             color: #bbb;
+        }
+
+        .print-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .print-btn:hover {
+            background-color: #1e7e34;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #carnet-canvas, #carnet-canvas * {
+                visibility: visible;
+            }
+            #carnet-canvas {
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
         }
     </style>
 </head>
-<body class="pb-28">
+<body>
 
-    <div class="bg-glow top-0 -left-20"></div>
-    <div class="bg-glow bottom-0 -right-20" style="animation-delay: -5s; background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, rgba(0,0,0,0) 70%);"></div>
+<div class="container">
+    <h2>Generador de Carnet</h2>
 
-    <header class="p-6 flex justify-between items-center max-w-lg mx-auto">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
-            </div>
-            <div>
-                <h1 class="text-xs text-zinc-500 font-bold uppercase tracking-widest">Global Vault</h1>
-                <p class="text-lg font-bold">Nexus Capital</p>
-            </div>
-        </div>
-        <button class="w-12 h-12 rounded-2xl glass-panel flex items-center justify-center relative">
-            <i data-lucide="bell" class="w-5 h-5 text-zinc-300"></i>
-            <span class="absolute top-3 right-3 w-2 h-2 bg-rose-500 rounded-full border-2 border-black"></span>
-        </button>
-    </header>
+    <div class="input-group">
+        <label>Paso 1: Sube tu Foto</label>
+        <label for="upload-photo" class="custom-file-upload">
+             Seleccionar Foto
+        </label>
+        <input id="upload-photo" type="file" accept="image/jpeg, image/png" style="display:none;" />
+        <span id="file-chosen">No hay foto</span>
+    </div>
 
-    <main class="px-6 max-w-lg mx-auto">
+    <div class="input-group">
+        <label for="user-name">Paso 2: Escribe tu Nombre Completo</label>
+        <input type="text" id="user-name" placeholder="Ej. Juan Pérez">
+    </div>
+
+    <button class="generate-btn" onclick="generarCarnet()">Generar Carnet</button>
+
+    <div id="carnet-result">
+        <h3>Tu Carnet:</h3>
         
-        <div class="grid grid-cols-6 gap-3 mb-8">
-            
-            <div class="col-span-6 glass-panel rounded-[32px] p-6 bento-card overflow-hidden relative">
-                <div class="relative z-10">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-zinc-400 text-sm font-medium">Cartera bajo gestión</span>
-                        <span class="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-2 py-1 rounded-full border border-blue-500/20 uppercase">Pro Trader</span>
-                    </div>
-                    <h2 class="text-4xl font-extrabold tracking-tighter mb-1">$842,500<span class="text-zinc-600">.00</span></h2>
-                    <p class="text-emerald-400 text-xs font-bold flex items-center gap-1">
-                        <i data-lucide="trending-up" class="w-3 h-3"></i> +$12,402 hoy
-                    </p>
-                </div>
-                <div class="absolute -right-10 -bottom-10 opacity-10">
-                    <i data-lucide="activity" class="w-40 h-40"></i>
-                </div>
+        <div id="carnet-canvas">
+            <div class="card-header">MEMBRESÍA DE GIMNASIO</div>
+            <div class="card-photo">
+                <img id="card-image-placeholder" src="" alt="Tu Foto">
             </div>
+            <div class="card-details">
+                <div class="card-label">Socio:</div>
+                <div class="card-value-name" id="card-name-placeholder">NOMBRE SOCIO</div>
+                
+                <div class="card-label">ID Socio:</div>
+                <div class="card-value-id" id="card-id-placeholder">#######</div>
 
-            <div class="col-span-3 glass-panel rounded-[32px] p-5 bento-card flex flex-col justify-between bg-blue-600/10 border-blue-500/20">
-                <div class="bg-blue-500 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/40">
-                    <i data-lucide="plus" class="text-white w-6 h-6"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold text-sm">Nuevo Préstamo</h3>
-                    <p class="text-[10px] text-zinc-400">Desembolso inmediato</p>
-                </div>
-            </div>
-
-            <div class="col-span-3 glass-panel rounded-[32px] p-5 bento-card flex flex-col justify-between bg-purple-600/10 border-purple-500/20">
-                <div class="bg-purple-500 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-purple-600/40">
-                    <i data-lucide="layers" class="text-white w-5 h-5"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold text-sm">Ruta de Cobro</h3>
-                    <p class="text-[10px] text-zinc-400">12 clientes pendientes</p>
-                </div>
-            </div>
-
-            <div class="col-span-2 glass-panel rounded-[24px] p-4 bento-card text-center">
-                <p class="text-[10px] text-zinc-500 font-bold uppercase mb-1">Risk</p>
-                <p class="text-lg font-bold text-orange-400">A+</p>
-            </div>
-
-            <div class="col-span-4 glass-panel rounded-[24px] p-4 bento-card flex items-center justify-between">
-                <div>
-                    <p class="text-[10px] text-zinc-500 font-bold uppercase">ROI Anual</p>
-                    <p class="text-lg font-bold">24.8%</p>
-                </div>
-                <div class="flex gap-1">
-                    <div class="w-1 h-4 bg-zinc-800 rounded-full"></div>
-                    <div class="w-1 h-6 bg-blue-500 rounded-full"></div>
-                    <div class="w-1 h-3 bg-zinc-800 rounded-full"></div>
-                </div>
+                <div class="card-sub-details">Vence: 12/2024 | Tipo: Premium</div>
             </div>
         </div>
+        
+        <button class="print-btn" onclick="window.print()">Imprimir Carnet</button>
+    </div>
 
-        <section class="mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg tracking-tight">Cobros Prioritarios</h3>
-                <i data-lucide="more-horizontal" class="text-zinc-500"></i>
-            </div>
+</div>
 
-            <div class="space-y-3">
-                <div class="glass-panel p-4 rounded-[24px] flex items-center justify-between bento-card neon-border-blue">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center font-bold text-sm">
-                            JD
-                        </div>
-                        <div>
-                            <p class="font-bold text-sm">Juan Delgado</p>
-                            <p class="text-xs text-zinc-500 italic">Vence hoy</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-bold text-sm text-blue-400">$150.00</p>
-                        <button class="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">Recordar</button>
-                    </div>
-                </div>
+<script>
+    const fileInput = document.getElementById('upload-photo');
+    const nameInput = document.getElementById('user-name');
+    const fileChosenText = document.getElementById('file-chosen');
 
-                <div class="glass-panel p-4 rounded-[24px] flex items-center justify-between bento-card neon-border-purple">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center font-bold text-sm">
-                            AM
-                        </div>
-                        <div>
-                            <p class="font-bold text-sm">Ana Martínez</p>
-                            <p class="text-xs text-rose-500 italic">Atraso 2 días</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-bold text-sm text-purple-400">$420.00</p>
-                        <button class="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">WhatsApp</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
+    const carnetResult = document.getElementById('carnet-result');
+    const cardImage = document.getElementById('card-image-placeholder');
+    const cardName = document.getElementById('card-name-placeholder');
+    const cardId = document.getElementById('card-id-placeholder');
 
-    <nav class="fixed bottom-8 left-6 right-6 z-50">
-        <div class="max-w-md mx-auto glass-panel rounded-full px-8 py-4 flex justify-between items-center shadow-2xl">
-            <button class="text-blue-500"><i data-lucide="layout-grid" class="w-6 h-6"></i></button>
-            <button class="text-zinc-600"><i data-lucide="users" class="w-6 h-6"></i></button>
-            <button class="text-zinc-600"><i data-lucide="wallet" class="w-6 h-6"></i></button>
-            <button class="text-zinc-600"><i data-lucide="settings" class="w-6 h-6"></i></button>
-            <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-zinc-800">
-                <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=100&q=80" alt="Admin">
-            </div>
-        </div>
-    </nav>
+    // Mostrar el nombre del archivo seleccionado
+    fileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            fileChosenText.textContent = this.files[0].name;
+        } else {
+            fileChosenText.textContent = "No hay foto";
+        }
+    });
 
-    <script>
-        lucide.createIcons();
-    </script>
+    function generarCarnet() {
+        // 1. Validar que el usuario subió una foto
+        if (!fileInput.files || !fileInput.files[0]) {
+            alert("Por favor, sube una foto primero.");
+            return;
+        }
+
+        // 2. Validar que el usuario puso un nombre
+        const nombre = nameInput.value.trim();
+        if (nombre === "") {
+            alert("Por favor, escribe un nombre.");
+            nameInput.focus();
+            return;
+        }
+
+        // 3. Procesar la Imagen (convertirla a formato base64 para mostrarla)
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            cardImage.src = e.target.result; // Asignar la imagen cargada al carnet
+
+            // 4. Actualizar el nombre en el carnet
+            cardName.textContent = nombre;
+
+            // 5. Generar un ID de socio aleatorio (para el ejemplo)
+            cardId.textContent = 'A' + Math.floor(100000000 + Math.random() * 900000000);
+
+            // 6. Mostrar el carnet
+            carnetResult.style.display = 'block';
+        }
+        reader.readAsDataURL(fileInput.files[0]);
+    }
+</script>
+
 </body>
 </html>
